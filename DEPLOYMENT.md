@@ -5,7 +5,31 @@
 ## 前置条件
 
 - 新装 macOS，已创建用户 `sue`（与 `vars/default.nix` 中 `username` 一致）
-- 已配置 SSH 密钥（用于克隆 GitHub 和后续 git 操作）
+
+---
+
+## 零、配置 SSH 密钥（克隆前必做）
+
+重装后需先生成 SSH 密钥并添加到 GitHub，才能用 `git clone git@github.com:...` 克隆。
+
+```bash
+# 1. 生成密钥（一路回车，或设置密码）
+ssh-keygen -t ed25519 -C "aesophsu@gmail.com"
+
+# 2. 启动 ssh-agent 并添加密钥
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+# 3. 复制公钥到剪贴板（macOS）
+pbcopy < ~/.ssh/id_ed25519.pub
+```
+
+然后打开 [GitHub → Settings → SSH and GPG keys](https://github.com/settings/keys)，点击 **New SSH key**，粘贴公钥并保存。
+
+```bash
+# 4. 测试连接（首次会提示确认 github.com 指纹，输入 yes）
+ssh -T git@github.com
+```
 
 ---
 
