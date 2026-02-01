@@ -1,0 +1,15 @@
+.Trash-1000/
+result
+result/
+.direnv/
+.DS_Store
+.pre-commit-config.yaml
+logs/
+core*
+!core/
+!core.nix
+!coredns*
+
+# mihomo 配置（含订阅 token，勿提交）
+home/darwin/mihomo/config.local.yaml
+home/darwin/mihomo/config.yaml

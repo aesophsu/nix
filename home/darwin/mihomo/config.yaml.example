@@ -1,0 +1,208 @@
+# ==========================================
+# Mihomo Config 模板 (MacBook Air M4 / macOS)
+# ==========================================
+# 使用: cp config.yaml.example config.yaml 或 config.local.yaml
+# 然后填入你的订阅 URL（含 token）
+
+# 基础端口设置
+port: 7890
+socks-port: 7891
+mixed-port: 7893
+allow-lan: false
+bind-address: 127.0.0.1
+log-level: info
+ipv6: true
+
+external-controller: 127.0.0.1:9090
+external-ui: ui
+
+unified-delay: true
+tcp-concurrent: true
+keep-alive-interval: 15
+find-process-mode: strict
+
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+  inet4-route-exclude-address:
+    - 192.168.0.0/16
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+sniffer:
+  enable: true
+  parse-pure-ip: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+      override-destination: true
+    QUIC:
+      ports: [443, 8443]
+      override-destination: true
+
+dns:
+  enable: true
+  listen: 127.0.0.1:1053
+  ipv6: true
+  prefer-h3: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-range-ipv6: fd00:100::/64
+  respect-rules: true
+  proxy-server-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://dns.google/dns-query
+    - https://dns11.quad9.net/dns-query
+  direct-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver-policy:
+    "geosite:cn": [223.5.5.5, 119.29.29.29]
+    "geosite:apple": [223.5.5.5, 119.29.29.29]
+    "github.com": [223.5.5.5, 119.29.29.29]
+  fake-ip-filter:
+    - "+.lan"
+    - "+.local"
+    - "time.apple.com"
+    - "time-ios.apple.com"
+    - "ntp.apple.com"
+    - "captive.apple.com"
+    - "rule-set:cn"
+
+geox:
+  geoip:
+    path: ./Country.mmdb
+    url: https://github.com/Loyalsoldier/geoip/releases/latest/download/Country.mmdb
+    asn-path: ./GeoLite2-ASN.mmdb
+    asn-url: https://github.com/DustinWin/geoip_asn/releases/latest/download/GeoLite2-ASN.mmdb
+  geosite:
+    path: ./geosite.dat
+    url: https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
+  update-interval: 172800
+
+proxy-providers:
+  Airport1:
+    type: http
+    url: "https://YOUR_SUBSCRIPTION_URL_1?token=YOUR_TOKEN"
+    path: ./proxies/airport1.yaml
+    interval: 43200
+    update-on-start: true
+    skip-cert-verify: false
+    filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
+    exclude-filter: "(?i)(倍|test|备用|Expire|到期)"
+    health-check:
+      enable: true
+      url: https://cp.cloudflare.com/generate_204
+      interval: 300
+      timeout: 5
+      lazy: true
+    override:
+      additional-suffix: " - A1"
+
+  Airport2:
+    type: http
+    url: "https://YOUR_SUBSCRIPTION_URL_2?token=YOUR_TOKEN"
+    path: ./proxies/airport2.yaml
+    interval: 43200
+    update-on-start: true
+    skip-cert-verify: false
+    filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
+    exclude-filter: "(?i)(倍|test|备用|Expire|到期)"
+    health-check:
+      enable: true
+      url: https://cp.cloudflare.com/generate_204
+      interval: 300
+      timeout: 5
+      lazy: true
+    override:
+      additional-suffix: " - A2"
+
+proxy-groups:
+  - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, DIRECT, REJECT] }
+  - { name: Auto, type: fallback, url: "https://cp.cloudflare.com/generate_204", interval: 300, use: [Airport1, Airport2] }
+  - { name: AI, type: select, proxies: [TW, JP, SG, US] }
+  - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(hk|港)" }
+  - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(tw|台)" }
+  - { name: JP, type: select, use: [Airport1, Airport2], filter: "(?i)(jp|日)" }
+  - { name: SG, type: select, use: [Airport1, Airport2], filter: "(?i)(sg|新)" }
+  - { name: US, type: select, use: [Airport1, Airport2], filter: "(?i)(us|美)" }
+
+rule-providers:
+  fakeip-filter:
+    type: http
+    behavior: domain
+    format: mrs
+    path: ./rules/fakeip-filter.mrs
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"
+    interval: 86400
+  private:
+    type: http
+    behavior: domain
+    format: mrs
+    path: ./rules/private.mrs
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/private.mrs"
+    interval: 86400
+  ai:
+    type: http
+    behavior: domain
+    format: mrs
+    path: ./rules/ai.mrs
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/ai.mrs"
+    interval: 86400
+  proxy:
+    type: http
+    behavior: domain
+    format: mrs
+    path: ./rules/proxy.mrs
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/proxy.mrs"
+    interval: 86400
+  cn:
+    type: http
+    behavior: domain
+    format: mrs
+    path: ./rules/cn.mrs
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/cn.mrs"
+    interval: 86400
+  cnip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    path: ./rules/cnip.mrs
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/cnip.mrs"
+    interval: 86400
+
+rules:
+  - DOMAIN,clash.razord.top,DIRECT
+  - DOMAIN,yacd.haishan.me,DIRECT
+  - DOMAIN-SUFFIX,ncbi.nlm.nih.gov,DIRECT
+  - DOMAIN-SUFFIX,pubmed.ncbi.nlm.nih.gov,DIRECT
+  - RULE-SET,private,DIRECT
+  - RULE-SET,fakeip-filter,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - DOMAIN-SUFFIX,home,DIRECT
+  - DOMAIN-SUFFIX,lan,DIRECT
+  - DOMAIN-KEYWORD,airdrop,DIRECT
+  - DOMAIN-KEYWORD,airplay,DIRECT
+  - DOMAIN-KEYWORD,bonjour,DIRECT
+  - RULE-SET,ai,AI
+  - RULE-SET,cn,DIRECT
+  - RULE-SET,cnip,DIRECT,no-resolve
+  - GEOIP,CN,DIRECT,no-resolve
+  - RULE-SET,proxy,Proxy
+  - MATCH,Proxy
