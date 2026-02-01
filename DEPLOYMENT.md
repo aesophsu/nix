@@ -77,6 +77,8 @@ sudo darwin-rebuild switch --flake '.#stella'
 
 首次会安装 nix-darwin、Home Manager、Homebrew 等，耗时较长。
 
+**若 WeChat 报 SSL 错误**：brew bundle 中的 mas 需访问 itunes.apple.com，国内网络易失败。可先注释 `modules/darwin/apps.nix` 中的 `masApps` 完成首次部署，登录后 Mihomo 自动启动，再取消注释并重新部署。
+
 ---
 
 ## 五、可选：Mihomo 控制面板 UI
@@ -118,4 +120,5 @@ sudo darwin-rebuild switch --flake '.#stella'
 | `Determinate detected, aborting activation` | 已设置 `nix.enable = false`，无需改动 |
 | mihomo 无法启动 | 检查 `~/.config/mihomo/config.yaml` 是否存在且订阅 URL 正确 |
 | Homebrew 安装失败 | 国内网络可检查 `modules/darwin/apps.nix` 中的镜像配置 |
+| WeChat 安装 SSL 错误 | 初次部署时 Mihomo 未启动，先注释 masApps 完成部署，再取消注释重新部署 |
 | SSH 密钥未生效 | 确认 `vars/default.nix` 中 `mainSshAuthorizedKeys` 已配置 |

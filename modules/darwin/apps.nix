@@ -2,16 +2,24 @@
   config,
   lib,
   pkgs,
+  myvars,
   ...
 }:
 
 let
+  inherit (myvars.networking.mihomo) httpProxy;
+  no_proxy = "localhost,127.0.0.1,.local,.lan,.cn,mirrors.bfsu.edu.cn,mirrors.tuna.tsinghua.edu.cn,mirrors.ustc.edu.cn,pypi.tuna.tsinghua.edu.cn";
   homebrew_mirror_env = {
     HOMEBREW_API_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles/api";
     HOMEBREW_BOTTLE_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles";
     HOMEBREW_BREW_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/brew.git";
     HOMEBREW_CORE_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/homebrew-core.git";
     HOMEBREW_PIP_INDEX_URL = "https://pypi.tuna.tsinghua.edu.cn/simple";
+    # mas 安装 WeChat 需访问 itunes.apple.com，国内网络需代理
+    ALL_PROXY = httpProxy;
+    HTTPS_PROXY = httpProxy;
+    NO_PROXY = no_proxy;
+    no_proxy = no_proxy;
   };
   homebrew_env_script = lib.concatStringsSep "\n" (
     lib.attrsets.mapAttrsToList (n: v: "export ${n}=${v}") homebrew_mirror_env
