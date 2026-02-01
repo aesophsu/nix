@@ -59,7 +59,8 @@ in
     ];
 
     # mas 为 masApps（如 WeChat）所需，避免被 cleanup 卸载
-    brews = [ "mas" ];
+    # libomp 为 XGBoost/LightGBM 等 PyPI 包所需（期望 Homebrew 路径）
+    brews = [ "mas" "libomp" ];
 
     # miniforge 体积大，256GB 建议按需 brew install
     casks = [
