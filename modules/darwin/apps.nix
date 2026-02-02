@@ -12,6 +12,8 @@ let
   homebrew_mirror_env = {
     HOMEBREW_API_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles/api";
     HOMEBREW_BOTTLE_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles";
+    # ghcr.io 格式的 bottle（如 postgresql@16）需通过 ARTIFACT_DOMAIN 镜像
+    HOMEBREW_ARTIFACT_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles";
     HOMEBREW_BREW_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/brew.git";
     HOMEBREW_CORE_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/homebrew-core.git";
     HOMEBREW_PIP_INDEX_URL = "https://pypi.tuna.tsinghua.edu.cn/simple";
@@ -60,6 +62,7 @@ in
 
     # mas 为 masApps（如 WeChat）所需，避免被 cleanup 卸载
     # libomp 为 XGBoost/LightGBM 等 PyPI 包所需（期望 Homebrew 路径）
+    # postgresql 改用 Nixpkgs（home/darwin/postgresql.nix），避免 Homebrew ghcr.io 下载失败
     brews = [ "mas" "libomp" ];
 
     # miniforge 体积大，256GB 建议按需 brew install
