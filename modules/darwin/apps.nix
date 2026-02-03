@@ -69,6 +69,7 @@ in
     casks = [
       "google-chrome"
       "cursor"
+      "chatgpt"
     ];
   };
 }

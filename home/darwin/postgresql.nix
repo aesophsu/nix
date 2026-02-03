@@ -23,14 +23,11 @@ in
     enable = true;
     config = {
       Label = "org.nix.postgresql";
+      # 直接运行 postgres 进程（Nixpkgs 的 pg_ctl 不支持 Homebrew 的 "run" 子命令）
       ProgramArguments = [
-        "${pg}/bin/pg_ctl"
+        "${pg}/bin/postgres"
         "-D"
         pgData
-        "-l"
-        pgLog
-        "-w"
-        "run"
       ];
       RunAtLoad = true;
       KeepAlive = true;
