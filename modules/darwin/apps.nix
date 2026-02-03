@@ -70,6 +70,7 @@ in
       "google-chrome"
       "cursor"
       "chatgpt"
+      "zotero"
     ];
   };
 }

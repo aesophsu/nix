@@ -34,71 +34,35 @@ let
   # System trees (per-architecture entry points)
   # =====================================================================================
 
-  # NixOS：需存在 outputs/<arch>/ 目录
-  nixosSystems = {
-    # x86_64-linux  = import ./x86_64-linux  (args // { system = "x86_64-linux"; });
-    # aarch64-linux = import ./aarch64-linux (args // { system = "aarch64-linux"; });
-  };
-
   darwinSystems = {
     aarch64-darwin = import ./aarch64-darwin (args // { system = "aarch64-darwin"; });
   };
 
-  allSystems = nixosSystems // darwinSystems;
-  allSystemNames = builtins.attrNames allSystems;
-  nixosSystemValues = builtins.attrValues nixosSystems;
+  darwinSystemNames = builtins.attrNames darwinSystems;
   darwinSystemValues = builtins.attrValues darwinSystems;
-  allSystemValues = nixosSystemValues ++ darwinSystemValues;
 
   # =====================================================================================
   # Helpers
   # =====================================================================================
 
-  forAllSystems = func: nixpkgs.lib.genAttrs allSystemNames func;
+  # 当前仅支持本机 macOS 系统（darwinSystems），如将来需要可再扩展 NixOS 等
+  forAllSystems = func: nixpkgs.lib.genAttrs darwinSystemNames func;
 
 in
 {
   # =====================================================================================
-  # NixOS & Darwin configurations
+  # Darwin configurations（当前仅 MacBook Air M4）
   # =====================================================================================
-
-  nixosConfigurations = lib.attrsets.mergeAttrsList (
-    map (it: it.nixosConfigurations or { }) nixosSystemValues
-  );
 
   darwinConfigurations = lib.attrsets.mergeAttrsList (
     map (it: it.darwinConfigurations or { }) darwinSystemValues
   );
 
   # =====================================================================================
-  # Colmena (remote deployment)
-  # =====================================================================================
-
-  colmena = {
-    meta =
-      let
-        system = "x86_64-linux";
-      in
-      {
-        nixpkgs = import nixpkgs { inherit system; };
-        specialArgs = genSpecialArgs system;
-      };
-
-    nodeNixpkgs = lib.attrsets.mergeAttrsList (
-      map (it: it.colmenaMeta.nodeNixpkgs or { }) nixosSystemValues
-    );
-
-    nodeSpecialArgs = lib.attrsets.mergeAttrsList (
-      map (it: it.colmenaMeta.nodeSpecialArgs or { }) nixosSystemValues
-    );
-  }
-  // lib.attrsets.mergeAttrsList (map (it: it.colmena or { }) nixosSystemValues);
-
-  # =====================================================================================
   # Packages & evaluation
   # =====================================================================================
 
-  packages = forAllSystems (system: allSystems.${system}.packages or { });
+  packages = forAllSystems (system: darwinSystems.${system}.packages or { });
 
   # =====================================================================================
   # Checks (CI / pre-commit)
@@ -107,7 +71,7 @@ in
   checks = forAllSystems (system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
-      evalTestsEmpty = allSystems.${system}.evalTests == { };
+      evalTestsEmpty = (darwinSystems.${system}.evalTests or { }) == { };
     in
     {
       eval-tests = pkgs.runCommand "eval-tests" { } ''
