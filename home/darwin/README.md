@@ -1,33 +1,31 @@
-# Home Manager's Darwin Submodules
+# Home Manager · Darwin（macOS）
 
-This directory contains macOS-specific Home Manager configurations for Darwin systems.
+macOS 专用 Home Manager 配置，与 `hosts/darwin-stella` 配合使用。
 
-## Configuration Modules
+## 目录结构
 
-### Core Configurations
+| 路径 | 说明 |
+|------|------|
+| `default.nix` | 入口：设置 `homeDirectory`、`xdg.enable`，并导入 `../base` 与当前目录下所有模块 |
+| `shell.nix` | 开发/临时 shell 环境 |
+| **mihomo/** | [mihomo](https://github.com/MetaCubeX/mihomo) 代理：包、环境变量、config 与 launchd |
+| **openclaw/** | [OpenClaw](https://openclaw.ai)（nix-openclaw）：声明式配置、Gateway、launchd、documents |
+| **postgresql/** | PostgreSQL 16（Nixpkgs）：包、数据目录与 launchd 服务 |
 
-- **default.nix**: Entry point that imports all Darwin configurations
-- **shell.nix**: Shell configurations and environment settings
-- **rime-squirrel.nix**: [Rime Squirrel](https://github.com/rime/squirrel) input method
-  configuration
+## 加载方式
 
-### Window Management
+- `default.nix` 通过 `mylib.scanPaths ./.** 自动导入本目录下所有 `.nix` 文件与子目录（每个子目录加载其 `default.nix`）。
+- 与 `outputs/aarch64-darwin/src/stella.nix` 中的 `home-modules` 一致：`hosts/darwin-stella/home.nix`、`home/darwin`、`nix-openclaw.homeManagerModules.openclaw`。
 
-- **aerospace/**: [Aerospace](https://github.com/nikitabobko/AeroSpace) tiling window manager
-  configuration
-  - Custom keybindings and workspace management
-  - Application-specific window rules
+## 常用命令
 
-### Network Configuration
+```bash
+# 应用整机配置（含 Home Manager）
+darwin-rebuild switch --flake .
 
-- **proxy/**: Network proxy configurations
-  - `proxychains.conf`: Proxy chains configuration for network routing
-  - Proxy settings for development tools and applications
+# 仅应用 Home Manager（用户 stella）
+home-manager switch --flake .#stella
 
-## Features
-
-- macOS-specific package installations and configurations
-- Native macOS applications and utilities
-- Touch ID and system integration
-- Homebrew integration for additional packages
-- macOS-specific shell configurations and aliases
+# 回滚
+home-manager switch --rollback
+```

@@ -62,7 +62,7 @@ in
 
     # mas 为 masApps（如 WeChat）所需，避免被 cleanup 卸载
     # libomp 为 XGBoost/LightGBM 等 PyPI 包所需（期望 Homebrew 路径）
-    # postgresql 改用 Nixpkgs（home/darwin/postgresql.nix），避免 Homebrew ghcr.io 下载失败
+    # postgresql 由 Nixpkgs 提供（home/darwin/postgresql/default.nix），避免 Homebrew ghcr.io 下载失败
     brews = [ "mas" "libomp" ];
 
     # miniforge 体积大，256GB 建议按需 brew install

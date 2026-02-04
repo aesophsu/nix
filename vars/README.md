@@ -24,22 +24,12 @@ Contains user information, SSH keys, and password configuration:
 
 ### 2. `networking.nix`
 
-Comprehensive network configuration including:
+网络与主机相关配置：
 
-- **Gateway settings**: Main router and proxy gateway configurations
-- **DNS servers**: IPv4 and IPv6 name servers
-- **Host inventory**: Complete mapping of all hosts with their network interfaces and IP addresses
-- **SSH configuration**: Remote builder aliases and known hosts configuration
-- **Network topology**: Physical machines, VMs, Kubernetes clusters, and SBCs
-
-## Host Categories
-
-The networking configuration covers:
-
-- **Physical machines**: Desktop PCs, Apple Silicon systems, SBCs
-- **Virtual machines**: KubeVirt guests, K3s nodes
-- **Kubernetes clusters**: Production and testing environments
-- **Network infrastructure**: Routers, gateways, and DNS configuration
+- **mihomo**：代理端口与 URL（与 `home/darwin/mihomo/config.yaml` 或 `config.local.yaml` 一致）
+- **nameservers**：国内 DNS（DNSPod、AliDNS）
+- **hostsAddr / hostsInterface**：主机网络接口与 DHCP 配置（当前仅 stella）
+- **ssh**：`knownHosts`（如 GitHub）等，供 nix-darwin 使用
 
 ## Usage
 

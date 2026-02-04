@@ -27,10 +27,12 @@ let
         }
       ];
 
-    home-modules = map mylib.relativeToRoot [
-      "hosts/darwin-${name}/home.nix"
-      "home/darwin"
-    ];
+    home-modules =
+      (map mylib.relativeToRoot [
+        "hosts/darwin-${name}/home.nix"
+        "home/darwin"
+      ])
+      ++ [ inputs.nix-openclaw.homeManagerModules.openclaw ];
   };
 
   # =====================================================================================

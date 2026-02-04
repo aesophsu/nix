@@ -1,3 +1,50 @@
-# 此目录仅存放 mihomo 配置文件，不包含 Nix 模块逻辑
-# 实际配置由同级的 mihomo.nix 提供
-{ ... }: { }
+# mihomo 代理：包、环境变量、config 与 launchd
+# 配置源优先级: config.local.yaml > config.yaml > config.yaml.example
+{ config, pkgs, myvars, ... }:
+
+let
+  configDir = "${config.xdg.configHome}/mihomo";
+  configSource =
+    if builtins.pathExists ./config.local.yaml
+    then ./config.local.yaml
+    else if builtins.pathExists ./config.yaml
+    then ./config.yaml
+    else ./config.yaml.example;
+  inherit (myvars.networking.mihomo) httpProxy socksProxy;
+in
+{
+  home.packages = [ pkgs.mihomo ];
+
+  # 环境变量：使 CLI 工具（curl、wget、git 等）使用 mihomo 代理
+  # no_proxy 含国内镜像域名，确保 pip/uv/brew 直连加速
+  home.sessionVariables = {
+    http_proxy = httpProxy;
+    https_proxy = httpProxy;
+    all_proxy = socksProxy;
+    HTTP_PROXY = httpProxy;
+    HTTPS_PROXY = httpProxy;
+    ALL_PROXY = socksProxy;
+    no_proxy = "localhost,127.0.0.1,.local,.lan,.cn,mirror.nju.edu.cn,pypi.tuna.tsinghua.edu.cn,mirrors.ustc.edu.cn,mirrors.bfsu.edu.cn,mirrors.tuna.tsinghua.edu.cn";
+    NO_PROXY = "localhost,127.0.0.1,.local,.lan,.cn,mirror.nju.edu.cn,pypi.tuna.tsinghua.edu.cn,mirrors.ustc.edu.cn,mirrors.bfsu.edu.cn,mirrors.tuna.tsinghua.edu.cn";
+  };
+
+  xdg.configFile."mihomo/config.yaml" = {
+    source = configSource;
+  };
+
+  launchd.agents.mihomo = {
+    enable = true;
+    config = {
+      Label = "mihomo";
+      ProgramArguments = [
+        "${pkgs.mihomo}/bin/mihomo"
+        "-d"
+        configDir
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/mihomo.stdout.log";
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/mihomo.stderr.log";
+    };
+  };
+}

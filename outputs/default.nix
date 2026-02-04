@@ -14,7 +14,21 @@ let
   mylib = import ../lib { inherit lib; };
   myvars = import ../vars { inherit lib; };
 
-  genSpecialArgs = system: inputs // { inherit mylib myvars; };
+  # OpenClaw 包（排除 oracle、PATH 安全）由 lib/openclaw-package.nix 提供
+  genSpecialArgs = system:
+    let
+      openclawPkg = import ../lib/openclaw-package.nix {
+        pkgs = nixpkgs.legacyPackages.${system};
+        nix-openclaw = inputs.nix-openclaw;
+        nix-steipete-tools = inputs.nix-steipete-tools;
+        inherit system;
+      };
+    in
+    inputs
+    // {
+      inherit mylib myvars;
+      openclawPackageNoOracle = openclawPkg.openclawPackageNoOracle;
+    };
 
   # =====================================================================================
   # Common args for haumea-style module trees

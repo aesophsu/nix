@@ -1,6 +1,6 @@
 { lib }:
 rec {
-  # mihomo 代理端口（与 home/darwin/mihomo/config.yaml 一致）
+  # mihomo 代理端口（与 home/darwin/mihomo/config.yaml 或 config.local.yaml 一致）
   mihomo = {
     host = "127.0.0.1";
     httpPort = "7890";

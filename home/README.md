@@ -22,5 +22,5 @@ home/
    - Shared configurations for editors, shells, and essential tools
 
 2. **darwin**: macOS-specific configuration
-   - macOS applications and services
-   - Platform-specific integrations (Aerospace, Squirrel, etc.)
+   - Entry: `default.nix` + `scanPaths` 加载子模块
+   - 子模块：mihomo（代理）、openclaw（AI 助手）、postgresql（数据库）

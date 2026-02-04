@@ -14,18 +14,19 @@ modules/
 │   ├── nix.nix            # Nix package manager settings
 │   ├── overlays.nix       # Package overlays
 │   ├── security.nix       # Basic security settings
-│   ├── system-packages.nix # Essential system packages
+│   ├── packages.nix       # Essential system packages
 │   └── users.nix          # User management
 └── darwin/                  # macOS-specific modules
     ├── README.md
-    ├── apps.nix           # macOS applications
-    ├── broken-packages.nix # Package compatibility fixes
+    ├── apps.nix            # Homebrew、环境变量、GUI 应用
+    ├── broken-packages.nix # 包兼容修复
     ├── default.nix
-    ├── nix-core.nix       # Core Nix configuration
-    ├── security.nix       # macOS security settings
-    ├── ssh.nix           # SSH configuration
-    ├── system.nix        # System-level settings
-    └── users.nix         # macOS user management
+    ├── nix-core.nix        # Nix 核心设置
+    ├── openclaw.nix        # nix-openclaw overlay
+    ├── security.nix        # macOS 安全设置
+    ├── ssh.nix             # SSH 配置
+    ├── system.nix         # 系统级设置（代理、时区、defaults）
+    └── users.nix          # 用户与 SSH 公钥
 ```
 
 ## Module Categories
@@ -49,25 +50,11 @@ macOS-specific configuration:
 - SSH and system-level settings
 - Package compatibility fixes
 
-### 3. **NixOS Modules** (`nixos/`)
-
-Platform-specific NixOS configuration:
-
-- **Base**: Core system settings and services
-- **Desktop**: Desktop environment and GUI applications
-- **Server**: Server-specific optimizations and services
-
 ## Usage
 
-Modules are imported based on platform detection:
+- **macOS**：`outputs/aarch64-darwin/src/stella.nix` 引入 `modules/darwin` 与 `hosts/darwin-stella`，并合并 `base/` 共享配置。
+- **所有系统**：`base/` 被 darwin 的 `default.nix` 引入，提供字体、Nix 设置、overlays、包、安全与用户等通用配置。
 
-- **NixOS Systems**: Import `nixos/` modules
-- **macOS Systems**: Import `darwin/` modules
-- **All Systems**: Import `base/` modules for shared configuration
+## 当前架构
 
-## Architecture Support
-
-- **x86_64-linux**: Desktop and server configurations
-- **aarch64-linux**: ARM64 Linux systems
-- **aarch64-darwin**: Apple Silicon macOS systems
-- **server-riscv64**: RISC-V server configurations
+- **aarch64-darwin**：MacBook Air M4（hostname: stella）

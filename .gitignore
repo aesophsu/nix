@@ -13,3 +13,5 @@ core*
 # mihomo 配置（含订阅 token，勿提交）
 home/darwin/mihomo/config.local.yaml
 home/darwin/mihomo/config.yaml
+
+# OpenClaw 使用 submodule nix-openclaw，不 ignore
