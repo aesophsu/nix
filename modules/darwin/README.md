@@ -1,9 +1,20 @@
 # Nix-Darwin's Modules
 
-This directory contains the modules for [Nix-Darwin](https://github.com/LnL7/nix-darwin).
+本目录为 [Nix-Darwin](https://github.com/LnL7/nix-darwin) 的 macOS 模块，由 `outputs/aarch64-darwin/src/stella.nix` 通过 `modules/darwin` 与 `hosts/darwin-stella` 引入；`default.nix` 会再引入 `../base` 共享配置。
 
-See [ryan4yin/nix-darwin-kickstarter](https://github.com/ryan4yin/nix-darwin-kickstarter) for a more
-detailed explanation.
+| 文件 | 说明 |
+|------|------|
+| **default.nix** | 入口，引入本目录所有模块及 `modules/base` |
+| **apps.nix** | Homebrew、环境变量（代理/镜像）、GUI 应用与 casks |
+| **system.nix** | 主机名、系统代理（networksetup）、时区、Dock/Finder/键盘等 defaults |
+| **nix-core.nix** | Nix daemon 设置（experimental-features、镜像等） |
+| **openclaw.nix** | 添加 nix-openclaw overlay，供 Home Manager 使用 |
+| **security.nix** | PAM、Touch ID 等 |
+| **ssh.nix** | SSH 服务与 knownHosts |
+| **users.nix** | 用户与 SSH 公钥 |
+| **broken-packages.nix** | 包兼容/补丁 |
+
+更多结构见上级 [modules/README.md](../README.md)。
 
 ## 已知警告（可忽略）
 

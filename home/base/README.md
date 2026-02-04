@@ -1,20 +1,23 @@
-# Home Manager's Base Submodules
+# Home Manager · Base（跨平台）
 
-This directory contains cross-platform base configurations that are shared between Linux and Darwin
-systems.
+跨平台 Home Manager 配置，被 Linux 与 Darwin 共用。
 
-## Configuration Structure
+## 结构
 
-### Core System
+| 路径 | 说明 |
+|------|------|
+| **home.nix** | 入口：`home.username`、`home.stateVersion` 等基础项 |
+| **core/** | 核心应用与设置，由 `core/default.nix` 扫描并导入 |
+| **core/default.nix** | 通过 `mylib.scanPaths ./.** 导入本目录下所有 `.nix` 与子目录 |
+| **core/core.nix** | 基础 home 选项 |
+| **core/git.nix** | Git 配置与别名 |
+| **core/neovim.nix** | Neovim 配置 |
+| **core/pip.nix** | Python pip 相关 |
+| **core/python.nix** | Python 与虚拟环境 |
+| **core/starship.nix** | 跨 shell 提示符（Starship） |
+| **core/theme.nix** | 主题与配色 |
+| **core/shells/** | Shell 配置（如 Nushell `config.nu`） |
 
-- **core/**: Essential cross-platform configurations
-  - **core.nix**: Minimal home-manager configuration
-  - **shells/**: Shell configurations (bash, zsh, fish, nu)
-  - **git.nix**: Git configuration and aliases
-  - **pip.nix**: Python package management
-  - **starship.nix**: Cross-shell prompt configuration
-  - **theme.nix**: Color schemes and theming
+## 加载方式
 
-### System Management
-
-- **home.nix**: Main home manager configuration file
+- `home/darwin/default.nix` 会 `import ../base/core` 与 `import ../base/home.nix`，因此所有 Darwin 用户都会带上 base 配置。

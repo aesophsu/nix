@@ -6,15 +6,20 @@ MacBook Air M4 优化配置，支持 TUN 模式、多机场、AI 分流等。
 
 ### 方式一：通过 Nix（推荐）
 
+配置由 `home/darwin/mihomo/default.nix` 提供，应用后会将 config 链接到 `~/.config/mihomo/config.yaml`。配置源优先级：`config.local.yaml` > `config.yaml` > `config.yaml.example`（均在本目录）。
+
 ```bash
-darwin-rebuild switch --flake .#stella
-# 或
+# 在仓库根目录执行
+darwin-rebuild switch --flake .
+# 或仅 Home Manager
 home-manager switch --flake .#stella
 ```
 
-### 方式二：手动复制
+### 方式二：不用 Nix 时手动复制
 
 ```bash
+cp home/darwin/mihomo/config.yaml.example home/darwin/mihomo/config.yaml
+# 编辑后复制到 XDG 目录
 cp home/darwin/mihomo/config.yaml ~/.config/mihomo/config.yaml
 ```
 

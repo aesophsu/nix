@@ -15,8 +15,7 @@ easier to add new machines.
 
 ### Entry Point
 
-4. **`default.nix`** - Main entry point that imports all functions and exports them as a single
-   attribute set
+4. **`default.nix`** - 入口：引入 `macosSystem.nix`、`attrs.nix`，并导出 `relativeToRoot`（相对 flake 根的路径）、`scanPaths`（扫描目录下 `.nix` 与子目录供 `import`）。`openclaw-package.nix` 由 `outputs/default.nix` 的 `genSpecialArgs` 单独调用，不通过本 default 导出。
 
 ## Usage
 

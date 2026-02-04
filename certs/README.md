@@ -20,4 +20,4 @@ public certificates and configuration files are committed to this repository for
 
 Run `./gen-certs.sh` to generate new certificates using the ECC CA configuration.
 
-See [../secrets](../secrets/) for the corresponding private key management.
+Private keys (`.key`) are not in this repo; manage them in a separate secrets store or locally.

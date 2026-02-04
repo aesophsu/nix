@@ -68,10 +68,24 @@ cp home/darwin/mihomo/config.yaml.example home/darwin/mihomo/config.yaml
 
 ---
 
-## 四、应用系统配置
+## 四、（可选）OpenClaw 与 path 输入
+
+若需使用 OpenClaw，本仓库使用 **path 输入** 避免 Nix daemon 直连 GitHub。首次需在**已开代理**的终端克隆以下仓库到本地后再执行后续步骤（见 `flake.nix` 内注释）：
+
+```bash
+git clone https://github.com/openclaw/nix-openclaw /Users/sue/nix-openclaw
+git clone https://github.com/numtide/flake-utils /Users/sue/flake-utils
+git clone https://github.com/openclaw/nix-steipete-tools /Users/sue/nix-steipete-tools
+```
+
+---
+
+## 五、应用系统配置
 
 ```bash
 cd ~/nix
+sudo darwin-rebuild switch --flake .
+# 或显式指定主机名
 sudo darwin-rebuild switch --flake '.#stella'
 ```
 
@@ -81,7 +95,7 @@ sudo darwin-rebuild switch --flake '.#stella'
 
 ---
 
-## 五、可选：Mihomo 控制面板 UI
+## 六、可选：Mihomo 控制面板 UI
 
 如需 Web 面板，将 UI 放到 `~/.config/mihomo/ui/`：
 
@@ -92,7 +106,7 @@ git clone https://github.com/haishan/yacd.git ~/.config/mihomo/ui
 
 ---
 
-## 六、可选：vars 个性化
+## 七、可选：vars 个性化
 
 根据机器修改 `vars/default.nix`：
 
@@ -103,12 +117,12 @@ git clone https://github.com/haishan/yacd.git ~/.config/mihomo/ui
 
 ---
 
-## 七、后续更新
+## 八、后续更新
 
 ```bash
 cd ~/nix
 git pull
-sudo darwin-rebuild switch --flake '.#stella'
+sudo darwin-rebuild switch --flake .
 ```
 
 ---
@@ -122,3 +136,4 @@ sudo darwin-rebuild switch --flake '.#stella'
 | Homebrew 安装失败 | 国内网络可检查 `modules/darwin/apps.nix` 中的镜像配置 |
 | WeChat 安装 SSL 错误 | 初次部署时 Mihomo 未启动，先注释 masApps 完成部署，再取消注释重新部署 |
 | SSH 密钥未生效 | 确认 `vars/default.nix` 中 `mainSshAuthorizedKeys` 已配置 |
+| OpenClaw Gateway 无法启动 | 检查 `~/.openclaw/openclaw.json` 是否为空；Home Manager 的 fallback 会写入最小配置（gateway.mode=local），可执行一次 `home-manager switch --flake .#stella` 触发 |

@@ -1,6 +1,6 @@
 # PostgreSQL 配置
 
-Nixpkgs PostgreSQL 16，由 Nix 管理 launchd 服务，开机自启。使用 cache.nixos.org 下载，避免 Homebrew ghcr.io 在国内网络环境下的下载失败。
+Nixpkgs PostgreSQL 16，由 **`home/darwin/postgresql/default.nix`** 提供：包、数据目录、initdb 与 launchd，开机自启。使用 Nix 缓存下载，避免 Homebrew ghcr.io 在国内网络环境下的下载失败。
 
 ## 路径
 

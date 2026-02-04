@@ -17,7 +17,7 @@
 # 确认 Nix 可用
 nix --version
 
-# 进入本配置仓库
+# 进入本配置仓库（路径按你克隆位置调整，如 ~/nix）
 cd /Users/sue/nix
 ```
 

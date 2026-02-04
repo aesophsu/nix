@@ -23,7 +23,7 @@ macOS 专用 Home Manager 配置，与 `hosts/darwin-stella` 配合使用。
 # 应用整机配置（含 Home Manager）
 darwin-rebuild switch --flake .
 
-# 仅应用 Home Manager（用户 stella）
+# 仅应用 Home Manager（配置名 stella，对应用户见 vars/default.nix）
 home-manager switch --flake .#stella
 
 # 回滚
