@@ -4,6 +4,7 @@
   myvars,
   ...
 }:
+
 {
   nix.settings = {
     experimental-features = [
@@ -13,7 +14,7 @@
 
     trusted-users = [ myvars.username ];
 
-    # 国内：优先使用国内 substituter，无需代理即可拉包；首轮部署可不依赖 mihomo
+    # Prefer substituter mirrors so first deploy can run without proxy
     substituters = [
       "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
       "https://mirrors.ustc.edu.cn/nix-channels/store"
@@ -28,7 +29,7 @@
 
     builders-use-substitutes = true;
 
-    # 256GB 不启用 Rosetta 构建，节省 store 空间
+    # Disable Rosetta build to save store space
     # extra-platforms = [ "x86_64-darwin" ];
   };
 }

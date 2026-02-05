@@ -1,10 +1,10 @@
 # ==========================================
-# Mihomo Config 模板 (MacBook Air M4 / macOS)
+# Mihomo config template (MacBook Air M4 / macOS)
 # ==========================================
-# 使用: cp config.yaml.example config.yaml 或 config.local.yaml
-# 然后填入你的订阅 URL（含 token）
+# Usage: cp config.yaml.example config.yaml or config.local.yaml
+# Then set your subscription URL (with token).
 
-# 基础端口设置
+# Ports
 port: 7890
 socks-port: 7891
 mixed-port: 7893
@@ -96,6 +96,7 @@ geox:
     url: https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
   update-interval: 172800
 
+# proxy-providers: filter by region (English/abbrev only; matches e.g. [HK]HongKong, HK-01, Singapore, Tokyo, US-01)
 proxy-providers:
   Airport1:
     type: http
@@ -104,8 +105,8 @@ proxy-providers:
     interval: 43200
     update-on-start: true
     skip-cert-verify: false
-    filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
-    exclude-filter: "(?i)(倍|test|备用|Expire|到期)"
+    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
+    exclude-filter: "(?i)(test|expire|backup|fallback)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -122,8 +123,8 @@ proxy-providers:
     interval: 43200
     update-on-start: true
     skip-cert-verify: false
-    filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
-    exclude-filter: "(?i)(倍|test|备用|Expire|到期)"
+    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
+    exclude-filter: "(?i)(test|expire|backup|fallback)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -137,11 +138,11 @@ proxy-groups:
   - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, DIRECT, REJECT] }
   - { name: Auto, type: fallback, url: "https://cp.cloudflare.com/generate_204", interval: 300, use: [Airport1, Airport2] }
   - { name: AI, type: select, proxies: [TW, JP, SG, US] }
-  - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(hk|港)" }
-  - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(tw|台)" }
-  - { name: JP, type: select, use: [Airport1, Airport2], filter: "(?i)(jp|日)" }
-  - { name: SG, type: select, use: [Airport1, Airport2], filter: "(?i)(sg|新)" }
-  - { name: US, type: select, use: [Airport1, Airport2], filter: "(?i)(us|美)" }
+  - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[HK\\]|HK-|HongKong|hk)" }
+  - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw)" }
+  - { name: JP, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[JP\\]|JP-|Tokyo|Japan|jp)" }
+  - { name: SG, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[SG\\]|SG-|Singapore|sg)" }
+  - { name: US, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)" }
 
 rule-providers:
   fakeip-filter:

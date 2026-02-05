@@ -25,7 +25,7 @@ let
         {
           modules.desktop.fonts.enable = true;
         }
-        # nix-openclaw overlay（在此注入，避免 modules/darwin/openclaw.nix 依赖 inputs）
+        # nix-openclaw overlay (injected here; modules/darwin has no inputs)
         { nixpkgs.overlays = [ inputs.nix-openclaw.overlays.default ]; }
       ];
 

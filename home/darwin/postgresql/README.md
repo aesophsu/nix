@@ -1,50 +1,24 @@
-# PostgreSQL 配置
+# PostgreSQL 16
 
-Nixpkgs PostgreSQL 16，由 **`home/darwin/postgresql/default.nix`** 提供：包、数据目录、initdb 与 launchd，开机自启。使用 Nix 缓存下载，避免 Homebrew ghcr.io 在国内网络环境下的下载失败。
+Nixpkgs package; data dir, initdb, launchd in `home/darwin/postgresql/default.nix`. Start on login. Uses Nix cache (avoids Homebrew ghcr.io issues).
 
-## 路径
+## Paths
 
-| 项目 | 路径 |
+| Item | Path |
 |------|------|
-| 数据目录 | `~/.local/share/postgresql/16/` |
-| 日志 | `~/.local/share/postgresql/16.log` |
-| 配置文件 | `~/.local/share/postgresql/16/postgresql.conf` |
+| Data | `~/.local/share/postgresql/16/` |
+| Log | `~/.local/share/postgresql/16.log` |
+| Config | `~/.local/share/postgresql/16/postgresql.conf` |
 
-## 服务管理
+## Service
 
-| 操作 | 命令 |
-|------|------|
-| 启动 | `launchctl kickstart -k gui/$(id -u)/org.nix.postgresql` |
-| 停止 | `launchctl bootout gui/$(id -u)/org.nix.postgresql` |
-| 查看状态 | `launchctl print gui/$(id -u)/org.nix.postgresql` |
-| 查看日志 | `tail -f ~/.local/share/postgresql/16.log` |
+| Action | Command |
+|--------|---------|
+| Start | `launchctl kickstart -k gui/$(id -u)/org.nix.postgresql` |
+| Stop | `launchctl bootout gui/$(id -u)/org.nix.postgresql` |
+| Status | `launchctl print gui/$(id -u)/org.nix.postgresql` |
+| Log | `tail -f ~/.local/share/postgresql/16.log` |
 
-部署后服务会自动启动（`RunAtLoad = true`）。若需手动启动，执行上述「启动」命令。
+First deploy runs initdb if data dir missing. Manual initdb: `initdb -D ~/.local/share/postgresql/16 -E UTF8`.
 
-## 常用命令
-
-```bash
-# 连接默认数据库
-psql postgres
-
-# 创建数据库
-createdb myapp
-
-# 连接指定数据库
-psql myapp
-
-# 创建超级用户（默认与 macOS 用户名相同）
-createuser -s $USER
-```
-
-## 连接字符串
-
-```
-postgres://sue@localhost:5432/postgres
-```
-
-## 首次部署
-
-1. `darwin-rebuild switch` 会应用配置
-2. home-manager 会执行 initdb（若数据目录不存在）并启动服务
-3. 若 initdb 未自动执行，可手动：`initdb -D ~/.local/share/postgresql/16 -E UTF8`
+**Usage**: `psql postgres`, `createdb myapp`, `createuser -s $USER`. Conn: `postgres://sue@localhost:5432/postgres`.

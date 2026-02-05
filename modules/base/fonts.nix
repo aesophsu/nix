@@ -4,6 +4,7 @@
   lib,
   ...
 }:
+
 let
   cfg = config.modules.desktop;
 in
@@ -20,7 +21,7 @@ in
   # Font packages
   # =====================================================================================
 
-  # 256GB 精简字体：图标、等宽、CJK essentials
+  # Slim font set: icons, monospace, CJK essentials
   config.fonts.packages = lib.mkIf cfg.fonts.enable (
     with pkgs;
     [

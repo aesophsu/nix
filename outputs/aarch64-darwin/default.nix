@@ -36,6 +36,6 @@ outputs
 
   inherit data;
 
-  # 暂无 eval tests，直接返回空 attrset
+  # No eval tests yet; return empty attrset
   evalTests = { };
 }

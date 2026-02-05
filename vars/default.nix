@@ -1,4 +1,5 @@
 { lib }:
+
 {
   hostname = "stella";
   username = "sue";
@@ -7,7 +8,7 @@
 
   networking = import ./networking.nix { inherit lib; };
 
-  # 本地用户可留空；新装系统需设置 hashed password
+  # Leave empty for local user; set hashed password on fresh install
   initialHashedPassword = "";
   mainSshAuthorizedKeys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBmbENfEKkOW0i8nSSL6oSeIJrQMrIexaKKu1SXyMpMs sue@latepro"

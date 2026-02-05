@@ -1,32 +1,32 @@
-# 中国大陆优化：DNS、代理与 no_proxy 国内镜像域名
+# DNS, proxy, no_proxy for mirror domains (mainland-friendly)
+
 { lib }:
 rec {
-  # mihomo 代理端口（与 home/darwin/mihomo/config.yaml 或 config.local.yaml 一致）
-  # 部署顺序：可先完成 darwin-rebuild，再配置并启动 mihomo
+  # mihomo ports (match home/darwin/mihomo config). Rebuild first, then configure/start mihomo.
   mihomo = {
     host = "127.0.0.1";
     httpPort = "7890";
     socksPort = "7891";
-    mixedPort = "7893"; # HTTP+SOCKS 混合端口
+    mixedPort = "7893"; # HTTP+SOCKS mixed port
     httpProxy = "http://127.0.0.1:7890";
     socksProxy = "socks5://127.0.0.1:7891";
   };
 
-  # 国内 DNS，加速解析；可选备选：114.114.114.114（114）、180.76.76.76（百度）
+  # DNS for faster resolution; alternatives: 114.114.114.114, 180.76.76.76
   nameservers = [
     "119.29.29.29" # DNSPod
     "223.5.5.5"    # AliDNS
   ];
 
-  # 主机网络配置（当前仅 stella）
+  # Host networking (currently stella only)
   hostsAddr = {
     stella = {
       iface = "en0";
-      ipv4 = "10.0.0.3"; # 记录用，实际由 DHCP 分配
+      ipv4 = "10.0.0.3"; # for reference; actual IP via DHCP
     };
   };
 
-  # 接口配置：使用 DHCP 获取 IP
+  # Interface: DHCP for IP
   hostsInterface = lib.attrsets.mapAttrs (_: val: {
     interfaces."${val.iface}" = {
       useDHCP = true;
@@ -37,7 +37,7 @@ rec {
   ssh = {
     extraConfig = "";
 
-    # GitHub 主机密钥，SSH 连接时免交互确认
+    # GitHub host key for non-interactive SSH
     knownHosts = {
       "github.com" = {
         hostNames = [

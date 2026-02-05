@@ -7,17 +7,13 @@ in
 {
   security.pam.services.sudo_local.touchIdAuth = true;
 
-  # 关闭 macOS 自动更新（检查、下载）
-  # AutomaticallyInstallMacOSUpdates 由 system.defaults.SoftwareUpdate 处理
+  # Disable macOS auto-update (check/download); install controlled below via SoftwareUpdate
   system.activationScripts.extraActivation.text = ''
-    # 禁用自动检查更新
     defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist AutomaticCheckEnabled -bool false
-    # 禁用后台自动下载
     defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist AutomaticDownload -bool false
-    # 禁用关键更新自动安装
     defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist CriticalUpdateInstall -bool false
 
-    # 设置 mihomo 为 macOS 系统默认代理（HTTP/HTTPS/SOCKS5）
+    # mihomo as system proxy (HTTP/HTTPS/SOCKS5)
     for svc in Wi-Fi Ethernet "USB 10/100/1000 LAN" "Thunderbolt Ethernet"; do
       if networksetup -listallnetworkservices 2>/dev/null | grep -q "^''${svc}$"; then
         networksetup -setwebproxy "''${svc}" 127.0.0.1 ${httpPort} 2>/dev/null || true
@@ -36,7 +32,7 @@ in
     primaryUser = myvars.username;
 
     defaults = {
-      # 关闭 macOS 自动更新（检查、下载、安装）
+      # Disable macOS auto-update (check, download, install)
       SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;
 
       dock = {

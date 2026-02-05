@@ -1,7 +1,7 @@
 { config, ... }:
 
 {
-  # Determinate Nix 使用自有 daemon，需关闭 nix-darwin 的 Nix 管理
+  # Determinate Nix uses its own daemon; disable nix-darwin Nix management
   nix = {
     enable = false;
     settings.auto-optimise-store = false;

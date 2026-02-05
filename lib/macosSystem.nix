@@ -9,6 +9,7 @@
   specialArgs ? (genSpecialArgs system),
   ...
 }:
+
 let
   inherit (inputs) home-manager nix-darwin;
 in

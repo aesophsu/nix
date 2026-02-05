@@ -1,10 +1,11 @@
 { config, lib, ... }:
+
 let
   envExtra = ''
     export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
   '';
 
-  # conda/miniforge 按需安装后取消注释
+  # Uncomment after installing conda/miniforge if needed
   initContent = ''
     # if [ -f "/opt/homebrew/Caskroom/miniforge/base/etc/profile.d/conda.sh" ]; then
     #     . "/opt/homebrew/Caskroom/miniforge/base/etc/profile.d/conda.sh"
@@ -19,7 +20,7 @@ in
 
   programs.zsh = {
     enable = true;
-    # 锁定当前行为，消除 dotDir 默认值变更警告
+    # Pin dotDir to avoid default-change warning
     dotDir = config.home.homeDirectory;
     initContent = lib.mkAfter (envExtra + initContent);
   };

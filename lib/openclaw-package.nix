@@ -1,10 +1,11 @@
-# OpenClaw 包构建与 PATH 安全包装（排除 oracle、仅暴露 openclaw* bin）
-# 供 outputs 的 genSpecialArgs 调用，避免 outputs/default.nix 内联膨胀
+# OpenClaw build + PATH-safe wrapper (exclude oracle; openclaw* bins only). Used by genSpecialArgs.
+
 { pkgs
 , nix-openclaw
 , nix-steipete-tools
 , system
 }:
+
 let
   fullOpenclaw = (import (nix-openclaw + "/nix/packages") {
     inherit pkgs;

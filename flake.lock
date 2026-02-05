@@ -87,11 +87,11 @@
       },
       "locked": {
         "narHash": "sha256-qFB6MNWtgf8jf1ahYnZanVgFm2Ptj3X1n1RKOBCpgB8=",
-        "path": "/Users/sue/claw/flake-utils",
+        "path": "/Users/sue/Code/claw/flake-utils",
         "type": "path"
       },
       "original": {
-        "path": "/Users/sue/claw/flake-utils",
+        "path": "/Users/sue/Code/claw/flake-utils",
         "type": "path"
       }
     },
@@ -234,11 +234,11 @@
       },
       "locked": {
         "narHash": "sha256-MgIy4ODyyf2B03kKUMNVi74s7+BJYYE6oH7t44/7hWc=",
-        "path": "/Users/sue/claw/nix-openclaw",
+        "path": "/Users/sue/Code/claw/nix-openclaw",
         "type": "path"
       },
       "original": {
-        "path": "/Users/sue/claw/nix-openclaw",
+        "path": "/Users/sue/Code/claw/nix-openclaw",
         "type": "path"
       }
     },
@@ -250,11 +250,11 @@
       },
       "locked": {
         "narHash": "sha256-1IdTgWwDCnLv+RSwEQmhbf2t9YvldVs5CDUPDYEazCY=",
-        "path": "/Users/sue/claw/nix-steipete-tools",
+        "path": "/Users/sue/Code/claw/nix-steipete-tools",
         "type": "path"
       },
       "original": {
-        "path": "/Users/sue/claw/nix-steipete-tools",
+        "path": "/Users/sue/Code/claw/nix-steipete-tools",
         "type": "path"
       }
     },

@@ -1,4 +1,5 @@
-# PostgreSQL 16：Nix 包、数据目录与 launchd 服务
+# PostgreSQL 16: Nix package, data dir, and launchd service
+
 { config, pkgs, lib, myvars, ... }:
 
 let
@@ -9,7 +10,7 @@ in
 {
   home.packages = [ pg ];
 
-  # 首次部署：若数据目录不存在则执行 initdb
+  # First deploy: run initdb if data dir does not exist
   home.activation.initPostgres = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ ! -f "${pgData}/PG_VERSION" ]; then
       echo "Initializing PostgreSQL data directory at ${pgData}..."
@@ -19,12 +20,12 @@ in
     fi
   '';
 
-  # launchd 服务：开机自启，崩溃自动重启
+  # launchd: start on login, restart on crash
   launchd.agents."org.nix.postgresql" = {
     enable = true;
     config = {
       Label = "org.nix.postgresql";
-      # 直接运行 postgres 进程（Nixpkgs 的 pg_ctl 不支持 Homebrew 的 "run" 子命令）
+      # Run postgres directly (Nixpkgs pg_ctl has no "run" subcommand)
       ProgramArguments = [
         "${pg}/bin/postgres"
         "-D"

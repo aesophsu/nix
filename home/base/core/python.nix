@@ -1,16 +1,16 @@
 { pkgs, ... }:
 
 let
-  # Python 3.12 + 常用工具（格式化、REPL）
-  # ruff 为独立二进制，单独安装
+  # Python 3.12 + common tools (formatting, REPL)
+  # ruff is a separate binary, installed separately
   pythonWithTools = pkgs.python312.withPackages (ps:
     with ps; [
       pip
       ipython
       black
-      # 按需添加：numpy pandas matplotlib requests
+      # optional: numpy pandas matplotlib requests
     ]);
-  # 排除 bin/idle*，避免与 openclaw 包（也带 Python idle）在 home-manager path 中冲突
+  # Exclude bin/idle* to avoid path clash with openclaw
   pythonWithToolsNoIdle = pkgs.runCommand "python312-env-no-idle"
     { passthru = pythonWithTools.passthru or { }; }
     ''
@@ -30,7 +30,7 @@ in
 {
   home.packages = with pkgs; [
     pythonWithToolsNoIdle
-    ruff # 独立二进制，比 flake8 更快
-    uv # 现代 pip 替代，项目级 venv 推荐
+    ruff # standalone binary, faster than flake8
+    uv # modern pip alternative, project venv recommended
   ];
 }

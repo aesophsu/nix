@@ -14,7 +14,7 @@ let
   mylib = import ../lib { inherit lib; };
   myvars = import ../vars { inherit lib; };
 
-  # OpenClaw 包（排除 oracle、PATH 安全）由 lib/openclaw-package.nix 提供
+  # OpenClaw package (exclude oracle, PATH-safe) from lib/openclaw-package.nix
   genSpecialArgs = system:
     let
       openclawPkg = import ../lib/openclaw-package.nix {
@@ -59,13 +59,13 @@ let
   # Helpers
   # =====================================================================================
 
-  # 当前仅支持本机 macOS 系统（darwinSystems），如将来需要可再扩展 NixOS 等
+  # Currently macOS only (darwinSystems); extend to NixOS etc. if needed
   forAllSystems = func: nixpkgs.lib.genAttrs darwinSystemNames func;
 
 in
 {
   # =====================================================================================
-  # Darwin configurations（当前仅 MacBook Air M4）
+  # Darwin configurations (MacBook Air M4)
   # =====================================================================================
 
   darwinConfigurations = lib.attrsets.mergeAttrsList (
@@ -157,7 +157,7 @@ in
         inherit (self.checks.${system}.pre-commit-check) shellHook;
       };
 
-      # Python 项目开发环境
+      # Python project dev shell
       python = pkgs.mkShell {
         name = "python";
 
@@ -171,7 +171,7 @@ in
           echo "Python: $(python --version)"
           echo "uv: $(uv --version 2>/dev/null || true)"
           echo ""
-          echo "项目级 venv 示例:"
+          echo "Project venv example:"
           echo "  uv venv && source .venv/bin/activate"
           echo "  uv pip install -r requirements.txt"
         '';

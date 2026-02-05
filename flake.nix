@@ -4,10 +4,9 @@
   outputs = inputs: import ./outputs inputs;
 
   nixConfig = {
-    # 不提示「Git tree has uncommitted changes」（若希望可复现构建，请保持工作区干净并提交）
+    # No "uncommitted changes" warning (keep tree clean for reproducible builds)
     warn-dirty = false;
-    # 国内：首轮部署不依赖代理，使用 path 输入 + 国内 substituter 镜像即可
-    # 若需 nix flake update 拉 GitHub，可先启动 mihomo 再执行，或在 ~/.config/nix/nix.conf 中设置：
+    # First deploy without proxy (path inputs + mirrors). For nix flake update set proxy in ~/.config/nix/nix.conf or run mihomo first:
     #   http-proxy = "http://127.0.0.1:7890"
     #   https-proxy = "http://127.0.0.1:7890"
     # extra-substituters = [ "https://nix-community.cachix.org" ];
@@ -53,26 +52,25 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # 以下 path 输入统一放在 ~/claw，避免 darwin-rebuild 时 Nix daemon 从 GitHub 拉取
-    # 首次在「已开代理」的终端执行（若尚未有 claw 目录）：
-    #   mkdir -p ~/claw
-    #   git clone https://github.com/numtide/flake-utils ~/claw/flake-utils && (cd ~/claw/flake-utils && git checkout 11707dc2f618dd54ca8739b309ec4fc024de578b)
-    #   git clone https://github.com/openclaw/nix-openclaw ~/claw/nix-openclaw
-    #   git clone https://github.com/openclaw/nix-steipete-tools ~/claw/nix-steipete-tools
-    flake-utils.url = "path:/Users/sue/claw/flake-utils";
+    # Path inputs under ~/Code/claw (no GitHub at eval). First-time (proxy if needed):
+    #   mkdir -p ~/Code/claw
+    #   git clone https://github.com/numtide/flake-utils ~/Code/claw/flake-utils && (cd ~/Code/claw/flake-utils && git checkout 11707dc2f618dd54ca8739b309ec4fc024de578b)
+    #   git clone https://github.com/openclaw/nix-openclaw ~/Code/claw/nix-openclaw
+    #   git clone https://github.com/openclaw/nix-steipete-tools ~/Code/claw/nix-steipete-tools
+    flake-utils.url = "path:/Users/sue/Code/claw/flake-utils";
     nix-steipete-tools = {
-      url = "path:/Users/sue/claw/nix-steipete-tools";
+      url = "path:/Users/sue/Code/claw/nix-steipete-tools";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-openclaw = {
-      url = "path:/Users/sue/claw/nix-openclaw";
+      url = "path:/Users/sue/Code/claw/nix-openclaw";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
       inputs.home-manager.follows = "home-manager";
       inputs.nix-steipete-tools.follows = "nix-steipete-tools";
     };
 
-    # 如需 secrets 管理，可添加自己的私有仓库
+    # Optional: add your own private repo for secrets
     # mysecrets = {
     #   url = "git+ssh://git@github.com/YOUR_USER/YOUR_SECRETS_REPO.git?shallow=1";
     #   flake = false;

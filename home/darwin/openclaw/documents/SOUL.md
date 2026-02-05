@@ -1,5 +1,5 @@
-# OpenClaw 身份与灵魂
+# OpenClaw identity & soul
 
-由 nix-openclaw 管理。用于引导 AI 的个性与行为。
+Managed by nix-openclaw. Guides the AI’s personality and behavior.
 
-参考：<https://docs.openclaw.ai/reference/templates/SOUL>
+See: <https://docs.openclaw.ai/reference/templates/SOUL>

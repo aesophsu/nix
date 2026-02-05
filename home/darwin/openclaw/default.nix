@@ -1,32 +1,33 @@
-# OpenClaw 声明式配置（nix-openclaw）
-# 未配置 Telegram，使用本地 WebChat/CLI；包与 PATH 包装见 lib/openclaw-package.nix
+# OpenClaw declarative config (nix-openclaw)
+# No Telegram; local WebChat/CLI. Package and PATH wrapper: lib/openclaw-package.nix
+
 { config, lib, pkgs, openclawPackageNoOracle, ... }:
 
 let
   stateDir = "${config.home.homeDirectory}/.openclaw";
   configPath = "${stateDir}/openclaw.json";
 
-  # 最小有效 config：单处定义，programs.openclaw.config 与 fallback JSON 共用
-  # 直连 DeepSeek 官方 API，需设置环境变量 DEEPSEEK_API_KEY（见 https://platform.deepseek.com）
+  # Minimal config: single source for programs.openclaw.config and fallback JSON
+  # DeepSeek API; set DEEPSEEK_API_KEY (see https://platform.deepseek.com)
   openclawMinimalConfig = {
     gateway = {
       mode = "local";
-      auth.token = "local-dev"; # 本地模式也需非空 token；生产可改为 secrets
+      auth.token = "local-dev"; # local mode needs non-empty token; use secrets in prod
     };
     agents = {
       defaults = { model = { primary = "deepseek/deepseek-chat"; }; };
     };
-    # 自定义 provider：DeepSeek 官方（OpenAI 兼容）
+    # Custom provider: DeepSeek (OpenAI-compatible)
     models = {
       mode = "merge";
       providers = {
         deepseek = {
           baseUrl = "https://api.deepseek.com/v1";
-          apiKey = "\${DEEPSEEK_API_KEY}"; # 运行时从环境变量读取，勿提交密钥
+          apiKey = "\${DEEPSEEK_API_KEY}"; # read from env at runtime; do not commit keys
           api = "openai-completions";
           models = [
             { id = "deepseek-chat"; name = "DeepSeek Chat (V3.2)"; }
-            { id = "deepseek-reasoner"; name = "DeepSeek Reasoner (思考模式)"; }
+            { id = "deepseek-reasoner"; name = "DeepSeek Reasoner (reasoning mode)"; }
           ];
         };
       };
@@ -43,7 +44,7 @@ in
 
     config = openclawMinimalConfig;
 
-    # 首方插件：截图、总结等（可选）
+    # First-party plugins: screenshot, summarize, etc. (optional)
     firstParty = {
       summarize.enable = true;
       peekaboo.enable = true;
@@ -53,7 +54,7 @@ in
       camsnap.enable = false;
     };
 
-    # 实例与 launchd（须在 programs.openclaw 下）
+    # Instance and launchd (must be under programs.openclaw)
     instances.default = {
       enable = true;
       launchd.enable = true;
@@ -61,7 +62,7 @@ in
     };
   };
 
-  # 若 nix-openclaw 生成的 openclaw.json 为空 {}，则用本配置写回最小有效 JSON（gateway 才能启动）
+  # If openclaw.json is {}, write this minimal config so gateway can start
   home.activation.openclawConfigFallback = lib.hm.dag.entryAfter [ "openclawConfigFiles" ] ''
     if [ -f ${configPath} ] && [ "$(cat ${configPath} 2>/dev/null)" = "{}" ]; then
       rm -f ${configPath}

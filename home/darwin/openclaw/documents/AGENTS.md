@@ -1,5 +1,5 @@
-# OpenClaw 代理说明
+# OpenClaw agents
 
-由 nix-openclaw 管理。可在此编写或从上游模板扩展。
+Managed by nix-openclaw. Edit here or extend from upstream template.
 
-参考：<https://docs.openclaw.ai/reference/AGENTS.default>
+See: <https://docs.openclaw.ai/reference/AGENTS.default>

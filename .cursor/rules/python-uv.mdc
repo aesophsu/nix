@@ -1,14 +1,14 @@
 ---
-description: Python 项目使用 uv 管理依赖
+description: Python projects use uv for dependency management
 globs: "**/*.py,requirements*.txt,pyproject.toml"
 alwaysApply: false
 ---
 
-# Python 依赖管理：使用 uv
+# Python deps: use uv
 
-本项目的 Python 依赖使用 **uv** 管理，请勿使用 `pip install` 或 `poetry`。
+Use **uv** for Python dependencies in this project. Do not use `pip install` or `poetry`.
 
-## 初始化项目
+## Init project
 
 ```bash
 uv venv
@@ -16,24 +16,24 @@ source .venv/bin/activate   # macOS/Linux
 uv pip install -r requirements.txt
 ```
 
-## 添加依赖
+## Add deps
 
 ```bash
-uv pip install <包名>
-# 或
+uv pip install <package>
+# or
 uv pip install -r requirements.txt
 ```
 
-## 运行程序
+## Run
 
 ```bash
 python script.py
-# 或激活 venv 后
+# or with venv active
 source .venv/bin/activate && python script.py
 ```
 
-## 注意事项
+## Notes
 
-- 使用 `uv pip` 而非 `pip`
-- 虚拟环境位于 `.venv/`
-- 如需新建 venv：`uv venv`
+- Use `uv pip` instead of `pip`
+- Venv lives in `.venv/`
+- New venv: `uv venv`

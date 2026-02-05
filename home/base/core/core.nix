@@ -1,4 +1,5 @@
 { pkgs, ... }:
+
 {
   home.packages = with pkgs; [
     nix-index
@@ -11,16 +12,16 @@
   # Modern replacement for `ls`
   programs.eza = {
     enable = true;
-    enableNushellIntegration = false; # 由 shells/config.nu 管理
+    enableNushellIntegration = false; # managed by shells/config.nu
     git = true;
-    icons = "auto"; # 终端支持时显示图标
+    icons = "auto"; # show icons when terminal supports it
   };
 
   # Syntax-highlighted `cat`
   programs.bat = {
     enable = true;
     config = {
-      pager = "less -FR"; # bat 输出分页
+      pager = "less -FR"; # bat pager
     };
   };
 
@@ -38,7 +39,7 @@
       };
       updates = {
         auto_update = false;
-        auto_update_interval_hours = 720; # 30 天
+        auto_update_interval_hours = 720; # 30 days
       };
     };
   };

@@ -1,5 +1,6 @@
-# mihomo 代理：包、环境变量、config 与 launchd
-# 配置源优先级: config.local.yaml > config.yaml > config.yaml.example
+# mihomo: package, env vars, config, launchd
+# Config precedence: config.local.yaml > config.yaml > config.yaml.example
+
 { config, pkgs, myvars, ... }:
 
 let
@@ -15,8 +16,8 @@ in
 {
   home.packages = [ pkgs.mihomo ];
 
-  # 环境变量：使 CLI 工具（curl、wget、git 等）使用 mihomo 代理
-  # no_proxy 含国内镜像域名，确保 pip/uv/brew 直连加速
+  # Env vars so CLI (curl, wget, git, etc.) use mihomo proxy
+  # no_proxy includes mirror domains so pip/uv/brew can go direct
   home.sessionVariables = {
     http_proxy = httpProxy;
     https_proxy = httpProxy;

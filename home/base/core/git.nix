@@ -5,8 +5,9 @@
   myvars,
   ...
 }:
+
 {
-  # 激活前删除已有 .gitconfig，确保使用本配置
+  # Remove existing .gitconfig before activation so this config is used
   home.activation.removeExistingGitconfig = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
     rm -f ${config.home.homeDirectory}/.gitconfig
   '';
@@ -16,7 +17,7 @@
     enable = true;
     settings = {
       git_protocol = "ssh";
-      prompt = "enabled"; # gh 交互式提示
+      prompt = "enabled"; # gh interactive prompt
       aliases = {
         co = "pr checkout";
         pv = "pr view";
@@ -32,7 +33,7 @@
     };
   };
 
-  # Git 主配置；工作目录通过 includes 使用 ~/work/.gitconfig
+  # Main Git config; work dir uses ~/work/.gitconfig via includes
   programs.git = {
     enable = true;
     lfs.enable = true;
@@ -48,10 +49,10 @@
       user.email = myvars.useremail;
       user.name = myvars.userfullname;
       init.defaultBranch = "main";
-      trim.bases = "develop,master,main"; # git-trim 基准分支
+      trim.bases = "develop,master,main"; # git-trim base branches
       push.autoSetupRemote = true;
       pull.rebase = true;
-      log.date = "iso"; # 日志日期格式
+      log.date = "iso"; # log date format
       url = {
         "ssh://git@github.com/aesophsu" = {
           insteadOf = "https://github.com/aesophsu";
@@ -60,7 +61,7 @@
     };
   };
 
-  # delta：Git diff 语法高亮
+  # delta: Git diff syntax highlighting
   programs.delta = {
     enable = true;
     enableGitIntegration = true;
@@ -74,6 +75,6 @@
   # lazygit：Git TUI
   programs.lazygit.enable = true;
 
-  # gitui：备用 Git TUI（未启用）
+  # gitui: alternative Git TUI (disabled)
   programs.gitui.enable = false;
 }
