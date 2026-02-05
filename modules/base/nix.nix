@@ -13,7 +13,7 @@
 
     trusted-users = [ myvars.username ];
 
-    # 国内镜像优先
+    # 国内：优先使用国内 substituter，无需代理即可拉包；首轮部署可不依赖 mihomo
     substituters = [
       "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
       "https://mirrors.ustc.edu.cn/nix-channels/store"

@@ -1,6 +1,8 @@
+# 中国大陆优化：DNS、代理与 no_proxy 国内镜像域名
 { lib }:
 rec {
   # mihomo 代理端口（与 home/darwin/mihomo/config.yaml 或 config.local.yaml 一致）
+  # 部署顺序：可先完成 darwin-rebuild，再配置并启动 mihomo
   mihomo = {
     host = "127.0.0.1";
     httpPort = "7890";
@@ -10,10 +12,10 @@ rec {
     socksProxy = "socks5://127.0.0.1:7891";
   };
 
-  # 国内 DNS，加速域名解析
+  # 国内 DNS，加速解析；可选备选：114.114.114.114（114）、180.76.76.76（百度）
   nameservers = [
     "119.29.29.29" # DNSPod
-    "223.5.5.5" # AliDNS
+    "223.5.5.5"    # AliDNS
   ];
 
   # 主机网络配置（当前仅 stella）

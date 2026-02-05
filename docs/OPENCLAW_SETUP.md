@@ -61,18 +61,16 @@ chmod 700 ~/.secrets
 
 ## 步骤四：Provider API 密钥（模型）
 
-OpenClaw 需要至少一个模型 Provider：
+OpenClaw 需要至少一个模型 Provider。**当前配置为直连 DeepSeek 官方 API**：
 
-- **Anthropic（Claude）**：设置环境变量 `ANTHROPIC_API_KEY`，或在 nix-openclaw 支持的 config 中配置。
-- **OpenAI（GPT）**：设置环境变量 `OPENAI_API_KEY`，并将 `agent.model` 改为 `openai/gpt-4o`（见步骤三）。
+- **DeepSeek（直连）**：设置环境变量 `DEEPSEEK_API_KEY`（在 [DeepSeek 开放平台](https://platform.deepseek.com) 申请）。默认模型 `deepseek/deepseek-chat`；可选 `deepseek/deepseek-reasoner`（思考模式）。
+- 其他：OpenRouter、Anthropic、OpenAI 等需在配置中增加对应 provider 并设置相应 Key。
 
-可将密钥放在 `~/.secrets` 并在 shell 或 launchd 中 source，例如：
+可将密钥放在 `~/.secrets/openclaw-env` 并在 shell 中 source（勿提交该文件），例如：
 
 ```bash
-# 示例：~/.zshrc 或 launchd 环境
-export ANTHROPIC_API_KEY="sk-ant-..."
-# 或
-export OPENAI_API_KEY="sk-..."
+# 示例：~/.secrets/openclaw-env（chmod 600）- 当前使用 DeepSeek 直连
+export DEEPSEEK_API_KEY="sk-..."
 ```
 
 （若使用 agenix 等，可改为从 secret 文件读取后 export。）

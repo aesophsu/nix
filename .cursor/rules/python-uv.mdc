@@ -1,0 +1,39 @@
+---
+description: Python 项目使用 uv 管理依赖
+globs: "**/*.py,requirements*.txt,pyproject.toml"
+alwaysApply: false
+---
+
+# Python 依赖管理：使用 uv
+
+本项目的 Python 依赖使用 **uv** 管理，请勿使用 `pip install` 或 `poetry`。
+
+## 初始化项目
+
+```bash
+uv venv
+source .venv/bin/activate   # macOS/Linux
+uv pip install -r requirements.txt
+```
+
+## 添加依赖
+
+```bash
+uv pip install <包名>
+# 或
+uv pip install -r requirements.txt
+```
+
+## 运行程序
+
+```bash
+python script.py
+# 或激活 venv 后
+source .venv/bin/activate && python script.py
+```
+
+## 注意事项
+
+- 使用 `uv pip` 而非 `pip`
+- 虚拟环境位于 `.venv/`
+- 如需新建 venv：`uv venv`

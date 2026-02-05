@@ -2,6 +2,14 @@
 
 适用于 MacBook Air M4 (aarch64-darwin)，使用 Determinate Nix + nix-darwin + Home Manager。
 
+## 中国大陆说明
+
+- **首轮部署可不依赖代理**：Nix 使用国内 substituter 镜像，Homebrew 使用北外镜像；同一次 `darwin-rebuild switch` 会一并完成 mihomo 的 Nix 部署（包 + launchd + config 链接），无需先单独“安装”或“启动” mihomo。
+- **mihomo 由 Nix 部署**：包、环境变量、`~/.config/mihomo/config.yaml` 的链接、launchd 均由 `home/darwin/mihomo/default.nix` 管理；你只需在仓库里准备 config 内容（步骤三），launchd 会在登录后自动启动 mihomo。
+- **path 输入**：OpenClaw 相关为 path 输入，不经过 GitHub，首次需在能访问 GitHub 的环境下克隆到本地后再部署。
+- **若 brew bundle 报错**：可先注释 `masApps` 或部分 taps 完成首次部署，在仓库中补好 mihomo config 后再次执行同一条 `darwin-rebuild switch`（无需改其它配置）。
+- **需要拉 GitHub 时**（如 `nix flake update`）：终端里 mihomo 的 sessionVariables 会提供代理；或先在 `~/.config/nix/nix.conf` 中配置 `http-proxy` / `https-proxy` 再执行。
+
 ## 前置条件
 
 - 新装 macOS，已创建用户 `sue`（与 `vars/default.nix` 中 `username` 一致）
@@ -53,18 +61,20 @@ cd nix
 
 ---
 
-## 三、配置 Mihomo（代理）
+## 三、准备 Mihomo 配置（代理由 Nix 部署）
 
-`config.yaml` 含订阅 token，未纳入 git。需手动创建：
+mihomo 的**安装、launchd、环境变量、config 链接**均由 Nix（Home Manager）在步骤五中一并部署。你只需在仓库里准备好 config 文件内容（含订阅 token，不提交到 git）：
 
 ```bash
 # 复制模板
 cp home/darwin/mihomo/config.yaml.example home/darwin/mihomo/config.yaml
 
 # 编辑并填入你的订阅 URL（含 token）
-# 或使用 config.local.yaml（优先级更高）
+# 或使用 config.local.yaml（优先级更高，且通常被 .gitignore）
 # cp home/darwin/mihomo/config.yaml.example home/darwin/mihomo/config.local.yaml
 ```
+
+执行步骤五后，launchd 会自动启动 mihomo，无需手动“安装”或“启动”。
 
 ---
 
@@ -89,9 +99,9 @@ sudo darwin-rebuild switch --flake .
 sudo darwin-rebuild switch --flake '.#stella'
 ```
 
-首次会安装 nix-darwin、Home Manager、Homebrew 等，耗时较长。
+首次会安装 nix-darwin、Home Manager、Homebrew、**以及 mihomo（包 + launchd + config 链接）** 等，耗时较长。国内已配置镜像，本次执行**不依赖代理**即可完成；mihomo 会在本次或下次 switch 中由 Nix 部署，launchd 在登录后自动启动（若已按步骤三准备好 config）。
 
-**若 WeChat 报 SSL 错误**：brew bundle 中的 mas 需访问 itunes.apple.com，国内网络易失败。可先注释 `modules/darwin/apps.nix` 中的 `masApps` 完成首次部署，登录后 Mihomo 自动启动，再取消注释并重新部署。
+**若 brew bundle 报错**（如 GitHub tap、mas 连 itunes.apple.com 失败）：可先注释 `modules/darwin/apps.nix` 中的 `masApps` 或部分 taps 完成首次部署；在仓库中补好 mihomo config（步骤三）后，再次执行同一条上述命令即可，无需改其它配置。
 
 ---
 
@@ -125,6 +135,8 @@ git pull
 sudo darwin-rebuild switch --flake .
 ```
 
+**首轮运行与再次运行**：使用同一套配置、同一条命令，无需在“首轮”和“再次”之间改配置。mihomo 由 Nix 在每次 switch 时部署（包 + launchd + config 链接）；若首轮时尚未准备 mihomo config，补好后再执行一次上述命令即可。
+
 ---
 
 ## 故障排查
@@ -132,8 +144,8 @@ sudo darwin-rebuild switch --flake .
 | 问题 | 处理 |
 |------|------|
 | `Determinate detected, aborting activation` | 已设置 `nix.enable = false`，无需改动 |
-| mihomo 无法启动 | 检查 `~/.config/mihomo/config.yaml` 是否存在且订阅 URL 正确 |
+| mihomo 无法启动 | mihomo 由 Nix 部署（home/darwin/mihomo）；检查 `~/.config/mihomo/config.yaml` 是否存在且订阅 URL 正确，补好后重新执行 `darwin-rebuild switch` |
 | Homebrew 安装失败 | 国内网络可检查 `modules/darwin/apps.nix` 中的镜像配置 |
-| WeChat 安装 SSL 错误 | 初次部署时 Mihomo 未启动，先注释 masApps 完成部署，再取消注释重新部署 |
+| WeChat 安装 SSL 错误 | 先注释 masApps 完成部署，补好 mihomo config 后再次 `darwin-rebuild switch`，无需改其它配置 |
 | SSH 密钥未生效 | 确认 `vars/default.nix` 中 `mainSshAuthorizedKeys` 已配置 |
 | OpenClaw Gateway 无法启动 | 检查 `~/.openclaw/openclaw.json` 是否为空；Home Manager 的 fallback 会写入最小配置（gateway.mode=local），可执行一次 `home-manager switch --flake .#stella` 触发 |

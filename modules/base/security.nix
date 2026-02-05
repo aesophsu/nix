@@ -1,5 +1,5 @@
 {
   security.pki.certificateFiles = [
-    ../../certs/ecc-ca.crt
+    ../../misc/certs/ecc-ca.crt
   ];
 }

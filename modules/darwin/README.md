@@ -23,4 +23,5 @@
 | 警告 | 说明 |
 |------|------|
 | `builtins.toFile` / `options.json` | home-manager 上游 bug [#7935](https://github.com/nix-community/home-manager/issues/7935)，不影响功能 |
+| `pnpm.fetchDeps: The package attribute is deprecated...` | nix-openclaw 构建 gateway 时触发，来自 nixpkgs 的 pnpm API 变更提示，不影响当前构建；上游改用 `fetchPnpmDeps` 后可消失 |
 | bat `Dockerfile (with bash)` syntax | bat 语法高亮上游问题，不影响使用 |

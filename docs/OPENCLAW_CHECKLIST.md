@@ -25,7 +25,8 @@
 
 ```bash
 cp ~/.secrets/openclaw-env.example ~/.secrets/openclaw-env
-# 编辑 ~/.secrets/openclaw-env，填入 ANTHROPIC_API_KEY 或 OPENAI_API_KEY
+# 编辑 ~/.secrets/openclaw-env，填入 DeepSeek 官方 API Key（当前配置为直连）
+#   export DEEPSEEK_API_KEY="sk-..."
 chmod 600 ~/.secrets/openclaw-env
 ```
 

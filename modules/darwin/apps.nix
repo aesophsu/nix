@@ -7,21 +7,19 @@
 }:
 
 let
-  inherit (myvars.networking.mihomo) httpProxy;
-  no_proxy = "localhost,127.0.0.1,.local,.lan,.cn,mirrors.bfsu.edu.cn,mirrors.tuna.tsinghua.edu.cn,mirrors.ustc.edu.cn,pypi.tuna.tsinghua.edu.cn";
+  # 国内镜像：北外 Homebrew 镜像 + 清华 PyPI，部署时可不依赖 mihomo
+  no_proxy = "localhost,127.0.0.1,.local,.lan,.cn,mirrors.bfsu.edu.cn,mirrors.tuna.tsinghua.edu.cn,mirrors.ustc.edu.cn,pypi.tuna.tsinghua.edu.cn,mirror.nju.edu.cn";
   homebrew_mirror_env = {
     HOMEBREW_API_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles/api";
     HOMEBREW_BOTTLE_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles";
-    # ghcr.io 格式的 bottle（如 postgresql@16）需通过 ARTIFACT_DOMAIN 镜像
     HOMEBREW_ARTIFACT_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles";
     HOMEBREW_BREW_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/brew.git";
     HOMEBREW_CORE_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/homebrew-core.git";
     HOMEBREW_PIP_INDEX_URL = "https://pypi.tuna.tsinghua.edu.cn/simple";
-    # mas 安装 WeChat 需访问 itunes.apple.com，国内网络需代理
-    ALL_PROXY = httpProxy;
-    HTTPS_PROXY = httpProxy;
     NO_PROXY = no_proxy;
     no_proxy = no_proxy;
+    # 不在激活脚本中设置 ALL_PROXY/HTTPS_PROXY，便于首轮部署时 mihomo 未就绪也能完成
+    # 终端内由 home/darwin/mihomo 设置 sessionVariables，mihomo 启动后 brew 会走代理
   };
   homebrew_env_script = lib.concatStringsSep "\n" (
     lib.attrsets.mapAttrsToList (n: v: "export ${n}=${v}") homebrew_mirror_env
