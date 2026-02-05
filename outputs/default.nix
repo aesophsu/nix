@@ -135,7 +135,6 @@ in
         with ps; [
           pip
           ipython
-          black
         ]);
     in
     {

@@ -1,13 +1,11 @@
 { pkgs, ... }:
 
 let
-  # Python 3.12 + common tools (formatting, REPL)
-  # ruff is a separate binary, installed separately
+  # Python 3.12 + common tools (REPL); format/lint via ruff (standalone)
   pythonWithTools = pkgs.python312.withPackages (ps:
     with ps; [
       pip
       ipython
-      black
       # optional: numpy pandas matplotlib requests
     ]);
   # Exclude bin/idle* to avoid path clash with openclaw
@@ -30,7 +28,7 @@ in
 {
   home.packages = with pkgs; [
     pythonWithToolsNoIdle
-    ruff # standalone binary, faster than flake8
+    ruff # format + lint (replaces black + flake8)
     uv # modern pip alternative, project venv recommended
   ];
 }
