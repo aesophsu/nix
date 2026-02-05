@@ -6,7 +6,10 @@ let
     with ps; [
       pip
       ipython
-      # optional: numpy pandas matplotlib requests
+      numpy
+      pandas
+      matplotlib
+      requests
     ]);
   # Exclude bin/idle* to avoid path clash with openclaw
   pythonWithToolsNoIdle = pkgs.runCommand "python312-env-no-idle"

@@ -1,0 +1,25 @@
+---
+description: Always manage this machine's system config and software via this nix flake
+alwaysApply: true
+---
+
+# 本仓库作为系统与软件的唯一配置源
+
+- **系统与 Home 目录配置**：
+  - 在本仓库中，所有与系统相关的配置（包含 `nix-darwin`、`home-manager`、shell、编辑器、开发环境等）一律优先通过当前 flake 管理。
+  - 如需新增或修改配置，应优先编辑已有的 Nix 模块与 Home Manager 配置（如 `modules/`, `home/`, `hosts/`, `outputs/` 等目录内的文件），而不是建议手工修改系统文件。
+
+- **软件安装与包管理**：
+  - 在本仓库中，当用户提到“安装软件”“添加工具”“开发依赖”等需求时，应优先通过：
+    - 系统级：`nix-darwin` 模块 / `modules/` 下的配置；
+    - 用户级：Home Manager / `home/` 下的配置；
+    - 以及本 flake 中已有的约定（如 `modules/base/packages.nix` 等）。
+  - **避免默认推荐** 使用 Homebrew、全局 `pip`, `npm -g` 等非 Nix 方式，除非用户明确要求或当前 Nix 无法满足且需要说明原因。
+
+- **存放位置与约定**：
+  - 为新增软件或配置时，应遵循本仓库既有目录结构和风格（可先阅读 `docs/` 与对应子目录下现有 `.nix` 文件）。
+  - 如需引入新的 overlay、包或模块，应优先复用或扩展 `overlays/`, `modules/`, `home/`, `outputs/` 等现有机制，而不是创建无关的新顶层目录。
+
+- **命令行与文档示例**：
+  - 在给出“如何启用/应用配置”的说明时，应优先使用 Nix 相关命令（如 `nix run`, `nix build`, `darwin-rebuild`, `home-manager switch` 等），并基于本 flake 的用法来示例。
+  - 如必须使用非 Nix 方式（如暂时性调试或上游 bug workaround），需要在说明中明确标注为“临时方案”，并在可能时附带一个“如何最终通过 Nix 固化”的建议方向。

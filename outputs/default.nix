@@ -135,6 +135,10 @@ in
         with ps; [
           pip
           ipython
+          numpy
+          pandas
+          matplotlib
+          requests
         ]);
     in
     {
@@ -144,6 +148,9 @@ in
         packages = with pkgs; [
           bashInteractive
           gcc
+
+          nodejs_20
+          pnpm
 
           nixfmt
           deadnix

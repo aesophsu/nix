@@ -96,11 +96,11 @@ geox:
     url: https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
   update-interval: 172800
 
-# proxy-providers: filter by region (English/abbrev only; matches e.g. [HK]HongKong, HK-01, Singapore, Tokyo, US-01)
 proxy-providers:
   Airport1:
     type: http
-    url: "https://YOUR_SUBSCRIPTION_URL_1?token=YOUR_TOKEN"
+    # Subscription 1 (ts1110)
+    url: "https://999.ts1110.top/weibo/ipx/client/dy?token=YOUR_TOKEN"
     path: ./proxies/airport1.yaml
     interval: 43200
     update-on-start: true
@@ -118,7 +118,8 @@ proxy-providers:
 
   Airport2:
     type: http
-    url: "https://YOUR_SUBSCRIPTION_URL_2?token=YOUR_TOKEN"
+    # Subscription 2 (fcsubcn)
+    url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=YOUR_TOKEN"
     path: ./proxies/airport2.yaml
     interval: 43200
     update-on-start: true
@@ -193,6 +194,9 @@ rules:
   - DOMAIN,yacd.haishan.me,DIRECT
   - DOMAIN-SUFFIX,ncbi.nlm.nih.gov,DIRECT
   - DOMAIN-SUFFIX,pubmed.ncbi.nlm.nih.gov,DIRECT
+  # Extra medical/science sites (enable when needed)
+  # - DOMAIN-SUFFIX,nejm.org,DIRECT
+  # - DOMAIN-SUFFIX,who.int,DIRECT
   - RULE-SET,private,DIRECT
   - RULE-SET,fakeip-filter,DIRECT
   - DOMAIN-SUFFIX,local,DIRECT
@@ -201,6 +205,9 @@ rules:
   - DOMAIN-KEYWORD,airdrop,DIRECT
   - DOMAIN-KEYWORD,airplay,DIRECT
   - DOMAIN-KEYWORD,bonjour,DIRECT
+  # Route all Apple services through the AI proxy group
+  # (covers App Store / iCloud / iMessage / iCloud Drive / etc.)
+  - GEOSITE,apple,AI
   - RULE-SET,ai,AI
   - RULE-SET,cn,DIRECT
   - RULE-SET,cnip,DIRECT,no-resolve

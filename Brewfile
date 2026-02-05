@@ -1,0 +1,5 @@
+brew "libomp"
+cask "cursor"
+cask "google-chrome"
+cask "zotero"
+vscode "openai.chatgpt"

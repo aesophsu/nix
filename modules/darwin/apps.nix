@@ -7,18 +7,19 @@
 }:
 
 let
-  # Mirrors: Homebrew (BFSU) + PyPI (Tsinghua); deploy without proxy
-  no_proxy = "localhost,127.0.0.1,.local,.lan,.cn,mirrors.bfsu.edu.cn,mirrors.tuna.tsinghua.edu.cn,mirrors.ustc.edu.cn,pypi.tuna.tsinghua.edu.cn,mirror.nju.edu.cn";
+  # 通过本地 mihomo 代理 Homebrew；避免硬编码 TUNA 镜像，让 Homebrew 自己走代理访问官方源。
+  inherit (myvars.networking.mihomo) httpProxy socksProxy;
+  no_proxy = "localhost,127.0.0.1,.local,.lan";
   homebrew_mirror_env = {
-    HOMEBREW_API_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles/api";
-    HOMEBREW_BOTTLE_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles";
-    HOMEBREW_ARTIFACT_DOMAIN = "https://mirrors.bfsu.edu.cn/homebrew-bottles";
-    HOMEBREW_BREW_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/brew.git";
-    HOMEBREW_CORE_GIT_REMOTE = "https://mirrors.bfsu.edu.cn/git/homebrew/homebrew-core.git";
-    HOMEBREW_PIP_INDEX_URL = "https://pypi.tuna.tsinghua.edu.cn/simple";
-    NO_PROXY = no_proxy;
+    # 让 activation 阶段的 brew / curl / git 等都通过 mihomo
+    http_proxy = httpProxy;
+    https_proxy = httpProxy;
+    HTTP_PROXY = httpProxy;
+    HTTPS_PROXY = httpProxy;
+    all_proxy = socksProxy;
+    ALL_PROXY = socksProxy;
     no_proxy = no_proxy;
-    # No ALL_PROXY in activation so first deploy works without mihomo; shell gets proxy from mihomo HM module
+    NO_PROXY = no_proxy;
   };
   homebrew_env_script = lib.concatStringsSep "\n" (
     lib.attrsets.mapAttrsToList (n: v: "export ${n}=${v}") homebrew_mirror_env
@@ -31,9 +32,7 @@ in
       "/usr/share/terminfo"
     ];
   };
-
   system.activationScripts.homebrew.text = lib.mkBefore ''
-    echo >&2 '${homebrew_env_script}'
     ${homebrew_env_script}
   '';
 
@@ -41,31 +40,34 @@ in
   environment.shells = [ pkgs.zsh ];
 
   homebrew = {
+    # Nix 管理 Homebrew，但禁用 Brewfile 模式，避免每次 `brew bundle` 很慢。
+    # 仍然会用 `brew install` 确保 brews/casks 存在。
     enable = true;
+    global = {
+      brewfile = false;
+    };
     onActivation = {
       autoUpdate = false; # faster rebuild; run brew update when needed
-      upgrade = true;
-      cleanup = "zap";
+      upgrade = false; # don't upgrade on every rebuild; run brew upgrade manually
+      cleanup = "none"; # 避免每次重建做大量清理；需要时手动 `brew cleanup`
     };
 
-    masApps = {
-      "WeChat" = 836500024;
-    };
+    # If MAS apps are needed, re-enable; they slow down rebuilds
+    # masApps = {
+    #   "WeChat" = 836500024;
+    # };
 
-    taps = [
-      "nikitabobko/tap"
-      "FelixKratz/formulae"
-    ];
+    # 目前不需要第三方 formulae，去掉额外 taps 以加快 brew 元数据处理；
+    # 如果未来需要 yabai 等，再重新启用。
+    taps = [ ];
 
-    # mas for masApps (e.g. WeChat); libomp for XGBoost/LightGBM; postgresql from Nix (home/darwin/postgresql)
-    brews = [ "mas" "libomp" ];
+    # CLI 工具改由 Nix 提供（见 modules/base/packages.nix）；Homebrew 仅负责 GUI casks。
+    brews = [ ];
 
     # miniforge is large; brew install on demand if needed
     casks = [
-      "google-chrome"
       "cursor"
       "chatgpt"
-      "zotero"
     ];
   };
 }
