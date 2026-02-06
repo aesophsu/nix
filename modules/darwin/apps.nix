@@ -39,6 +39,7 @@ in
   programs.zsh.enable = true;
   environment.shells = [ pkgs.zsh ];
 
+  # Homebrew 仅用于无法由 Nix 提供的 cask；CLI 与其余 GUI 均以 Nix 为准（见 modules/base/packages.nix、home/darwin/gui.nix）。
   homebrew = {
     # Nix 管理 Homebrew，但禁用 Brewfile 模式，避免每次 `brew bundle` 很慢。
     # 仍然会用 `brew install` 确保 brews/casks 存在。
@@ -52,10 +53,10 @@ in
       cleanup = "none"; # 避免每次重建做大量清理；需要时手动 `brew cleanup`
     };
 
-    # If MAS apps are needed, re-enable; they slow down rebuilds
-    # masApps = {
-    #   "WeChat" = 836500024;
-    # };
+    # Mac App Store 应用（会拖慢 rebuild；需要时再添加）
+    masApps = {
+      "WeChat" = 836500024;
+    };
 
     # 目前不需要第三方 formulae，去掉额外 taps 以加快 brew 元数据处理；
     # 如果未来需要 yabai 等，再重新启用。
@@ -65,8 +66,8 @@ in
     brews = [ ];
 
     # miniforge is large; brew install on demand if needed
+    # 仅因 nixpkgs 暂无而保留的 Homebrew 例外（Cursor 已迁至 home/darwin/gui.nix 的 code-cursor）
     casks = [
-      "cursor"
       "chatgpt"
     ];
   };

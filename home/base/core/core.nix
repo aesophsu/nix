@@ -25,7 +25,7 @@ in
           ]
         },
         "terminal": {
-          "command": "/Users/sue/dev/terminal_mcp/mcp-terminal-server",
+          "command": "${config.home.homeDirectory}/Code/terminal_mcp/mcp-terminal-server",
           "args": [],
           "env": {
             "MCP_COMMAND_TIMEOUT": "30",

@@ -2,7 +2,6 @@
 
 {
   macosSystem = import ./macosSystem.nix;
-  attrs = import ./attrs.nix { inherit lib; };
 
   # Build path relative to flake root: relativeToRoot "modules/darwin" => /path/to/flake/modules/darwin
   relativeToRoot = lib.path.append ../.;

@@ -4,7 +4,6 @@ Helpers for the flake; used by outputs to avoid duplication and simplify new hos
 
 | File | Role |
 |------|------|
-| **default.nix** | Exports macosSystem, attrs, relativeToRoot, scanPaths (path helpers). openclaw-package.nix is called from outputs/genSpecialArgs only. |
-| **attrs.nix** | Attrset helpers |
+| **default.nix** | Exports macosSystem, relativeToRoot, scanPaths (path helpers). openclaw-package.nix is called from outputs/genSpecialArgs only. |
 | **macosSystem.nix** | [nix-darwin](https://github.com/LnL7/nix-darwin) config builder |
-| **openclaw-package.nix** | OpenClaw build (exclude oracle) + PATH-safe wrapper (openclaw* bins); used in genSpecialArgs |
+| **openclaw-package.nix** | OpenClaw build (exclude oracle) + PATH-safe wrapper (openclaw* bins); used in genSpecialArgs. Overlay and HM module are injected in outputs/aarch64-darwin/src/stella.nix. |

@@ -8,7 +8,7 @@
 | apps.nix | Homebrew, env (proxy/mirrors), GUI/casks |
 | system.nix | Hostname, proxy (networksetup), timezone, Dock/Finder/keyboard defaults |
 | nix-core.nix | Nix daemon (experimental-features, mirrors) |
-| openclaw.nix | Placeholder; overlay in stella.nix |
+| (OpenClaw) | Overlay and HM module wired in [outputs/aarch64-darwin/src/stella.nix](../../outputs/aarch64-darwin/src/stella.nix); no openclaw.nix in this dir |
 | security.nix | PAM, Touch ID |
 | ssh.nix | SSH service, knownHosts |
 | users.nix | Users, SSH keys |

@@ -140,3 +140,75 @@ Same command for first and later runs. If mihomo config wasn’t ready at first 
 | WeChat/SSL error | Comment masApps, add mihomo config, run switch again. |
 | SSH key not used | Set `mainSshAuthorizedKeys` in `vars/default.nix`. |
 | OpenClaw Gateway won’t start | If `~/.openclaw/openclaw.json` is empty, HM fallback writes minimal config; run `home-manager switch --flake .#stella` once. |
+
+---
+
+## ~/ 与 ~/Code 目录约定
+
+Purpose of top-level dirs under `~/` and how they're organized.
+
+### By purpose
+
+**System / runtime (don't touch)**
+
+| Dir/file | Purpose | Action |
+|----------|---------|--------|
+| `.cache/` | App caches (bat, nix eval-cache) | Keep |
+| `.config/` | App config (mostly Home Manager) | Keep |
+| `.local/` | Local state (nix profile, etc.) | Keep |
+| `.nix-defexpr` / `.nix-profile` | Nix expr and profile links | Keep |
+| `Library/`, `Applications/` | macOS / HM apps | Keep |
+| `Desktop/` … `Public/` | macOS user dirs | Keep |
+
+**Secrets (don't touch)**
+
+| Dir | Purpose |
+|-----|---------|
+| `.ssh/` | SSH keys and config |
+| `.secrets/` | Private keys / secrets |
+
+**App data (keep as needed)**
+
+| Dir | Purpose |
+|-----|---------|
+| `.codex/`, `.cursor/` | AI/IDE data |
+| `.openclaw/` | OpenClaw runtime |
+| `Zotero/` | Zotero library |
+
+**Config / code (under ~/Code)**
+
+| Path | Purpose |
+|------|---------|
+| **~/Code/nix** | Nix config (nix-darwin + HM); darwin-rebuild entry |
+| **~/Code/claw** | Path deps (flake-utils, nix-openclaw, nix-steipete-tools) |
+| **~/Code/nix/misc** | Non-eval assets (e.g. certs/ for PKI). |
+| **~/Code/terminal_mcp** | Terminal MCP server (Go) |
+| **~/Code/mcp-filesystem-python** | MCP filesystem server (Python) |
+| **~/Code/openclaw_sandbox** | OpenClaw workspace (optional; was ~/openclaw_sandbox) |
+
+Config and code live under **~/Code** for backup and clarity.
+
+**Go cache (keep at ~)**
+
+| Path | Purpose |
+|------|---------|
+| **~/go** | Go module cache (GOPATH/GOMODCACHE). Do not move; migration breaks `go build` / `go run`. |
+
+**Backups and misc**
+
+| Path | Purpose |
+|------|---------|
+| **~/Code/nix/archive/** | Home Manager and other backups (e.g. `zshrc.home-manager.backup`). |
+| **~/Code/nix/misc/openclaw_research_sandbox.sb** | Sandbox profile (moved from ~). |
+
+### How it was done
+
+- Create `~/Code`; move former `~/nix` → `~/Code/nix`, `~/claw` → `~/Code/claw`.
+- In nix: path inputs → `path:/Users/sue/Code/claw/<name>`; docs updated to ~/Code/nix, ~/Code/claw.
+- Run darwin-rebuild from `~/Code/nix`.
+
+### Notes
+
+- Home Manager `home.homeDirectory` is `/Users/<username>` (vars); independent of repo path.
+- Nix only needs path in flake.nix; ensure `~/Code/claw` subdirs exist.
+- **~/bin** has been removed; PATH uses **~/.local/bin** only (see `home/base/core/shells/default.nix`).

@@ -38,7 +38,7 @@ ROOT = _detect_root()
 # 允许访问的白名单目录（最小权限原则）：
 # - ~/.openclaw             : OpenClaw 相关配置与工具
 # - ~/Code                  : 所有代码与配置仓库（含本 nix 仓库）
-# - ~/dev, ~/go             : 其他开发项目
+# - ~/go                    : Go 模块缓存
 # - ~/Documents/mimic       : MIMIC 分析项目（按 home-layout 规则依旧放在 Documents 下）
 # - ~/Documents/PhysioNet   : PhysioNet 相关数据与代码
 #
@@ -46,7 +46,6 @@ ROOT = _detect_root()
 ALLOWED_PATHS: List[Path] = [
   ROOT / ".openclaw",
   ROOT / "Code",
-  ROOT / "dev",
   ROOT / "go",
   ROOT / "Documents" / "mimic",
   ROOT / "Documents" / "PhysioNet",

@@ -24,12 +24,12 @@ self: super: {
   # Wrapper for your local terminal MCP server.
   #
   # Assumes you have cloned / built:
-  #   $HOME/dev/terminal_mcp/mcp-terminal-server
+  #   $HOME/Code/terminal_mcp/mcp-terminal-server
   #
   # Usage:
   #   "${pkgs.mcp-terminal}/bin/mcp-terminal"
   mcp-terminal = super.writeShellScriptBin "mcp-terminal" ''
-    exec "$HOME/dev/terminal_mcp/mcp-terminal-server" "$@"
+    exec "$HOME/Code/terminal_mcp/mcp-terminal-server" "$@"
   '';
 }
 
