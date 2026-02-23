@@ -51,16 +51,21 @@ let
   darwinSystems = {
     aarch64-darwin = import ./aarch64-darwin (args // { system = "aarch64-darwin"; });
   };
+  linuxSystems = {
+    x86_64-linux = import ./x86_64-linux (args // { system = "x86_64-linux"; });
+  };
 
   darwinSystemNames = builtins.attrNames darwinSystems;
   darwinSystemValues = builtins.attrValues darwinSystems;
+  linuxSystemNames = builtins.attrNames linuxSystems;
+  linuxSystemValues = builtins.attrValues linuxSystems;
 
   # =====================================================================================
   # Helpers
   # =====================================================================================
 
-  # Currently macOS only (darwinSystems); extend to NixOS etc. if needed
-  forAllSystems = func: nixpkgs.lib.genAttrs darwinSystemNames func;
+  forDarwinSystems = func: nixpkgs.lib.genAttrs darwinSystemNames func;
+  forLinuxSystems = func: nixpkgs.lib.genAttrs linuxSystemNames func;
 
 in
 {
@@ -71,18 +76,23 @@ in
   darwinConfigurations = lib.attrsets.mergeAttrsList (
     map (it: it.darwinConfigurations or { }) darwinSystemValues
   );
+  nixosConfigurations = lib.attrsets.mergeAttrsList (
+    map (it: it.nixosConfigurations or { }) linuxSystemValues
+  );
 
   # =====================================================================================
   # Packages & evaluation
   # =====================================================================================
 
-  packages = forAllSystems (system: darwinSystems.${system}.packages or { });
+  packages =
+    (forDarwinSystems (system: darwinSystems.${system}.packages or { }))
+    // (forLinuxSystems (system: linuxSystems.${system}.packages or { }));
 
   # =====================================================================================
   # Checks (CI / pre-commit)
   # =====================================================================================
 
-  checks = forAllSystems (system:
+  checks = forDarwinSystems (system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
       evalTestsEmpty = (darwinSystems.${system}.evalTests or { }) == { };
@@ -127,7 +137,7 @@ in
   # Development environments
   # =====================================================================================
 
-  devShells = forAllSystems (
+  devShells = forDarwinSystems (
     system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
@@ -189,5 +199,5 @@ in
   # Formatter
   # =====================================================================================
 
-  formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
+  formatter = forDarwinSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
 }
