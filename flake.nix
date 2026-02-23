@@ -27,11 +27,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    haumea = {
-      url = "github:nix-community/haumea/v0.2.2";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     pre-commit-hooks = {
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -50,24 +45,6 @@
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Path inputs under ~/Code/claw (no GitHub at eval). First-time (proxy if needed):
-    #   mkdir -p ~/Code/claw
-    #   git clone https://github.com/numtide/flake-utils ~/Code/claw/flake-utils && (cd ~/Code/claw/flake-utils && git checkout 11707dc2f618dd54ca8739b309ec4fc024de578b)
-    #   git clone https://github.com/openclaw/nix-openclaw ~/Code/claw/nix-openclaw
-    #   git clone https://github.com/openclaw/nix-steipete-tools ~/Code/claw/nix-steipete-tools
-    flake-utils.url = "path:/Users/sue/Code/claw/flake-utils";
-    nix-steipete-tools = {
-      url = "path:/Users/sue/Code/claw/nix-steipete-tools";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nix-openclaw = {
-      url = "path:/Users/sue/Code/claw/nix-openclaw";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-      inputs.home-manager.follows = "home-manager";
-      inputs.nix-steipete-tools.follows = "nix-steipete-tools";
     };
 
     # Optional: add your own private repo for secrets

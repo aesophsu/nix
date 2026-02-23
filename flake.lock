@@ -86,20 +86,6 @@
         "systems": "systems_2"
       },
       "locked": {
-        "narHash": "sha256-qFB6MNWtgf8jf1ahYnZanVgFm2Ptj3X1n1RKOBCpgB8=",
-        "path": "/Users/sue/Code/claw/flake-utils",
-        "type": "path"
-      },
-      "original": {
-        "path": "/Users/sue/Code/claw/flake-utils",
-        "type": "path"
-      }
-    },
-    "flake-utils_2": {
-      "inputs": {
-        "systems": "systems_3"
-      },
-      "locked": {
         "lastModified": 1681202837,
         "narHash": "sha256-H+Rh19JDwRtpVPAWp64F+rlEtxUWBAQW28eAi3SRSzg=",
         "owner": "numtide",
@@ -131,27 +117,6 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "gitignore.nix",
-        "type": "github"
-      }
-    },
-    "haumea": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1685133229,
-        "narHash": "sha256-FePm/Gi9PBSNwiDFq3N+DWdfxFq0UKsVVTJS3cQPn94=",
-        "owner": "nix-community",
-        "repo": "haumea",
-        "rev": "34dd58385092a23018748b50f9b23de6266dffc2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "ref": "v0.2.2",
-        "repo": "haumea",
         "type": "github"
       }
     },
@@ -215,47 +180,6 @@
         "owner": "nix-darwin",
         "repo": "nix-darwin",
         "type": "github"
-      }
-    },
-    "nix-openclaw": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "home-manager": [
-          "home-manager"
-        ],
-        "nix-steipete-tools": [
-          "nix-steipete-tools"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "narHash": "sha256-MgIy4ODyyf2B03kKUMNVi74s7+BJYYE6oH7t44/7hWc=",
-        "path": "/Users/sue/Code/claw/nix-openclaw",
-        "type": "path"
-      },
-      "original": {
-        "path": "/Users/sue/Code/claw/nix-openclaw",
-        "type": "path"
-      }
-    },
-    "nix-steipete-tools": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "narHash": "sha256-1IdTgWwDCnLv+RSwEQmhbf2t9YvldVs5CDUPDYEazCY=",
-        "path": "/Users/sue/Code/claw/nix-steipete-tools",
-        "type": "path"
-      },
-      "original": {
-        "path": "/Users/sue/Code/claw/nix-steipete-tools",
-        "type": "path"
       }
     },
     "nixpkgs": {
@@ -337,12 +261,8 @@
       "inputs": {
         "agenix": "agenix",
         "catppuccin": "catppuccin",
-        "flake-utils": "flake-utils",
-        "haumea": "haumea",
         "home-manager": "home-manager_2",
         "nix-darwin": "nix-darwin",
-        "nix-openclaw": "nix-openclaw",
-        "nix-steipete-tools": "nix-steipete-tools",
         "nixpkgs": "nixpkgs",
         "nixpkgs-darwin": "nixpkgs-darwin",
         "nuenv": "nuenv",
@@ -351,7 +271,7 @@
     },
     "rust-overlay": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils",
         "nixpkgs": [
           "nuenv",
           "nixpkgs"
@@ -387,21 +307,6 @@
       }
     },
     "systems_2": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_3": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",

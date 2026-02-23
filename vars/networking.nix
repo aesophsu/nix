@@ -2,14 +2,65 @@
 
 { lib }:
 rec {
-  # mihomo ports (match home/darwin/services/mihomo config). Rebuild first, then configure/start mihomo.
-  mihomo = {
+  proxy = rec {
+    noProxyLocal = [
+      "localhost"
+      "127.0.0.1"
+      "::1"
+      ".local"
+      ".lan"
+    ];
+
+    noProxyBaseDomains = [
+      ".cn"
+      "mirror.nju.edu.cn"
+      "pypi.tuna.tsinghua.edu.cn"
+      "mirrors.ustc.edu.cn"
+      "mirrors.bfsu.edu.cn"
+      "mirrors.tuna.tsinghua.edu.cn"
+    ];
+
+    mkNoProxyList = { extra ? [ ] }: noProxyLocal ++ noProxyBaseDomains ++ extra;
+    mkNoProxy = { extra ? [ ] }: lib.concatStringsSep "," (mkNoProxyList { inherit extra; });
+
+    env =
+      {
+        httpProxy,
+        socksProxy,
+        noProxyList ? mkNoProxyList { },
+      }:
+      let
+        noProxy = lib.concatStringsSep "," noProxyList;
+      in
+      {
+        http_proxy = httpProxy;
+        https_proxy = httpProxy;
+        all_proxy = socksProxy;
+        HTTP_PROXY = httpProxy;
+        HTTPS_PROXY = httpProxy;
+        ALL_PROXY = socksProxy;
+        no_proxy = noProxy;
+        NO_PROXY = noProxy;
+      };
+  };
+
+  mihomo = rec {
+    # mihomo ports (match home/darwin/services/mihomo config). Rebuild first, then configure/start mihomo.
     host = "127.0.0.1";
-    httpPort = "7890";
-    socksPort = "7891";
-    mixedPort = "7893"; # HTTP+SOCKS mixed port
-    httpProxy = "http://127.0.0.1:7890";
-    socksProxy = "socks5://127.0.0.1:7891";
+    ports = {
+      http = "7890";
+      socks = "7891";
+      mixed = "7893"; # HTTP+SOCKS mixed port
+    };
+    httpPort = ports.http;
+    socksPort = ports.socks;
+    mixedPort = ports.mixed;
+    proxies = {
+      http = "http://${host}:${httpPort}";
+      socks = "socks5://${host}:${socksPort}";
+    };
+    httpProxy = proxies.http;
+    socksProxy = proxies.socks;
   };
 
   # DNS for faster resolution; alternatives: 114.114.114.114, 180.76.76.76

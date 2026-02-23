@@ -1,19 +1,16 @@
-{ mylib, myvars, ... }:
-
-let
-  groupedDirs = [
-    ./apps
-    ./services
-    ./profiles
-  ];
-  topLevelModules = builtins.filter (path: !(builtins.elem path groupedDirs)) (mylib.scanPaths ./.);
-in
+{ mylib, myvars, system, ... }:
 {
-  home.homeDirectory = "/Users/${myvars.username}";
+  home.homeDirectory = mylib.homeDirForSystem {
+    inherit system;
+    username = myvars.username;
+  };
   xdg.enable = true;
 
-  imports = topLevelModules ++ groupedDirs ++ [
-    ../base/core
-    ../base/home.nix
-  ];
+  imports = mylib.discoverImports {
+    dir = ./.;
+    extraImports = [
+      ../base/core
+      ../base/home.nix
+    ];
+  };
 }

@@ -1,4 +1,4 @@
-{ lib, pkgs, myvars, ... }:
+{ lib, pkgs, mylib, myvars, system ? "x86_64-linux", ... }:
 let
   username = myvars.username;
 in
@@ -14,7 +14,10 @@ in
 
   home = {
     username = username;
-    homeDirectory = "/home/${username}";
+    homeDirectory = mylib.homeDirForSystem {
+      inherit system;
+      inherit username;
+    };
     stateVersion = "25.11";
   };
 

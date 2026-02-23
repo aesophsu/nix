@@ -1,4 +1,4 @@
-{ lib, pkgs, myvars ? null, ... }:
+{ lib, pkgs, mylib, myvars ? null, ... }:
 let
   username = if myvars != null then myvars.username else "sue";
   mihomoVars =
@@ -13,17 +13,26 @@ let
         httpProxy = "http://127.0.0.1:7890";
         socksProxy = "socks5://127.0.0.1:7891";
       };
-  mihomoNoProxy = "localhost,127.0.0.1,::1,.local,.lan,.cn,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16";
   mihomoLocalConfigPath = /etc/nixos/local/mihomo/config.yaml;
-  mihomoConfigSource =
-    if builtins.pathExists mihomoLocalConfigPath then
+  mihomoConfigSource = mylib.firstExistingPathOr {
+    candidates = [
       mihomoLocalConfigPath
-    else if builtins.pathExists ./mihomo.config.local.yaml then
       ./mihomo.config.local.yaml
-    else if builtins.pathExists ./mihomo.config.yaml then
       ./mihomo.config.yaml
+    ];
+    default = ../../home/darwin/services/mihomo/config.yaml.example;
+  };
+  mihomoNoProxy =
+    if myvars != null && myvars ? networking && myvars.networking ? proxy then
+      myvars.networking.proxy.mkNoProxy {
+        extra = [
+          "10.0.0.0/8"
+          "172.16.0.0/12"
+          "192.168.0.0/16"
+        ];
+      }
     else
-      ../../home/darwin/services/mihomo/config.yaml.example;
+      "localhost,127.0.0.1,::1,.local,.lan,.cn,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16";
 
 in
 {

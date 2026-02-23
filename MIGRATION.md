@@ -19,10 +19,6 @@
 | `home/darwin/shell.nix` | `home/darwin/profiles/shell.nix` |
 | `home/darwin/mihomo/default.nix` | `home/darwin/services/mihomo/default.nix` |
 | `home/darwin/mihomo/config.yaml.example` | `home/darwin/services/mihomo/config.yaml.example` |
-| `home/darwin/openclaw/default.nix` | `home/darwin/services/openclaw/default.nix` |
-| `home/darwin/openclaw/documents/AGENTS.md` | `home/darwin/services/openclaw/documents/AGENTS.md` |
-| `home/darwin/openclaw/documents/SOUL.md` | `home/darwin/services/openclaw/documents/SOUL.md` |
-| `home/darwin/openclaw/documents/TOOLS.md` | `home/darwin/services/openclaw/documents/TOOLS.md` |
 | `home/darwin/postgresql/default.nix` | `home/darwin/services/postgresql/default.nix` |
 
 ### Home Manager（Base）
@@ -48,8 +44,14 @@
 ## 文档变更
 
 - 新增仓库总览与架构图：`README.md`
+- 新增生成文档目录：`docs/generated/`（由 `scripts/docs/generate.py` 维护）
 - 删除重复 README：`home/base/README.md`、`modules/darwin/README.md`
 - 文档风格统一为中文主叙述，路径统一使用反引号
+
+## 输出装配层变更（新）
+
+- `outputs/*/src/hosts.nix` 更名为 `outputs/*/fragments/hosts.nix`
+- `outputs/lib/mk-platform-outputs.nix` 统一平台输出装配模板（替代 `haumea` loader）
 
 ## 注意事项
 

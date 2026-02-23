@@ -1,20 +1,16 @@
-name: Nix Flake Eval Tests
+name: Nix Flake Checks
 
 on:
   push:
     branches:
       - main
     paths-ignore:
-      - "scripts/**"
-      - "**.md"
       - "**.nu"
       - "Justfile"
   pull_request:
     branches:
       - main
     paths-ignore:
-      - "scripts/**"
-      - "**.md"
       - "**.nu"
       - "Justfile"
 
@@ -34,9 +30,16 @@ jobs:
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             experimental-features = nix-command flakes
 
-      - name: Run Nix Flake Eval Tests
+      - name: Run Nix Flake Checks
         run: |
-          echo 'Flake Eval Tests'
-          # stack overflow...
-          # nix eval .#checks --show-trace --print-build-logs --verbose
-          nix eval .#evalTests --show-trace --print-build-logs --verbose
+          echo 'Flake checks (eval only across all systems)'
+          # Darwin derivations cannot be built on Ubuntu, but --no-build can still eval them.
+          nix flake check --no-build --all-systems
+
+          echo 'Linux executable checks'
+          nix build --no-link .#checks.x86_64-linux.smoke-eval
+          nix build --no-link .#checks.x86_64-linux.docs-sync
+          nix build --no-link .#checks.x86_64-linux.pre-commit
+
+          echo 'docInventory'
+          nix eval --json .#docInventory > /dev/null

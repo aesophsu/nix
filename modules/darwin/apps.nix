@@ -9,17 +9,10 @@
 let
   # 通过本地 mihomo 代理 Homebrew；避免硬编码 TUNA 镜像，让 Homebrew 自己走代理访问官方源。
   inherit (myvars.networking.mihomo) httpProxy socksProxy;
-  no_proxy = "localhost,127.0.0.1,.local,.lan";
-  homebrew_mirror_env = {
-    # 让 activation 阶段的 brew / curl / git 等都通过 mihomo
-    http_proxy = httpProxy;
-    https_proxy = httpProxy;
-    HTTP_PROXY = httpProxy;
-    HTTPS_PROXY = httpProxy;
-    all_proxy = socksProxy;
-    ALL_PROXY = socksProxy;
-    no_proxy = no_proxy;
-    NO_PROXY = no_proxy;
+  proxyLib = myvars.networking.proxy;
+  homebrew_mirror_env = proxyLib.env {
+    inherit httpProxy socksProxy;
+    noProxyList = proxyLib.noProxyLocal;
   };
   homebrew_env_script = lib.concatStringsSep "\n" (
     lib.attrsets.mapAttrsToList (n: v: "export ${n}=${v}") homebrew_mirror_env
@@ -55,9 +48,7 @@ in
 
     # Mac App Store 应用（会拖慢 rebuild；需要时再添加）
     # Office 组件（Word/Excel/PPT/365 套件）用 mas 安装易报错，请从 App Store 手动安装
-    masApps = {
-      "WeChat" = 836500024;
-    };
+    masApps = { };
 
     # 目前不需要第三方 formulae，去掉额外 taps 以加快 brew 元数据处理；
     # 如果未来需要 yabai 等，再重新启用。
@@ -68,8 +59,6 @@ in
 
     # miniforge is large; brew install on demand if needed
     # 仅因 nixpkgs 暂无而保留的 Homebrew 例外（Cursor 已迁至 home/darwin/apps/gui.nix 的 code-cursor）
-    casks = [
-      "chatgpt"
-    ];
+    casks = [ ];
   };
 }

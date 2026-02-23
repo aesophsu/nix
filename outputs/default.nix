@@ -7,135 +7,132 @@
 let
   inherit (inputs.nixpkgs) lib;
 
-  # =====================================================================================
-  # Project-level extensions
-  # =====================================================================================
-
+  # Top-level flake outputs aggregator: shared helpers + per-system trees.
   mylib = import ../lib { inherit lib; };
   myvars = import ../vars { inherit lib; };
+  hostRegistryLib = mylib.hostRegistry;
+  hostRegistryRaw = import ../hosts/registry.nix { inherit myvars; };
+  hostRegistry = hostRegistryLib.indexRegistry hostRegistryRaw;
+  smokeCheckLib = import ./lib/smoke-check.nix { inherit lib; };
+  preCommitHooks = import ./lib/pre-commit-hooks.nix;
 
-  # OpenClaw package (exclude oracle, PATH-safe) from lib/openclaw-package.nix
+  # Shared arguments injected into system builders/modules via specialArgs.
   genSpecialArgs = system:
-    let
-      openclawPkg = import ../lib/openclaw-package.nix {
-        pkgs = nixpkgs.legacyPackages.${system};
-        nix-openclaw = inputs.nix-openclaw;
-        nix-steipete-tools = inputs.nix-steipete-tools;
-        inherit system;
-      };
-    in
     inputs
     // {
-      inherit mylib myvars;
-      openclawPackageNoOracle = openclawPkg.openclawPackageNoOracle;
+      inherit system mylib myvars hostRegistry;
     };
 
-  # =====================================================================================
-  # Common args for haumea-style module trees
-  # =====================================================================================
-
+  # Common args for per-system output trees.
   args = {
     inherit
       inputs
       lib
       mylib
       myvars
+      hostRegistry
+      hostRegistryRaw
       genSpecialArgs
       ;
   };
 
-  # =====================================================================================
-  # System trees (per-architecture entry points)
-  # =====================================================================================
-
+  # Per-system output entry points.
   darwinSystems = {
     aarch64-darwin = import ./aarch64-darwin (args // { system = "aarch64-darwin"; });
   };
-  linuxSystems = {
+  nixosSystems = {
     x86_64-linux = import ./x86_64-linux (args // { system = "x86_64-linux"; });
   };
+  allSystems = nixosSystems // darwinSystems;
 
   darwinSystemNames = builtins.attrNames darwinSystems;
   darwinSystemValues = builtins.attrValues darwinSystems;
-  linuxSystemNames = builtins.attrNames linuxSystems;
-  linuxSystemValues = builtins.attrValues linuxSystems;
+  nixosSystemNames = builtins.attrNames nixosSystems;
+  nixosSystemValues = builtins.attrValues nixosSystems;
+  allSystemNames = builtins.attrNames allSystems;
+  allSystemValues = builtins.attrValues allSystems;
 
   # =====================================================================================
   # Helpers
   # =====================================================================================
 
   forDarwinSystems = func: nixpkgs.lib.genAttrs darwinSystemNames func;
-  forLinuxSystems = func: nixpkgs.lib.genAttrs linuxSystemNames func;
+  forNixosSystems = func: nixpkgs.lib.genAttrs nixosSystemNames func;
+  forAllSystems = func: nixpkgs.lib.genAttrs allSystemNames func;
+  checkNamesForSystem =
+    system:
+    [
+      "smoke-eval"
+      "docs-sync"
+    ]
+    ++ lib.optionals (builtins.hasAttr system pre-commit-hooks.lib) [ "pre-commit" ];
+  docInventory = {
+    hosts = hostRegistry.hosts;
+    enabledHosts = hostRegistry.enabledHosts;
+    systems = {
+      darwin = darwinSystemNames;
+      nixos = nixosSystemNames;
+      all = allSystemNames;
+    };
+    outputs = {
+      topLevel = [
+        "darwinConfigurations"
+        "nixosConfigurations"
+        "packages"
+        "checks"
+        "devShells"
+        "formatter"
+        "docInventory"
+      ];
+      platformFragments = {
+        "aarch64-darwin" = "outputs/aarch64-darwin/fragments";
+        "x86_64-linux" = "outputs/x86_64-linux/fragments";
+      };
+    };
+    checks = builtins.listToAttrs (
+      map (system: {
+        name = system;
+        value = checkNamesForSystem system;
+      }) allSystemNames
+    );
+  };
 
 in
 {
-  # =====================================================================================
-  # Darwin configurations (MacBook Air M4)
-  # =====================================================================================
-
+  # Aggregated system configurations.
   darwinConfigurations = lib.attrsets.mergeAttrsList (
     map (it: it.darwinConfigurations or { }) darwinSystemValues
   );
   nixosConfigurations = lib.attrsets.mergeAttrsList (
-    map (it: it.nixosConfigurations or { }) linuxSystemValues
+    map (it: it.nixosConfigurations or { }) nixosSystemValues
   );
-
-  # =====================================================================================
-  # Packages & evaluation
-  # =====================================================================================
 
   packages =
     (forDarwinSystems (system: darwinSystems.${system}.packages or { }))
-    // (forLinuxSystems (system: linuxSystems.${system}.packages or { }));
+    // (forNixosSystems (system: nixosSystems.${system}.packages or { }));
 
-  # =====================================================================================
-  # Checks (CI / pre-commit)
-  # =====================================================================================
-
-  checks = forDarwinSystems (system:
+  # Unified checks: smoke-eval plus pre-commit where supported on the target system.
+  checks = forAllSystems (system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
-      evalTestsEmpty = (darwinSystems.${system}.evalTests or { }) == { };
+      tests = allSystems.${system}.evalTests or { };
+      docInventoryJson = pkgs.writeText "doc-inventory.json" (builtins.toJSON docInventory);
     in
     {
-      eval-tests = pkgs.runCommand "eval-tests" { } ''
-        ${if evalTestsEmpty then "touch $out" else "echo 'evalTests not empty' && exit 1"}
+      smoke-eval = smokeCheckLib.mkSmokeCheck pkgs tests;
+      docs-sync = pkgs.runCommand "docs-sync" { } ''
+        cd ${mylib.relativeToRoot "."}
+        ${pkgs.python3}/bin/python ./scripts/docs/generate.py --check --inventory-file ${docInventoryJson}
+        touch $out
       '';
-
-      pre-commit-check = pre-commit-hooks.lib.${system}.run {
-      src = mylib.relativeToRoot ".";
-      hooks = {
-        nixfmt = {
-          enable = true;
-          settings.width = 100;
-        };
-
-        typos = {
-          enable = true;
-          settings = {
-            write = true;
-            configPath = ".typos.toml";
-            exclude = "rime-data/";
-          };
-        };
-
-        prettier = {
-          enable = true;
-          settings = {
-            write = true;
-            configPath = ".prettierrc.yaml";
-          };
-        };
-
-        # deadnix.enable = true;
-        # statix.enable = true;
+    }
+    // lib.optionalAttrs (builtins.hasAttr system pre-commit-hooks.lib) {
+      pre-commit = pre-commit-hooks.lib.${system}.run {
+        src = mylib.relativeToRoot ".";
+        hooks = preCommitHooks;
       };
-    };
-  });
-
-  # =====================================================================================
-  # Development environments
-  # =====================================================================================
+    }
+  );
 
   devShells = forDarwinSystems (
     system:
@@ -170,7 +167,7 @@ in
           nodePackages.prettier
         ];
 
-        inherit (self.checks.${system}.pre-commit-check) shellHook;
+        inherit (self.checks.${system}.pre-commit) shellHook;
       };
 
       # Python project dev shell
@@ -195,9 +192,7 @@ in
     }
   );
 
-  # =====================================================================================
-  # Formatter
-  # =====================================================================================
+  formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
 
-  formatter = forDarwinSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
+  inherit docInventory;
 }

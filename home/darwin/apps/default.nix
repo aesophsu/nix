@@ -1,5 +1,5 @@
 { mylib, ... }:
 
 {
-  imports = mylib.scanPaths ./.;
+  imports = mylib.discoverImports { dir = ./.; };
 }
