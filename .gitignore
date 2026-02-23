@@ -1,6 +1,7 @@
 .Trash-1000/
 result
 result/
+result-*
 .direnv/
 .DS_Store
 .pre-commit-config.yaml
@@ -14,4 +15,4 @@ core*
 home/darwin/services/mihomo/config.local.yaml
 home/darwin/services/mihomo/config.yaml
 
-# OpenClaw uses path input nix-openclaw; do not ignore
+scripts/docs/__pycache__/

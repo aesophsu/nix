@@ -14,7 +14,6 @@
     git
     git-lfs
     openssl
-    mas
     llvmPackages.openmp
   ];
 }

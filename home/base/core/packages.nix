@@ -9,6 +9,7 @@ in
     nix-tree
     gnupg
     uv
+    codex
     tree
     wget
     nodejs

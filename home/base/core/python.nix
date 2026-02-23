@@ -11,7 +11,7 @@ let
       matplotlib
       requests
     ]);
-  # Exclude bin/idle* to avoid path clash with openclaw
+  # Exclude bin/idle* to avoid PATH clashes with other tools
   pythonWithToolsNoIdle = pkgs.runCommand "python312-env-no-idle"
     { passthru = pythonWithTools.passthru or { }; }
     ''

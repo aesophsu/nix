@@ -6,6 +6,3 @@
 |---|---|
 | `default.nix` | 导出 `macosSystem`、`relativeToRoot`、`scanPaths` 等公共函数 |
 | `macosSystem.nix` | [nix-darwin](https://github.com/LnL7/nix-darwin) 系统组装入口 |
-| `openclaw-package.nix` | OpenClaw 构建（禁用 oracle）与 PATH 安全 wrapper；由 `genSpecialArgs` 使用 |
-
-`nix-openclaw` 的 overlay 与 HM module 接线在 `outputs/aarch64-darwin/src/stella.nix` 中完成。

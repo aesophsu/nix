@@ -36,7 +36,6 @@ def _detect_root() -> Path:
 ROOT = _detect_root()
 
 # 允许访问的白名单目录（最小权限原则）：
-# - ~/.openclaw             : OpenClaw 相关配置与工具
 # - ~/Code                  : 所有代码与配置仓库（含本 nix 仓库）
 # - ~/go                    : Go 模块缓存
 # - ~/Documents/mimic       : MIMIC 分析项目（按 home-layout 规则依旧放在 Documents 下）
@@ -44,7 +43,6 @@ ROOT = _detect_root()
 #
 # 如需扩展，请显式在这里添加子目录，而不是放开整个 ~ 或整个 Documents。
 ALLOWED_PATHS: List[Path] = [
-  ROOT / ".openclaw",
   ROOT / "Code",
   ROOT / "go",
   ROOT / "Documents" / "mimic",
@@ -417,4 +415,3 @@ def main() -> None:
 
 if __name__ == "__main__":
   main()
-

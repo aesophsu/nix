@@ -8,11 +8,10 @@ macOS 专用 Home Manager 配置（与 `hosts/darwin-stella/` 一起使用）。
 | `apps/gui.nix` | GUI 应用层（在 256G profile 下大多由 Homebrew 接管） |
 | `profiles/shell.nix` | Shell PATH / 初始化偏好（bash、zsh） |
 | `services/mihomo/` | [mihomo](https://github.com/MetaCubeX/mihomo)：包、环境变量、配置、launchd |
-| `services/openclaw/` | [OpenClaw](https://openclaw.ai)：配置、gateway、launchd、documents |
 | `services/postgresql/` | PostgreSQL 16（Nixpkgs）：包、数据目录、launchd |
 
 `default.nix` 保留顶层模块自动扫描，并显式导入 `apps/`、`services/`、`profiles/`，以保证结构和导入顺序稳定。
-`stella` 的 Home Manager 接线来自 `hosts/darwin-stella/home.nix` + `home/darwin/` + `nix-openclaw.homeManagerModules.openclaw`。
+`stella` 的 Home Manager 接线来自 `hosts/darwin-stella/home.nix` + `home/darwin/`。
 
 ## 常用命令
 

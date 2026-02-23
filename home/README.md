@@ -20,7 +20,6 @@ home/
     └── services/
         ├── default.nix
         ├── mihomo/      # proxy (default.nix + config)
-        ├── openclaw/    # OpenClaw (default.nix + documents)
         └── postgresql/  # PostgreSQL 16 (default.nix)
 ```
 
