@@ -1,23 +1,23 @@
-# My Private PKI / CA
+# 私有 PKI / CA（`misc/certs/`）
 
-This is my private Private Key Infrastructure (PKI) / Certificate Authority (CA) for my personal
-use. It is used to issue certificates for my own servers and services.
+用于个人服务的私有 PKI / CA（证书颁发）目录，包含公开证书、CSR 配置与生成脚本。
 
-## Current Structure
+## 文件说明
 
-- **ecc-ca.crt** - ECC CA certificate file
-- **ecc-ca.srl** - CA serial number file for certificate tracking
-- **ecc-csr.conf** - OpenSSL configuration file for certificate signing requests
-- **ecc-server.crt** - Server certificate signed by the ECC CA
-- **gen-certs.sh** - Shell script to generate certificates automatically
+| 路径 | 说明 |
+|---|---|
+| `ecc-ca.crt` | ECC CA 证书 |
+| `ecc-ca.srl` | CA 序列号文件（证书签发跟踪） |
+| `ecc-csr.conf` | OpenSSL CSR 配置 |
+| `ecc-server.crt` | 由 ECC CA 签发的服务端证书 |
+| `gen-certs.sh` | 自动生成证书脚本 |
 
-## Security Notes
+## 安全说明
 
-All private keys (`.key` files) are ignored by git and stored in a private secrets repository. The
-public certificates and configuration files are committed to this repository for reference.
+- 私钥文件（`.key`）不提交到仓库
+- 私钥保存在单独的 secrets 仓库或本地安全存储
+- 当前仓库仅保存公开证书与配置文件，便于参考与重建
 
-## Usage
+## 使用
 
-Run `./gen-certs.sh` to generate new certificates using the ECC CA configuration.
-
-Private keys (`.key`) are not in this repo; manage them in a separate secrets store or locally.
+运行 `./gen-certs.sh` 生成或更新证书。

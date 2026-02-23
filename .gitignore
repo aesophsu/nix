@@ -11,7 +11,7 @@ core*
 !coredns*
 
 # mihomo config (subscription token; do not commit)
-home/darwin/mihomo/config.local.yaml
-home/darwin/mihomo/config.yaml
+home/darwin/services/mihomo/config.local.yaml
+home/darwin/services/mihomo/config.yaml
 
 # OpenClaw uses path input nix-openclaw; do not ignore

@@ -1,10 +1,10 @@
-# vars
+# 共享变量（`vars/`）
 
-Shared variables for all hosts.
+所有主机共享的变量定义。
 
-| File | Role |
-|------|------|
-| default.nix | User (username, full name, email), initialHashedPassword, mainSshAuthorizedKeys, secondaryAuthorizedKeys |
-| networking.nix | mihomo (ports, proxy URLs; match home/darwin/mihomo config), nameservers, hostsAddr/hostsInterface (DHCP), ssh knownHosts |
+| 路径 | 说明 |
+|---|---|
+| `default.nix` | 用户信息（用户名、姓名、邮箱）、初始密码哈希、SSH authorized keys |
+| `networking.nix` | mihomo 端口/代理 URL（需与 `home/darwin/services/mihomo/` 对齐）、DNS、主机网络、SSH knownHosts |
 
-Mirrors: Nix store (modules/base/nix.nix), Homebrew (modules/darwin/apps.nix), PyPI (home/base/core/pip.nix, mihomo no_proxy). Mainland-friendly.
+镜像相关配置分散在：`modules/base/nix.nix`（Nix store）、`modules/darwin/apps.nix`（Homebrew）、`home/base/core/pip.nix` 与 mihomo `no_proxy`（PyPI 等）。

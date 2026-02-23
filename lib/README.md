@@ -1,9 +1,11 @@
-# lib
+# 辅助库（`lib/`）
 
-Helpers for the flake; used by outputs to avoid duplication and simplify new hosts.
+供 flake `outputs` 复用的辅助函数与构建封装，减少重复配置并简化新增主机。
 
-| File | Role |
-|------|------|
-| **default.nix** | Exports macosSystem, relativeToRoot, scanPaths (path helpers). openclaw-package.nix is called from outputs/genSpecialArgs only. |
-| **macosSystem.nix** | [nix-darwin](https://github.com/LnL7/nix-darwin) config builder |
-| **openclaw-package.nix** | OpenClaw build (exclude oracle) + PATH-safe wrapper (openclaw* bins); used in genSpecialArgs. Overlay and HM module are injected in outputs/aarch64-darwin/src/stella.nix. |
+| 路径 | 说明 |
+|---|---|
+| `default.nix` | 导出 `macosSystem`、`relativeToRoot`、`scanPaths` 等公共函数 |
+| `macosSystem.nix` | [nix-darwin](https://github.com/LnL7/nix-darwin) 系统组装入口 |
+| `openclaw-package.nix` | OpenClaw 构建（禁用 oracle）与 PATH 安全 wrapper；由 `genSpecialArgs` 使用 |
+
+`nix-openclaw` 的 overlay 与 HM module 接线在 `outputs/aarch64-darwin/src/stella.nix` 中完成。

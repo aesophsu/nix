@@ -13,6 +13,11 @@
     ];
 
     trusted-users = [ myvars.username ];
+    accept-flake-config = true;
+
+    # Keep builds responsive without over-tuning per host.
+    max-jobs = "auto";
+    cores = 0;
 
     # Prefer substituter mirrors so first deploy can run without proxy
     substituters = [
@@ -28,6 +33,13 @@
     ];
 
     builders-use-substitutes = true;
+    fallback = false; # fail fast if no binary cache; avoid surprise source builds on 256G SSD
+
+    # 256G SSD: favor reclaimable store metadata and keep headroom before builds.
+    keep-outputs = false;
+    keep-derivations = false;
+    min-free = 5 * 1024 * 1024 * 1024; # 5 GiB
+    max-free = 15 * 1024 * 1024 * 1024; # 15 GiB
 
     # Disable Rosetta build to save store space
     # extra-platforms = [ "x86_64-darwin" ];

@@ -1,5 +1,10 @@
-# overlays
+# Overlays（`overlays/`）
 
-Custom Nixpkgs overlays. Loaded by `modules/base/overlays.nix` via `import ../../overlays`.
+自定义 Nixpkgs overlays。由 `modules/base/overlays.nix` 通过 `import ../../overlays` 加载。
 
-Only `default.nix` here (loads other .nix in this dir) → effectively empty overlay list. To add an overlay: add a .nix that exports `self: super: { ... }`; default.nix picks it up.
+当前目录主要由 `default.nix` 聚合其余 `.nix` 文件（目前 overlay 列表基本为空）。
+
+## 约定
+
+- 新增 overlay：添加一个导出 `self: super: { ... }` 的 `.nix` 文件
+- `default.nix` 会自动聚合并导出

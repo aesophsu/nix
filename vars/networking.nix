@@ -2,7 +2,7 @@
 
 { lib }:
 rec {
-  # mihomo ports (match home/darwin/mihomo config). Rebuild first, then configure/start mihomo.
+  # mihomo ports (match home/darwin/services/mihomo config). Rebuild first, then configure/start mihomo.
   mihomo = {
     host = "127.0.0.1";
     httpPort = "7890";

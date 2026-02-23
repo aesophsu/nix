@@ -1,5 +1,11 @@
 { mylib, ... }:
 
+let
+  groupedDirs = [
+    ./shells
+  ];
+  topLevelModules = builtins.filter (path: !(builtins.elem path groupedDirs)) (mylib.scanPaths ./.);
+in
 {
-  imports = mylib.scanPaths ./.; # auto-import .nix files and subdirs under current directory
+  imports = topLevelModules ++ groupedDirs;
 }

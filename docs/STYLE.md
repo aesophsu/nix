@@ -1,34 +1,34 @@
-# Nix comment and config style
+# Nix 注释与配置风格
 
-Conventions for Nix in this repo; matches pre-commit (nixfmt, prettier).
+本仓库 Nix 文件的书写约定；与 pre-commit（`nixfmt`、`prettier`）保持一致。
 
-## 1. Format
+## 1. 格式
 
-- Indent: 2 spaces. Line width: 100 (nixfmt).
-- Attributes: `key = value;` with semicolon.
-- One blank line after `{ ... }:` before `{` or `let`.
+- 缩进：2 空格；行宽：100（`nixfmt`）
+- 属性：使用 `key = value;`（以分号结尾）
+- 在 `{ ... }:` 函数签名之后，进入 `{` 或 `let` 前保留 1 个空行
 
 ```nix
-# Preferred
+# 推荐
 { pkgs, ... }:
 
 {
   foo = true;
 }
 
-# Avoid: no blank after signature
+# 不推荐：签名后缺少空行
 { pkgs, ... }:
 {
   foo = true;
 }
 ```
 
-## 2. Comments
+## 2. 注释
 
-### 2.1 File header
+### 2.1 文件头注释
 
-- Multi-line `#` at top: first line = brief summary; optional detail lines.
-- One blank line between header and `{ ... }:`.
+- 文件顶部使用多行 `#` 注释；第一行给出简要摘要，后续行为补充说明（可选）
+- 文件头注释与 `{ ... }:` 之间保留 1 个空行
 
 ```nix
 # PostgreSQL 16: Nix package, data dir, and launchd service
@@ -38,10 +38,10 @@ let
   ...
 ```
 
-### 2.2 Section dividers
+### 2.2 分节线（Section Divider）
 
-- Only in long multi-section files (outputs, per-arch entrypoints, option/config modules).
-- Format: `# ===...===` (~80 chars), title line above and below.
+- 仅在较长、多段落文件中使用（如 `outputs`、架构入口、复杂模块）
+- 格式：`# ===...===`（约 80 列），标题位于分隔线之间
 
 ```nix
   # =====================================================================================
@@ -49,15 +49,20 @@ let
   # =====================================================================================
 ```
 
-### 2.3 Inline and block
+### 2.3 行内注释与块注释
 
-- Inline: `key = value; # comment` (space before `#`). Block: standalone `#` line above block, same indent.
-- Prefer English; keep terms consistent.
+- 行内：`key = value; # comment`（`#` 前保留空格）
+- 块注释：用独立 `#` 行放在代码块上方，并与代码块保持相同缩进
+- 注释语言建议以中文为主；英文术语保持一致（如 Home Manager、launchd、overlay）
 
-## 3. let / in
+## 3. `let` / `in`
 
-- Short let: no blank before `in`. Long/many bindings: blank between `let` and `in`. Optional blank after `in` before `{`.
+- 简短 `let`：`in` 前可不留空行
+- 绑定较多的 `let`：建议在 `let` 内容与 `in` 之间留空行
+- `in` 之后到 `{` 之前是否留空行可按可读性决定
 
-## 4. Other
+## 4. 其他
 
-- Lists/attrsets: nixfmt; trailing comma optional. File ends with one newline.
+- 列表/属性集遵循 `nixfmt`
+- 末尾逗号可选（以 `nixfmt` 结果为准）
+- 文件以单个换行结束

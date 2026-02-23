@@ -4,18 +4,18 @@
 
 ## 系统级包
 
-- **位置**：[modules/base/packages.nix](../modules/base/packages.nix)（及 modules/darwin 下各模块）
+- **位置**：[modules/base/system-packages.nix](../modules/base/system-packages.nix)（及 modules/darwin 下各模块）
 - **内容**：系统 CLI（git、openssl、mas、llvmPackages.openmp 等）；`environment.systemPackages`。
 
 ## 用户级包
 
-- **位置**：[home/base/core/](../home/base/core/)（CLI/语言/工具）、[home/darwin/gui.nix](../home/darwin/gui.nix)（macOS GUI）
-- **内容**：用户 CLI（eza、bat、fzf、uv、nodejs、go 等）、GUI 应用（如 google-chrome、zotero、code-cursor）、语言栈（Python 等）。
+- **位置**：[home/base/core/](../home/base/core/)（CLI/语言/工具）、[home/darwin/apps/gui.nix](../home/darwin/apps/gui.nix)（macOS GUI 层）
+- **内容**：用户 CLI（eza、bat、fzf、uv、nodejs、go 等）、语言栈（Python 等）、以及少量仍由 Nix 管理的 GUI（若有）。
 
 ## Homebrew 例外
 
-- **位置**：[modules/darwin/apps.nix](../modules/darwin/apps.nix)
-- **约定**：仅保留当前无法用 Nix 安装的 cask（例如 ChatGPT 桌面）。CLI 与其余 GUI 均以 Nix 为准；`brews = [ ]`，casks 仅列必要项。
+- **位置**：[modules/darwin/apps.nix](../modules/darwin/apps.nix)（基础 Homebrew 策略）、[modules/darwin/profiles/storage-256g-aggressive.nix](../modules/darwin/profiles/storage-256g-aggressive.nix)（256G 激进存储 profile）
+- **约定**：在 256G profile 下，重量级 GUI（如 `codex-app`、Chrome、Telegram、Zotero、Cursor）优先走 Homebrew cask，减少 Nix store 代际占用；`brews = [ ]`，casks 仅列必要项。
 
 ## Unfree 包
 

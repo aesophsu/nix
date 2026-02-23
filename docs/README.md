@@ -1,12 +1,13 @@
-# Docs
+# 文档索引
 
-Index of this repo’s documentation.
+仓库文档入口（部署、风格、软件管理与专题说明）。
 
-| Doc | Purpose |
-|-----|---------|
-| [DEPLOYMENT.md](../DEPLOYMENT.md) | Fresh macOS deploy (Nix + nix-darwin + HM; mirrors and path deps) |
-| [OPENCLAW_SETUP.md](./OPENCLAW_SETUP.md) | OpenClaw setup and usage |
-| [STYLE.md](./STYLE.md) | Nix comment and config style |
-| [PACKAGES.md](./PACKAGES.md) | 软件管理说明（系统/用户/Homebrew 例外） |
+| 文档 | 说明 |
+|---|---|
+| `DEPLOYMENT.md` | 新机部署与重建流程（Nix + nix-darwin + Home Manager） |
+| `docs/OPENCLAW_SETUP.md` | OpenClaw 配置与使用说明 |
+| `docs/STYLE.md` | Nix 注释与配置风格约定 |
+| `docs/PACKAGES.md` | 软件管理说明（系统/用户/Homebrew 例外） |
+| `README.md` | 仓库总览与架构图（模块边界 + 导入关系） |
 
-各目录说明见：lib/README、modules/README、home/README、overlays/README、vars/README、misc/certs/README，以及 home/darwin 下 mihomo/、postgresql/、openclaw/ 等子目录。
+目录说明见 `lib/README.md`、`modules/README.md`、`home/README.md`、`overlays/README.md`、`vars/README.md`、`misc/certs/README.md`，以及 `home/darwin/services/` 下各子目录说明。

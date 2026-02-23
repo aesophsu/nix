@@ -1,22 +1,22 @@
-# Fresh macOS deploy guide
+# macOS 新机部署指南
 
-MacBook Air M4 (aarch64-darwin), Determinate Nix + nix-darwin + Home Manager.
+适用于 MacBook Air M4（`aarch64-darwin`），技术栈为 Determinate Nix + nix-darwin + Home Manager。
 
-## Mainland / proxy notes
+## 代理与国内网络说明
 
 - **First deploy without proxy**: Nix uses substituter mirrors, Homebrew uses BFSU mirror. One `darwin-rebuild switch` deploys mihomo (package + launchd + config link); no separate install.
-- **mihomo via Nix**: Package, env vars, `~/.config/mihomo/config.yaml` link, launchd are in `home/darwin/mihomo/default.nix`. Prepare config in repo (step 3); launchd starts mihomo on login.
+- **mihomo via Nix**: Package, env vars, `~/.config/mihomo/config.yaml` link, launchd are in `home/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd starts mihomo on login.
 - **Path inputs**: OpenClaw deps are path inputs (no GitHub at eval). Clone them once (with proxy if needed), then deploy.
 - **brew/mas errors**: Comment out `masApps` or some taps to finish first deploy; add mihomo config, then run the same `darwin-rebuild switch` again.
 - **GitHub access** (e.g. `nix flake update`): Use mihomo sessionVariables in shell, or set `http-proxy` / `https-proxy` in `~/.config/nix/nix.conf`.
 
-## Prerequisites
+## 前提条件
 
 - Fresh macOS, user `sue` (match `vars/default.nix` `username`).
 
 ---
 
-## 0. SSH key (before clone)
+## 0. SSH Key（克隆仓库前）
 
 Generate key and add to GitHub so `git clone git@github.com:...` works.
 
@@ -41,7 +41,7 @@ ssh -T git@github.com
 
 ---
 
-## 1. Install Nix (Determinate)
+## 1. 安装 Nix（Determinate）
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
@@ -51,7 +51,7 @@ Restart terminal or `source /etc/nix/profile/nix.sh`.
 
 ---
 
-## 2. Clone config repo
+## 2. 克隆配置仓库
 
 ```bash
 mkdir -p ~/Code
@@ -62,12 +62,12 @@ cd nix
 
 ---
 
-## 3. Mihomo config (Nix deploys the rest)
+## 3. 准备 Mihomo 配置（其余由 Nix 部署）
 
 Nix (Home Manager) deploys mihomo in step 5. Prepare config in repo (subscription URL/token; do not commit secrets):
 
 ```bash
-cp home/darwin/mihomo/config.yaml.example home/darwin/mihomo/config.yaml
+cp home/darwin/services/mihomo/config.yaml.example home/darwin/services/mihomo/config.yaml
 # Edit and add subscription URL, or use config.local.yaml (higher priority, often .gitignored)
 ```
 
@@ -75,7 +75,7 @@ After step 5, launchd starts mihomo automatically.
 
 ---
 
-## 4. (Optional) OpenClaw path inputs
+## 4. （可选）准备 OpenClaw path inputs
 
 OpenClaw uses path inputs so the daemon doesn’t hit GitHub. Clone with proxy if needed (see `flake.nix`):
 
@@ -89,7 +89,7 @@ git clone https://github.com/openclaw/nix-steipete-tools ~/Code/claw/nix-steipet
 
 ---
 
-## 5. Apply system config
+## 5. 应用系统配置
 
 ```bash
 cd ~/Code/nix
@@ -102,7 +102,7 @@ First run installs nix-darwin, Home Manager, Homebrew, mihomo; mirrors allow no 
 
 ---
 
-## 6. (Optional) Mihomo UI
+## 6. （可选）安装 Mihomo UI
 
 Put UI in `~/.config/mihomo/ui/`:
 
@@ -112,13 +112,13 @@ git clone https://github.com/haishan/yacd.git ~/.config/mihomo/ui
 
 ---
 
-## 7. (Optional) vars
+## 7. （可选）修改 `vars`
 
 Edit `vars/default.nix`: `hostname`, `username`, `mainSshAuthorizedKeys`, `initialHashedPassword` (use `nix-hash --type sha512` for fresh install).
 
 ---
 
-## 8. Updates
+## 8. 后续更新
 
 ```bash
 cd ~/Code/nix
@@ -130,10 +130,10 @@ Same command for first and later runs. If mihomo config wasn’t ready at first 
 
 ---
 
-## Troubleshooting
+## 故障排查
 
-| Issue | Fix |
-|-------|-----|
+| 问题 | 处理方式 |
+|---|---|
 | `Determinate detected, aborting activation` | Expected; `nix.enable = false` is set. |
 | mihomo won’t start | Check `~/.config/mihomo/config.yaml` exists and subscription URL is correct; re-run `darwin-rebuild switch`. |
 | Homebrew install fails | Check mirrors in `modules/darwin/apps.nix`. |
@@ -143,16 +143,16 @@ Same command for first and later runs. If mihomo config wasn’t ready at first 
 
 ---
 
-## ~/ 与 ~/Code 目录约定
+## `~/` 与 `~/Code` 目录约定
 
-Purpose of top-level dirs under `~/` and how they're organized.
+说明 `~/` 顶层目录用途及整理规则。
 
-### By purpose
+### 按用途分类
 
-**System / runtime (don't touch)**
+**系统 / 运行时目录（不要随意移动）**
 
-| Dir/file | Purpose | Action |
-|----------|---------|--------|
+| 路径 | 说明 | 建议 |
+|---|---|---|
 | `.cache/` | App caches (bat, nix eval-cache) | Keep |
 | `.config/` | App config (mostly Home Manager) | Keep |
 | `.local/` | Local state (nix profile, etc.) | Keep |
@@ -160,25 +160,25 @@ Purpose of top-level dirs under `~/` and how they're organized.
 | `Library/`, `Applications/` | macOS / HM apps | Keep |
 | `Desktop/` … `Public/` | macOS user dirs | Keep |
 
-**Secrets (don't touch)**
+**Secrets（不要提交）**
 
-| Dir | Purpose |
-|-----|---------|
+| 路径 | 说明 |
+|---|---|
 | `.ssh/` | SSH keys and config |
 | `.secrets/` | Private keys / secrets |
 
-**App data (keep as needed)**
+**应用数据（按需保留）**
 
-| Dir | Purpose |
-|-----|---------|
+| 路径 | 说明 |
+|---|---|
 | `.codex/`, `.cursor/` | AI/IDE data |
 | `.openclaw/` | OpenClaw runtime |
 | `Zotero/` | Zotero library |
 
-**Config / code (under ~/Code)**
+**配置 / 代码（统一放在 `~/Code`）**
 
-| Path | Purpose |
-|------|---------|
+| 路径 | 说明 |
+|---|---|
 | **~/Code/nix** | Nix config (nix-darwin + HM); darwin-rebuild entry |
 | **~/Code/claw** | Path deps (flake-utils, nix-openclaw, nix-steipete-tools) |
 | **~/Code/nix/misc** | Non-eval assets (e.g. certs/ for PKI). |
@@ -186,28 +186,28 @@ Purpose of top-level dirs under `~/` and how they're organized.
 | **~/Code/mcp-filesystem-python** | MCP filesystem server (Python) |
 | **~/Code/openclaw_sandbox** | OpenClaw workspace (optional; was ~/openclaw_sandbox) |
 
-Config and code live under **~/Code** for backup and clarity.
+配置与代码统一放在 `~/Code`，便于备份与管理。
 
-**Go cache (keep at ~)**
+**Go 缓存（保留在 `~`）**
 
-| Path | Purpose |
-|------|---------|
+| 路径 | 说明 |
+|---|---|
 | **~/go** | Go module cache (GOPATH/GOMODCACHE). Do not move; migration breaks `go build` / `go run`. |
 
-**Backups and misc**
+**备份与杂项**
 
-| Path | Purpose |
-|------|---------|
+| 路径 | 说明 |
+|---|---|
 | **~/Code/nix/archive/** | Home Manager and other backups (e.g. `zshrc.home-manager.backup`). |
 | **~/Code/nix/misc/openclaw_research_sandbox.sb** | Sandbox profile (moved from ~). |
 
-### How it was done
+### 调整方式（已完成）
 
 - Create `~/Code`; move former `~/nix` → `~/Code/nix`, `~/claw` → `~/Code/claw`.
 - In nix: path inputs → `path:/Users/sue/Code/claw/<name>`; docs updated to ~/Code/nix, ~/Code/claw.
 - Run darwin-rebuild from `~/Code/nix`.
 
-### Notes
+### 说明
 
 - Home Manager `home.homeDirectory` is `/Users/<username>` (vars); independent of repo path.
 - Nix only needs path in flake.nix; ensure `~/Code/claw` subdirs exist.
