@@ -48,6 +48,7 @@ flowchart TD
 |---|---|
 | `docs/README.md` | 文档总索引 |
 | `DEPLOYMENT.md` | 部署流程（新机安装 / 重建） |
+| `MIGRATION.md` | 目录重构迁移说明（旧路径 -> 新路径） |
 | `modules/README.md` | 系统模块结构说明 |
 | `home/README.md` | Home Manager 结构说明 |
 | `hosts/darwin-stella/README.md` | 主机差异边界说明 |
