@@ -16,4 +16,4 @@ python3 scripts/docs/generate.py --check
 生成的 `docs/generated/checks-and-commands.md` 会按使用场景分组展示：
 - 本机 Darwin 默认 checks
 - CI / 可选 Linux checks
-- 远程 Linux 构建 NixOS ISO（`scripts/build-nixos-iso-remote.sh`）
+- 远程 Linux 构建 NixOS ISO（`scripts/iso/build-remote.sh` + `--flake-subpath nixos-installer`）

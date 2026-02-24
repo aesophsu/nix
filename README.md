@@ -65,6 +65,8 @@ flowchart TD
 | `docs/generated/modules.md` | 生成的模块与 outputs 目录索引 |
 | `docs/generated/checks-and-commands.md` | 生成的 checks 矩阵与常用命令 |
 | `docs/NIXOS_ISO_REMOTE_BUILD.md` | 从 macOS 上传到远程 Linux 构建 NixOS ISO 的流程说明 |
+| `nixos-installer/README.md` | MBP11,2 手动安装器（bootstrap 子flake）主文档 |
+| `secrets/README.md` | agenix secrets 接口层说明（双模式） |
 | `DEPLOYMENT.md` | 部署流程（新机安装 / 重建） |
 | `MIGRATION.md` | 目录重构迁移说明（旧路径 -> 新路径） |
 | `modules/README.md` | 系统模块结构说明 |
@@ -75,6 +77,12 @@ flowchart TD
 
 ```bash
 darwin-rebuild switch --flake /Users/sue/Code/nix#stella
+```
+
+也可以使用统一任务入口：
+
+```bash
+just --list
 ```
 
 说明：本仓库大量使用 flake + Git 跟踪文件。新增目录或重命名文件后，请先 `git add`，否则 `.#stella` 评估可能看不到新文件。
@@ -100,13 +108,18 @@ nix build --no-link .#checks.x86_64-linux.docs-sync
 nix build --no-link .#checks.x86_64-linux.pre-commit
 ```
 
-## 远程 Linux 构建 NixOS ISO（推荐路径）
+## 远程 Linux 构建 NixOS ISO（推荐路径，bootstrap 子flake）
 
 ```bash
-scripts/build-nixos-iso-remote.sh \
+scripts/iso/build-remote.sh \
   --host <ssh-host> \
   --remote-dir <remote-dir> \
+  --flake-subpath nixos-installer \
   --iso shaka-manual-installer-iso
 ```
 
-说明：本仓库默认不再依赖本机 `nix build` 透明派发到远程 builder。ISO 构建改为显式上传到远程 Linux 执行，详见 `docs/NIXOS_ISO_REMOTE_BUILD.md`。
+说明：
+
+- installer ISO 现由 `nixos-installer/` 子flake 提供（bootstrap 入口）
+- 主仓库 flake 聚焦最终系统配置与用户环境
+- 详见 `docs/NIXOS_ISO_REMOTE_BUILD.md` 与 `nixos-installer/README.md`

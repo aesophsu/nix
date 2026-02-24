@@ -24,7 +24,7 @@
        Then:             install-shaka --run
 
     Full guide:
-      /etc/nixos/flake/docs/NIXOS_SHAKA_INSTALL_MBP112.md
+      /etc/nixos/flake/nixos-installer/README.md
   '';
 
   programs.bash.promptInit = ''

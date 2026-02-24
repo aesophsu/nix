@@ -18,3 +18,7 @@ home/darwin/services/mihomo/config.yaml
 scripts/docs/__pycache__/
 archive/iso-out/
 scripts/build-nixos-iso-remote.env.local
+nixos-installer/result
+nixos-installer/result-*
+secrets/local/*
+!secrets/local/.gitkeep

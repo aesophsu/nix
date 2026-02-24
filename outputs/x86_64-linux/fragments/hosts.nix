@@ -22,7 +22,11 @@ let
 
       config = lib.nixosSystem {
         inherit system;
-        specialArgs = args;
+        specialArgs =
+          (genSpecialArgs system)
+          // {
+            inherit hostRegistry genSpecialArgs;
+          };
         modules = extraModules ++ [ (mylib.relativeToRoot host.hostPath) ];
       };
 

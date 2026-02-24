@@ -16,20 +16,15 @@ in
         "primary"
         "macbook-air-m4"
       ];
-      enabled = true;
-    }
-
-    {
-      name = "shaka-manual-installer";
-      platform = "nixos";
-      system = "x86_64-linux";
-      hostPath = "hosts/nixos-shaka-installer";
-      kind = "installer";
-      roles = [ "installer" ];
-      isoPackageAliases = [
-        "macbookpro11-2-manual-installer-iso"
-        "shaka-manual-installer-iso"
-      ];
+      deploy = {
+        method = "darwin-rebuild";
+        target = "local";
+      };
+      secrets = {
+        enabled = true;
+        profile = "darwin-stella";
+        hmAgeIdentityPath = "/Users/${myvars.username}/.ssh/${darwinPrimary}";
+      };
       enabled = true;
     }
 
@@ -39,6 +34,18 @@ in
       system = "x86_64-linux";
       hostPath = "hosts/nixos-shaka";
       roles = [ "desktop" ];
+      deploy = {
+        method = "manual-installer";
+        target = "local";
+      };
+      secrets = {
+        enabled = true;
+        profile = "nixos-shaka";
+      };
+      bootstrap = {
+        installerFlake = "nixos-installer";
+        installerProfile = "shaka-manual-installer-iso";
+      };
       enabled = true;
     }
   ];

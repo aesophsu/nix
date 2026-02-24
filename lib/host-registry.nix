@@ -4,6 +4,7 @@ let
   isNonEmptyString = v: builtins.isString v && v != "";
   isStringList = v: builtins.isList v && builtins.all builtins.isString v;
   isBool = v: builtins.isBool v;
+  isAttrs = builtins.isAttrs;
 
   ensure = cond: msg: if cond then true else throw "host-registry: ${msg}";
 
@@ -42,6 +43,9 @@ let
         (ensureOptional isStringList "a list of strings" host "roles")
         (ensureOptional isStringList "a list of strings" host "tags")
         (ensureOptional isStringList "a list of strings" host "isoPackageAliases")
+        (ensureOptional isAttrs "an attrset" host "deploy")
+        (ensureOptional isAttrs "an attrset" host "secrets")
+        (ensureOptional isAttrs "an attrset" host "bootstrap")
         (ensureOptional isBool "a bool" host "enabled")
         (
           ensure (
@@ -54,6 +58,63 @@ let
         (
           if (host.kind or "") == "installer" then
             ensure (host.platform == "nixos") "installer host '${host.name}' must use platform=nixos"
+          else
+            true
+        )
+        (
+          if host ? deploy then
+            let
+              d = host.deploy;
+            in
+            builtins.deepSeq [
+              (ensure (builtins.elem (d.method or "") [ "darwin-rebuild" "nixos-rebuild" "manual-installer" ]) "host '${host.name}' deploy.method invalid")
+              (ensure (builtins.elem (d.target or "") [ "local" "ssh" ]) "host '${host.name}' deploy.target invalid")
+              (
+                if (d.target or "") == "ssh" then
+                  ensure (isNonEmptyString (d.sshHost or "")) "host '${host.name}' deploy.sshHost required when deploy.target=ssh"
+                else
+                  true
+              )
+              (if d ? sshUser then ensure (isNonEmptyString d.sshUser) "host '${host.name}' deploy.sshUser must be a non-empty string" else true)
+            ] true
+          else
+            true
+        )
+        (
+          if host ? secrets then
+            let
+              s = host.secrets;
+            in
+            builtins.deepSeq [
+              (if s ? enabled then ensure (isBool s.enabled) "host '${host.name}' secrets.enabled must be a bool" else true)
+              (
+                if (s.enabled or false) then
+                  ensure (isNonEmptyString (s.profile or "")) "host '${host.name}' secrets.profile required when secrets.enabled=true"
+                else if s ? profile then
+                  ensure (isNonEmptyString s.profile) "host '${host.name}' secrets.profile must be a non-empty string"
+                else
+                  true
+              )
+              (
+                if s ? hmAgeIdentityPath then
+                  ensure (isNonEmptyString s.hmAgeIdentityPath) "host '${host.name}' secrets.hmAgeIdentityPath must be a non-empty string"
+                else
+                  true
+              )
+            ] true
+          else
+            true
+        )
+        (
+          if host ? bootstrap then
+            let
+              b = host.bootstrap;
+            in
+            builtins.deepSeq [
+              (ensure (host.platform == "nixos") "host '${host.name}' bootstrap metadata is only valid for platform=nixos")
+              (ensure (isNonEmptyString (b.installerFlake or "")) "host '${host.name}' bootstrap.installerFlake required")
+              (ensure (isNonEmptyString (b.installerProfile or "")) "host '${host.name}' bootstrap.installerProfile required")
+            ] true
           else
             true
         )

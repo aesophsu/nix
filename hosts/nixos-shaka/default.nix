@@ -44,6 +44,7 @@ in
     ./modules/common/network-core.nix
     ./modules/common/network-mbp11-2-stability.nix
     ./modules/common/networkmanager-default-wifi.nix
+    ../../secrets/nixos.nix
     ./modules/common/power-and-runtime.nix
     ./modules/common/gui-core.nix
     ./modules/common/user-login-core.nix

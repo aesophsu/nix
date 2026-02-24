@@ -44,7 +44,7 @@ let
       Install target: #shaka
 
     Read the full guide:
-      /etc/nixos/flake/docs/NIXOS_SHAKA_INSTALL_MBP112.md
+      /etc/nixos/flake/nixos-installer/README.md
 
     Safety:
       - All destructive commands are shown as examples only.

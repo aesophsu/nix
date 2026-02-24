@@ -104,6 +104,10 @@ def build_architecture_md(inventory: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
+            "## Bootstrap Flakes",
+            "",
+            "- `nixos-installer/` (manual installer ISO subflake for MacBookPro11,2 / shaka)",
+            "",
             "## Generated Docs",
             "",
             "- `docs/generated/hosts.md`",
@@ -119,6 +123,16 @@ def build_hosts_md(inventory: dict[str, Any]) -> str:
     hosts = inventory.get("hosts", [])
     rows: list[list[str]] = []
     for host in sorted(hosts, key=lambda h: (h.get("platform", ""), h.get("name", ""))):
+        deploy = host.get("deploy", {}) if isinstance(host.get("deploy"), dict) else {}
+        secrets = host.get("secrets", {}) if isinstance(host.get("secrets"), dict) else {}
+        bootstrap = host.get("bootstrap", {}) if isinstance(host.get("bootstrap"), dict) else {}
+        installer_flake = str(bootstrap.get("installerFlake", ""))
+        installer_profile = str(bootstrap.get("installerProfile", ""))
+        bootstrap_installer = (
+            f"{installer_flake}#{installer_profile}"
+            if installer_flake and installer_profile
+            else installer_flake or installer_profile
+        )
         rows.append(
             [
                 str(host.get("name", "")),
@@ -130,6 +144,10 @@ def build_hosts_md(inventory: dict[str, Any]) -> str:
                 str(host.get("homePath", "")),
                 format_list(host.get("roles", [])),
                 format_list(host.get("tags", [])),
+                str(deploy.get("method", "")),
+                str(deploy.get("target", "")),
+                str(secrets.get("profile", "")),
+                bootstrap_installer,
             ]
         )
 
@@ -140,7 +158,21 @@ def build_hosts_md(inventory: dict[str, Any]) -> str:
             "This file is generated from `.#docInventory` (which is backed by `hosts/registry.nix`).",
             "",
             markdown_table(
-                ["name", "platform", "system", "kind", "enabled", "hostPath", "homePath", "roles", "tags"],
+                [
+                    "name",
+                    "platform",
+                    "system",
+                    "kind",
+                    "enabled",
+                    "hostPath",
+                    "homePath",
+                    "roles",
+                    "tags",
+                    "deployMethod",
+                    "deployTarget",
+                    "secretsProfile",
+                    "bootstrapInstaller",
+                ],
                 rows,
             ),
             "",
@@ -158,6 +190,8 @@ def build_modules_md() -> str:
         ("Output Fragments (darwin)", REPO_ROOT / "outputs" / "aarch64-darwin" / "fragments"),
         ("Output Fragments (nixos)", REPO_ROOT / "outputs" / "x86_64-linux" / "fragments"),
         ("Output Helpers", REPO_ROOT / "outputs" / "lib"),
+        ("Secrets Interface", REPO_ROOT / "secrets"),
+        ("Installer Modules (bootstrap flake)", REPO_ROOT / "nixos-installer" / "modules"),
     ]
     lines = [
         "# Generated Module and Output Index",
@@ -192,8 +226,8 @@ def build_checks_md(inventory: dict[str, Any]) -> str:
         "nix build --no-link .#checks.x86_64-linux.pre-commit",
     ]
     remote_iso_build = [
-        "scripts/build-nixos-iso-remote.sh --host <ssh-host> --remote-dir <remote-dir> --iso shaka-manual-installer-iso",
-        "scripts/build-nixos-iso-remote.sh --dry-run --host <ssh-host> --remote-dir <remote-dir>",
+        "scripts/iso/build-remote.sh --host <ssh-host> --remote-dir <remote-dir> --flake-subpath nixos-installer --iso shaka-manual-installer-iso",
+        "scripts/iso/build-remote.sh --dry-run --host <ssh-host> --remote-dir <remote-dir> --flake-subpath nixos-installer",
     ]
 
     lines = [
@@ -262,7 +296,11 @@ def extract_relative_path_tokens(markdown_text: str) -> list[str]:
             "lib/",
             "vars/",
             "misc/",
+            "secrets/",
+            "nixos-installer/",
             ".github/",
+            "Justfile",
+            "utils.nu",
             "README.md",
             "DEPLOYMENT.md",
             "MIGRATION.md",

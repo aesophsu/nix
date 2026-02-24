@@ -1,6 +1,6 @@
 # 远程 Linux 构建 NixOS ISO（macOS 上传工作区）
 
-适用于在 macOS（当前主机 `stella`）上维护 flake，但将 `x86_64-linux` 的 NixOS manual installer ISO 构建放到远程 Linux 主机执行。
+适用于在 macOS（当前主机 `stella`）上维护仓库根 flake，但将 `x86_64-linux` 的 NixOS manual installer ISO（由 `nixos-installer/` 子flake提供）构建放到远程 Linux 主机执行。
 
 ## 背景（为何改为显式远程构建）
 
@@ -19,7 +19,7 @@
 ## 适用场景
 
 - 在 macOS 上维护 `/Users/sue/Code/nix`
-- 构建 `packages.x86_64-linux.<isoAlias>`（例如 `shaka-manual-installer-iso`）
+- 构建 `nixos-installer#packages.x86_64-linux.<isoAlias>`（例如 `shaka-manual-installer-iso`）
 - 远程 Linux 主机具备 `nix`、`rsync`、`bash`、SSH 访问能力
 
 ## 前置条件
@@ -70,26 +70,29 @@ NIX_ISO_REMOTE_DIR="/srv/nix-iso-build"
 ### 先看 dry-run（推荐）
 
 ```bash
-scripts/build-nixos-iso-remote.sh --dry-run \
+scripts/iso/build-remote.sh --dry-run \
   --host <ssh-host> \
-  --remote-dir <remote-dir>
+  --remote-dir <remote-dir> \
+  --flake-subpath nixos-installer
 ```
 
 ### 实际构建（默认 ISO：`shaka-manual-installer-iso`）
 
 ```bash
-scripts/build-nixos-iso-remote.sh \
+scripts/iso/build-remote.sh \
   --host <ssh-host> \
   --remote-dir <remote-dir> \
+  --flake-subpath nixos-installer \
   --iso shaka-manual-installer-iso
 ```
 
 ### 保留远端工作目录（便于排错）
 
 ```bash
-scripts/build-nixos-iso-remote.sh \
+scripts/iso/build-remote.sh \
   --host <ssh-host> \
   --remote-dir <remote-dir> \
+  --flake-subpath nixos-installer \
   --keep-remote
 ```
 
@@ -128,7 +131,13 @@ scripts/build-nixos-iso-remote.sh \
 
 ### 3) ISO alias 不存在
 
-脚本会在本地先校验 flake 输出别名（例如 `shaka-manual-installer-iso`、`macbookpro11-2-manual-installer-iso`）。
+脚本会在本地先校验指定 `--flake-subpath` 下的 flake 输出别名（例如 `shaka-manual-installer-iso`、`macbookpro11-2-manual-installer-iso`）。
+
+## 兼容入口（过渡期）
+
+旧脚本 `scripts/build-nixos-iso-remote.sh` 仍可使用，但会打印弃用提示，并默认追加：
+
+- `--flake-subpath nixos-installer`
 
 ### 4) 下载失败
 

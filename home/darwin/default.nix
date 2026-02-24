@@ -11,6 +11,7 @@
     extraImports = [
       ../base/core
       ../base/home.nix
+      ../../secrets/home-manager.nix
     ];
   };
 }

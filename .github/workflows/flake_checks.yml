@@ -4,15 +4,9 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "**.nu"
-      - "Justfile"
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - "**.nu"
-      - "Justfile"
 
 jobs:
   checks:
@@ -41,5 +35,12 @@ jobs:
           nix build --no-link .#checks.x86_64-linux.docs-sync
           nix build --no-link .#checks.x86_64-linux.pre-commit
 
+          echo 'Bootstrap installer subflake checks (eval only)'
+          nix flake check --no-build ./nixos-installer
+          nix eval --raw ./nixos-installer#packages.x86_64-linux.shaka-manual-installer-iso.outPath > /dev/null
+
           echo 'docInventory'
           nix eval --json .#docInventory > /dev/null
+
+          echo 'tracked secret audit'
+          bash ./scripts/security/audit-secrets.sh

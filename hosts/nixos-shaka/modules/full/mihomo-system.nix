@@ -1,4 +1,9 @@
-{ lib, pkgs, shaka, ... }:
+{ config, lib, pkgs, shaka, ... }:
+let
+  hasAgeMihomoConfig = lib.hasAttrByPath [ "age" "secrets" "shaka-mihomo-config" "path" ] config;
+  mihomoConfigFile =
+    if hasAgeMihomoConfig then config.age.secrets."shaka-mihomo-config".path else shaka.mihomo.configSource;
+in
 {
   networking.firewall.allowedTCPPorts = [
     (lib.toInt shaka.mihomo.vars.httpPort)
@@ -10,7 +15,7 @@
 
   services.mihomo = {
     enable = true;
-    configFile = shaka.mihomo.configSource;
+    configFile = mihomoConfigFile;
     webui = pkgs.metacubexd;
     tunMode = true;
   };
@@ -35,10 +40,11 @@
     "shaka/mihomo/README.md".text = ''
       Mihomo (system service) config path priority on Shaka:
 
-      1. /etc/nixos/local/mihomo/config.yaml    (recommended, not in git / not in nix store)
-      2. hosts/nixos-shaka/mihomo.config.local.yaml
-      3. hosts/nixos-shaka/mihomo.config.yaml
-      4. bundled example template
+      1. agenix secret (if enabled for host `shaka`)
+      2. /etc/nixos/local/mihomo/config.yaml    (recommended fallback, not in git / not in nix store)
+      3. hosts/nixos-shaka/mihomo.config.local.yaml
+      4. hosts/nixos-shaka/mihomo.config.yaml
+      5. bundled example template
 
       Recommended workflow (clash.meta / mihomo style):
       - Copy /etc/shaka/mihomo/config.yaml.example -> /etc/nixos/local/mihomo/config.yaml

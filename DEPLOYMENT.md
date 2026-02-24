@@ -123,14 +123,15 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 
 ### 可选：从 macOS 上传到远程 Linux 构建 NixOS ISO（推荐）
 
-本仓库不再推荐依赖本机 `nix build` 透明派发到远程 builder。请使用显式上传 + 远程构建 + 自动回传 ISO 的脚本：
+本仓库不再推荐依赖本机 `nix build` 透明派发到远程 builder。请使用显式上传 + 远程构建 + 自动回传 ISO 的脚本（bootstrap 子flake）：
 
 ```bash
 cd ~/Code/nix
-scripts/build-nixos-iso-remote.sh \
+scripts/iso/build-remote.sh \
   --host <ssh-host> \
   --remote-dir <remote-dir> \
-  --iso shaka-installer-iso
+  --flake-subpath nixos-installer \
+  --iso shaka-manual-installer-iso
 ```
 
 详见 `docs/NIXOS_ISO_REMOTE_BUILD.md`（参数、env.local、故障排查、产物路径）。
@@ -218,4 +219,4 @@ scripts/build-nixos-iso-remote.sh \
 - `hosts/registry.nix` 是主机清单单一来源（SSOT），驱动 `outputs/*/fragments/hosts.nix` 与 `outputs/*/tests/default.nix`。
 - `outputs/aarch64-darwin/fragments/hosts.nix` 与 `outputs/x86_64-linux/fragments/hosts.nix` 都是通用 host loader（不再使用单主机 loader 文件）。
 - `checks.<system>.smoke-eval` / `checks.<system>.docs-sync` / `checks.<system>.pre-commit` 为统一检查命名。
-- 从 macOS 构建 NixOS ISO 的推荐路径是 `scripts/build-nixos-iso-remote.sh`（上传到远程 Linux 构建并回传）。
+- 从 macOS 构建 NixOS ISO 的推荐路径是 `scripts/iso/build-remote.sh --flake-subpath nixos-installer`。
