@@ -397,11 +397,17 @@ fi
 stage_end "upload"
 
 stage_start "build"
+REMOTE_NIX_BUILD_CMD="nix build --print-out-paths \".#packages.x86_64-linux.${ISO_ALIAS}\""
+# `nixos-installer` is a subflake that needs access to the uploaded repo root for `rootSrc`.
+# In pure eval, `path:..` inside the subflake can otherwise resolve to `/nix/store` after source copy.
+if [[ "${FLAKE_SUBPATH}" != "." ]]; then
+  REMOTE_NIX_BUILD_CMD="nix build --override-input rootSrc $(quote_sh "path:${REMOTE_RUN_DIR}") --print-out-paths \".#packages.x86_64-linux.${ISO_ALIAS}\""
+fi
 REMOTE_BUILD_CMD=$(
   cat <<EOF
 set -euo pipefail
 cd $(quote_sh "${REMOTE_BUILD_DIR}")
-nix build --print-out-paths ".#packages.x86_64-linux.${ISO_ALIAS}" > $(quote_sh "${REMOTE_BUILD_OUTPATH_FILE}")
+${REMOTE_NIX_BUILD_CMD} > $(quote_sh "${REMOTE_BUILD_OUTPATH_FILE}")
 EOF
 )
 
