@@ -20,15 +20,15 @@ in
     }
 
     {
-      name = "shaka-installer";
+      name = "shaka-manual-installer";
       platform = "nixos";
       system = "x86_64-linux";
       hostPath = "hosts/nixos-shaka-installer";
       kind = "installer";
       roles = [ "installer" ];
       isoPackageAliases = [
-        "macbookpro11-2-installer-iso"
-        "shaka-installer-iso"
+        "macbookpro11-2-manual-installer-iso"
+        "shaka-manual-installer-iso"
       ];
       enabled = true;
     }

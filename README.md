@@ -64,6 +64,7 @@ flowchart TD
 | `docs/generated/hosts.md` | 生成的主机注册表清单（来自 `.#docInventory`） |
 | `docs/generated/modules.md` | 生成的模块与 outputs 目录索引 |
 | `docs/generated/checks-and-commands.md` | 生成的 checks 矩阵与常用命令 |
+| `docs/NIXOS_ISO_REMOTE_BUILD.md` | 从 macOS 上传到远程 Linux 构建 NixOS ISO 的流程说明 |
 | `DEPLOYMENT.md` | 部署流程（新机安装 / 重建） |
 | `MIGRATION.md` | 目录重构迁移说明（旧路径 -> 新路径） |
 | `modules/README.md` | 系统模块结构说明 |
@@ -84,17 +85,28 @@ darwin-rebuild switch --flake /Users/sue/Code/nix#stella
 # 只做评估检查（不构建系统）
 nix flake check --no-build
 
-# Smoke eval checks（Darwin / NixOS）
+# 本机 Darwin 常用 checks
 nix build --no-link .#checks.aarch64-darwin.smoke-eval
-nix build --no-link .#checks.x86_64-linux.smoke-eval
-
-# Docs sync
 nix build --no-link .#checks.aarch64-darwin.docs-sync
+nix build --no-link .#checks.aarch64-darwin.pre-commit
 
 # Doc inventory / generated docs
 nix eval --json .#docInventory
 python3 scripts/docs/generate.py --write
 
-# Pre-commit checks（如该系统受支持）
-nix build --no-link .#checks.aarch64-darwin.pre-commit
+# CI / 可选 Linux checks（通常交给 CI 或远程 Linux）
+nix build --no-link .#checks.x86_64-linux.smoke-eval
+nix build --no-link .#checks.x86_64-linux.docs-sync
+nix build --no-link .#checks.x86_64-linux.pre-commit
 ```
+
+## 远程 Linux 构建 NixOS ISO（推荐路径）
+
+```bash
+scripts/build-nixos-iso-remote.sh \
+  --host <ssh-host> \
+  --remote-dir <remote-dir> \
+  --iso shaka-manual-installer-iso
+```
+
+说明：本仓库默认不再依赖本机 `nix build` 透明派发到远程 builder。ISO 构建改为显式上传到远程 Linux 执行，详见 `docs/NIXOS_ISO_REMOTE_BUILD.md`。

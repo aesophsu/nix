@@ -2,7 +2,9 @@
 {
   imports = [
     ./modules/base.nix
-    ./modules/auto-install.nix
+    ./modules/hardware-mbp112.nix
+    ./modules/install-helper.nix
+    ./modules/ui-tty.nix
   ];
 
   system.stateVersion = "24.11";

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Upload current working tree to a remote Linux host, build a NixOS installer ISO there,
+# Upload current working tree to a remote Linux host, build a NixOS manual installer ISO there,
 # then download the ISO back to this machine.
 #
 # See docs/NIXOS_ISO_REMOTE_BUILD.md for details.
@@ -12,7 +12,7 @@ REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 ENV_LOCAL="${SCRIPT_DIR}/build-nixos-iso-remote.env.local"
 
 # Fixed defaults (CLI flags override env overrides these defaults)
-DEFAULT_ISO_ALIAS="shaka-installer-iso"
+DEFAULT_ISO_ALIAS="shaka-manual-installer-iso"
 DEFAULT_LOCAL_OUT_DIR="${REPO_ROOT}/archive/iso-out"
 DEFAULT_FLAKE_SUBPATH="."
 
@@ -28,6 +28,11 @@ LOCAL_OUT_DIR="${NIX_ISO_LOCAL_OUT_DIR:-${DEFAULT_LOCAL_OUT_DIR}}"
 FLAKE_SUBPATH="${NIX_ISO_FLAKE_SUBPATH:-${DEFAULT_FLAKE_SUBPATH}}"
 NIX_ISO_SSH_OPTS="${NIX_ISO_SSH_OPTS:-}"
 KEEP_REMOTE="${NIX_ISO_KEEP_REMOTE:-0}"
+SSH_CONNECT_TIMEOUT="${NIX_ISO_SSH_CONNECT_TIMEOUT:-15}"
+REMOTE_BUILD_TIMEOUT="${NIX_ISO_REMOTE_BUILD_TIMEOUT:-7200}"
+RSYNC_IO_TIMEOUT="${NIX_ISO_RSYNC_IO_TIMEOUT:-60}"
+RSYNC_CONNECT_TIMEOUT="${NIX_ISO_RSYNC_CONNECT_TIMEOUT:-15}"
+STAGE_LOG_TIMESTAMPS="${NIX_ISO_STAGE_LOG_TIMESTAMPS:-1}"
 
 DRY_RUN=0
 VERBOSE=0
@@ -37,7 +42,11 @@ RUN_ID=""
 REMOTE_RUN_DIR=""
 REMOTE_BUILD_DIR=""
 REMOTE_STORE_PATH=""
+REMOTE_DOWNLOAD_PATH=""
+REMOTE_BUILD_OUTPATH_FILE=""
 LOCAL_ISO_PATH=""
+DOWNLOAD_METHOD=""
+STAGE_STARTED_AT=0
 
 usage() {
   cat <<'EOF'
@@ -49,7 +58,7 @@ Required (flag or env):
   --remote-dir <path>       Remote workspace root directory
 
 Options:
-  --iso <alias>             Flake ISO package alias (default: shaka-installer-iso)
+  --iso <alias>             Flake ISO package alias (default: shaka-manual-installer-iso)
   --local-out-dir <path>    Local output dir for downloaded ISOs (default: archive/iso-out)
   --flake-subpath <path>    Relative subpath under uploaded repo to build from (default: .)
   --keep-remote             Keep remote run directory after success
@@ -87,6 +96,106 @@ debug() {
   fi
 }
 
+stage_start() {
+  local name="$1"
+  CURRENT_STAGE="${name}"
+  STAGE_STARTED_AT="$(date +%s)"
+  log "Stage start: ${name}"
+}
+
+stage_end() {
+  local name="$1"
+  if [[ "${STAGE_LOG_TIMESTAMPS}" == "1" && -n "${STAGE_STARTED_AT}" ]]; then
+    local now elapsed
+    now="$(date +%s)"
+    elapsed=$(( now - STAGE_STARTED_AT ))
+    log "Stage done: ${name} (${elapsed}s)"
+  else
+    log "Stage done: ${name}"
+  fi
+}
+
+run_with_timeout() {
+  local timeout_s="$1"
+  shift
+  local cmd_pid watchdog_pid status=0
+
+  "$@" &
+  cmd_pid=$!
+
+  (
+    sleep "${timeout_s}"
+    if kill -0 "${cmd_pid}" >/dev/null 2>&1; then
+      warn "build stage timeout after ${timeout_s}s; terminating process ${cmd_pid}"
+      kill "${cmd_pid}" >/dev/null 2>&1 || true
+      sleep 2
+      kill -9 "${cmd_pid}" >/dev/null 2>&1 || true
+    fi
+  ) &
+  watchdog_pid=$!
+
+  wait "${cmd_pid}" || status=$?
+  kill "${watchdog_pid}" >/dev/null 2>&1 || true
+  wait "${watchdog_pid}" 2>/dev/null || true
+
+  return "${status}"
+}
+
+download_iso_with_fallback() {
+  local rsync_exit_code=0
+
+  RSYNC_DOWNLOAD_CMD=(
+    rsync -avP
+    --timeout "${RSYNC_IO_TIMEOUT}"
+    -e "${RSYNC_RSH}"
+    "${REMOTE_HOST}:${REMOTE_DOWNLOAD_PATH}"
+    "${LOCAL_ISO_PATH}"
+  )
+  if rsync --help 2>&1 | rg -q -- '--contimeout'; then
+    RSYNC_DOWNLOAD_CMD=(rsync -avP --timeout "${RSYNC_IO_TIMEOUT}" --contimeout "${RSYNC_CONNECT_TIMEOUT}" -e "${RSYNC_RSH}" "${REMOTE_HOST}:${REMOTE_DOWNLOAD_PATH}" "${LOCAL_ISO_PATH}")
+  fi
+
+  if [[ "${DRY_RUN}" == "1" ]]; then
+    printf '[dry-run] mkdir -p %q\n' "${LOCAL_OUT_DIR}"
+    print_cmd_array "[dry-run]" "${RSYNC_DOWNLOAD_CMD[@]}"
+    printf '[dry-run] fallback: scp -o BatchMode=yes %q %q (if rsync fails)\n' \
+      "${REMOTE_HOST}:${REMOTE_DOWNLOAD_PATH}" "${LOCAL_ISO_PATH}"
+    DOWNLOAD_METHOD="rsync"
+    return 0
+  fi
+
+  mkdir -p "${LOCAL_OUT_DIR}"
+
+  if [[ "${NIX_ISO_TEST_FORCE_RSYNC_FAIL:-0}" == "1" ]]; then
+    rsync_exit_code=12
+    warn "rsync download failed (exit=${rsync_exit_code}), falling back to scp"
+    rm -f "${LOCAL_ISO_PATH}" || true
+    if "${SCP_BASE[@]}" "${REMOTE_HOST}:${REMOTE_DOWNLOAD_PATH}" "${LOCAL_ISO_PATH}"; then
+      DOWNLOAD_METHOD="scp"
+      return 0
+    fi
+    die "Download failed via forced rsync failure test and scp fallback"
+  fi
+
+  if "${RSYNC_DOWNLOAD_CMD[@]}"; then
+    DOWNLOAD_METHOD="rsync"
+  else
+    rsync_exit_code=$?
+    warn "rsync download failed (exit=${rsync_exit_code}), falling back to scp"
+
+    # Clean up any partial file before retrying with scp.
+    rm -f "${LOCAL_ISO_PATH}" || true
+
+    if "${SCP_BASE[@]}" "${REMOTE_HOST}:${REMOTE_DOWNLOAD_PATH}" "${LOCAL_ISO_PATH}"; then
+      DOWNLOAD_METHOD="scp"
+    else
+      die "Download failed via rsync (exit=${rsync_exit_code}) and scp fallback"
+    fi
+  fi
+  [[ -f "${LOCAL_ISO_PATH}" ]] || die "Downloaded path is not a regular file: ${LOCAL_ISO_PATH}"
+  return 0
+}
+
 quote_sh() {
   printf '%q' "$1"
 }
@@ -96,6 +205,9 @@ on_error() {
   printf '[iso-remote][error] Stage failed: %s (exit=%s)\n' "${CURRENT_STAGE}" "${exit_code}" >&2
   if [[ -n "${REMOTE_RUN_DIR}" ]]; then
     printf '[iso-remote][error] Remote run dir kept for debugging: %s\n' "${REMOTE_RUN_DIR}" >&2
+  fi
+  if [[ -n "${REMOTE_BUILD_OUTPATH_FILE}" ]]; then
+    printf '[iso-remote][error] Remote build outpath file: %s\n' "${REMOTE_BUILD_OUTPATH_FILE}" >&2
   fi
   exit "${exit_code}"
 }
@@ -181,6 +293,7 @@ TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 RUN_ID="${TIMESTAMP}-${COMMIT_SHORT}-${DIRTY_STATE}"
 REMOTE_RUN_DIR="${REMOTE_DIR%/}/runs/${RUN_ID}"
 REMOTE_BUILD_DIR="${REMOTE_RUN_DIR}/${FLAKE_SUBPATH}"
+REMOTE_BUILD_OUTPATH_FILE="${REMOTE_RUN_DIR}/.codex-build-outpath.txt"
 LOCAL_ISO_PATH="${LOCAL_OUT_DIR%/}/${ISO_ALIAS}-${RUN_ID}.iso"
 
 CURRENT_STAGE="validate-iso-alias"
@@ -190,11 +303,20 @@ if ! nix eval --raw ".#packages.x86_64-linux.${ISO_ALIAS}.outPath" >/dev/null 2>
 fi
 
 read -r -a SSH_OPTS_ARR <<< "${NIX_ISO_SSH_OPTS}"
-SSH_BASE=(ssh "${SSH_OPTS_ARR[@]}")
+SSH_COMMON_OPTS=(
+  -o BatchMode=yes
+  -o ConnectTimeout="${SSH_CONNECT_TIMEOUT}"
+  -o ServerAliveInterval=15
+  -o ServerAliveCountMax=4
+  -o RequestTTY=no
+)
+SSH_BASE=(ssh -n -T "${SSH_COMMON_OPTS[@]}" "${SSH_OPTS_ARR[@]}")
+REMOTE_BASH_LC=(bash --noprofile --norc -lc)
 RSYNC_RSH="ssh"
 if [[ -n "${NIX_ISO_SSH_OPTS}" ]]; then
   RSYNC_RSH="ssh ${NIX_ISO_SSH_OPTS}"
 fi
+SCP_BASE=(scp "${SSH_COMMON_OPTS[@]}" "${SSH_OPTS_ARR[@]}")
 
 ssh_run() {
   "${SSH_BASE[@]}" "${REMOTE_HOST}" "$@"
@@ -227,13 +349,14 @@ log "Commit: ${COMMIT_SHORT} (${DIRTY_STATE})"
 log "Local output path: ${LOCAL_ISO_PATH}"
 debug "flake-subpath=${FLAKE_SUBPATH}"
 
-CURRENT_STAGE="preflight-remote"
+stage_start "preflight-remote"
 REMOTE_PREFLIGHT_CMD="command -v bash >/dev/null && command -v rsync >/dev/null && command -v nix >/dev/null"
 if [[ "${DRY_RUN}" == "1" ]]; then
-  printf '[dry-run] ssh %s bash -lc %q\n' "${REMOTE_HOST}" "${REMOTE_PREFLIGHT_CMD}"
+  printf '[dry-run] ssh %s bash --noprofile --norc -lc %q\n' "${REMOTE_HOST}" "${REMOTE_PREFLIGHT_CMD}"
 else
-  ssh_run bash -lc "${REMOTE_PREFLIGHT_CMD}" >/dev/null
+  ssh_run "${REMOTE_BASH_LC[@]}" "${REMOTE_PREFLIGHT_CMD}" >/dev/null
 fi
+stage_end "preflight-remote"
 
 RSYNC_EXCLUDES=(
   ".git/"
@@ -245,11 +368,15 @@ RSYNC_EXCLUDES=(
   ".DS_Store"
 )
 
-CURRENT_STAGE="upload"
+stage_start "upload"
 RSYNC_UPLOAD_CMD=(
   rsync -a
+  --timeout "${RSYNC_IO_TIMEOUT}"
   -e "${RSYNC_RSH}"
 )
+if rsync --help 2>&1 | rg -q -- '--contimeout'; then
+  RSYNC_UPLOAD_CMD=(rsync -a --timeout "${RSYNC_IO_TIMEOUT}" --contimeout "${RSYNC_CONNECT_TIMEOUT}" -e "${RSYNC_RSH}")
+fi
 for pat in "${RSYNC_EXCLUDES[@]}"; do
   RSYNC_UPLOAD_CMD+=(--exclude "${pat}")
 done
@@ -264,26 +391,42 @@ else
   ssh_run mkdir -p "${REMOTE_RUN_DIR}"
   "${RSYNC_UPLOAD_CMD[@]}"
 fi
+stage_end "upload"
 
-CURRENT_STAGE="build"
+stage_start "build"
 REMOTE_BUILD_CMD=$(
   cat <<EOF
 set -euo pipefail
 cd $(quote_sh "${REMOTE_BUILD_DIR}")
-nix build --print-out-paths ".#packages.x86_64-linux.${ISO_ALIAS}"
+nix build --print-out-paths ".#packages.x86_64-linux.${ISO_ALIAS}" > $(quote_sh "${REMOTE_BUILD_OUTPATH_FILE}")
 EOF
 )
 
 if [[ "${DRY_RUN}" == "1" ]]; then
-  printf '[dry-run] ssh %s bash -lc %q\n' "${REMOTE_HOST}" "${REMOTE_BUILD_CMD}"
+  printf '[dry-run] ssh %s bash --noprofile --norc -lc %q\n' "${REMOTE_HOST}" "${REMOTE_BUILD_CMD}"
   REMOTE_STORE_PATH="/nix/store/<remote-built-iso>.iso"
 else
-  REMOTE_STORE_PATH="$(ssh_run bash -lc "${REMOTE_BUILD_CMD}")"
-  REMOTE_STORE_PATH="${REMOTE_STORE_PATH//$'\r'/}"
-  REMOTE_STORE_PATH="${REMOTE_STORE_PATH%%$'\n'*}"
+  run_with_timeout "${REMOTE_BUILD_TIMEOUT}" ssh_run "${REMOTE_BASH_LC[@]}" "${REMOTE_BUILD_CMD}"
 fi
+stage_end "build"
+
+stage_start "read-outpath"
+if [[ "${DRY_RUN}" != "1" ]]; then
+  REMOTE_BUILD_STDOUT="$(ssh_run "${REMOTE_BASH_LC[@]}" "cat $(quote_sh "${REMOTE_BUILD_OUTPATH_FILE}")")"
+  REMOTE_BUILD_STDOUT="${REMOTE_BUILD_STDOUT//$'\r'/}"
+  REMOTE_STORE_PATH="$(
+    printf '%s\n' "${REMOTE_BUILD_STDOUT}" | awk '/^\/nix\/store\/.*\.iso$/ { found=$0 } END { if (found) print found }'
+  )"
+fi
+stage_end "read-outpath"
 
 [[ -n "${REMOTE_STORE_PATH}" ]] || die "Remote build did not return an output path"
+case "${REMOTE_STORE_PATH}" in
+  /nix/store/*) ;;
+  *)
+    die "Remote build output is not a Nix store path: ${REMOTE_STORE_PATH}"
+    ;;
+esac
 case "${REMOTE_STORE_PATH}" in
   *.iso) ;;
   *)
@@ -291,23 +434,33 @@ case "${REMOTE_STORE_PATH}" in
     ;;
 esac
 
-CURRENT_STAGE="download"
-RSYNC_DOWNLOAD_CMD=(
-  rsync -avP
-  -e "${RSYNC_RSH}"
-  "${REMOTE_HOST}:${REMOTE_STORE_PATH}"
-  "${LOCAL_ISO_PATH}"
-)
-
+stage_start "resolve-remote-download-path"
 if [[ "${DRY_RUN}" == "1" ]]; then
-  printf '[dry-run] mkdir -p %q\n' "${LOCAL_OUT_DIR}"
-  print_cmd_array "[dry-run]" "${RSYNC_DOWNLOAD_CMD[@]}"
+  REMOTE_DOWNLOAD_PATH="/nix/store/<remote-built-iso>.iso"
 else
-  mkdir -p "${LOCAL_OUT_DIR}"
-  "${RSYNC_DOWNLOAD_CMD[@]}"
+  REMOTE_DOWNLOAD_STDOUT="$(
+    ssh_run "${REMOTE_BASH_LC[@]}" "find $(quote_sh "${REMOTE_STORE_PATH}") -maxdepth 3 -type f -name '*.iso' | head -n1"
+  )"
+  REMOTE_DOWNLOAD_STDOUT="${REMOTE_DOWNLOAD_STDOUT//$'\r'/}"
+  REMOTE_DOWNLOAD_PATH="$(
+    printf '%s\n' "${REMOTE_DOWNLOAD_STDOUT}" | awk '/^\/nix\/store\/.*\.iso$/ { found=$0 } END { if (found) print found }'
+  )"
 fi
+stage_end "resolve-remote-download-path"
 
-CURRENT_STAGE="post-download"
+[[ -n "${REMOTE_DOWNLOAD_PATH}" ]] || die "Could not resolve a downloadable ISO file under remote output path: ${REMOTE_STORE_PATH}"
+case "${REMOTE_DOWNLOAD_PATH}" in
+  /nix/store/*/*.iso | /nix/store/*.iso) ;;
+  *)
+    die "Resolved download path is not a valid Nix store ISO file path: ${REMOTE_DOWNLOAD_PATH}"
+    ;;
+esac
+
+stage_start "download"
+download_iso_with_fallback
+stage_end "download"
+
+stage_start "post-download"
 LOCAL_SHA256=""
 LOCAL_SIZE=""
 if [[ "${DRY_RUN}" == "1" ]]; then
@@ -323,8 +476,9 @@ else
   fi
   LOCAL_SIZE="$(wc -c < "${LOCAL_ISO_PATH}" | tr -d ' ')"
 fi
+stage_end "post-download"
 
-CURRENT_STAGE="cleanup"
+stage_start "cleanup"
 if [[ "${KEEP_REMOTE}" != "1" ]]; then
   if [[ "${DRY_RUN}" == "1" ]]; then
     printf '[dry-run] ssh %s rm -rf %q\n' "${REMOTE_HOST}" "${REMOTE_RUN_DIR}"
@@ -335,10 +489,13 @@ if [[ "${KEEP_REMOTE}" != "1" ]]; then
 else
   log "Keeping remote run dir: ${REMOTE_RUN_DIR}"
 fi
+stage_end "cleanup"
 
 CURRENT_STAGE="done"
 log "Remote store path: ${REMOTE_STORE_PATH}"
+log "Remote ISO file path: ${REMOTE_DOWNLOAD_PATH}"
 log "Local ISO path: ${LOCAL_ISO_PATH}"
+log "Download method: ${DOWNLOAD_METHOD}"
 log "Local ISO size(bytes): ${LOCAL_SIZE}"
 log "Local ISO sha256: ${LOCAL_SHA256}"
 log "Done."

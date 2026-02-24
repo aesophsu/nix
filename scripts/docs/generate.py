@@ -177,14 +177,23 @@ def build_checks_md(inventory: dict[str, Any]) -> str:
     for system in systems:
         rows.append([system, ", ".join(checks_by_system.get(system, []))])
 
-    examples = [
+    local_darwin_defaults = [
         "nix flake check --no-build",
         "nix build --no-link .#checks.aarch64-darwin.smoke-eval",
-        "nix build --no-link .#checks.x86_64-linux.smoke-eval",
         "nix build --no-link .#checks.aarch64-darwin.docs-sync",
+        "nix build --no-link .#checks.aarch64-darwin.pre-commit",
         "nix eval --json .#docInventory",
         "python3 scripts/docs/generate.py --write",
         "python3 scripts/docs/generate.py --check",
+    ]
+    ci_or_optional_linux = [
+        "nix build --no-link .#checks.x86_64-linux.smoke-eval",
+        "nix build --no-link .#checks.x86_64-linux.docs-sync",
+        "nix build --no-link .#checks.x86_64-linux.pre-commit",
+    ]
+    remote_iso_build = [
+        "scripts/build-nixos-iso-remote.sh --host <ssh-host> --remote-dir <remote-dir> --iso shaka-manual-installer-iso",
+        "scripts/build-nixos-iso-remote.sh --dry-run --host <ssh-host> --remote-dir <remote-dir>",
     ]
 
     lines = [
@@ -196,10 +205,26 @@ def build_checks_md(inventory: dict[str, Any]) -> str:
         "",
         markdown_table(["system", "checks"], rows),
         "",
-        "## Common Commands",
+        "## Local Darwin Defaults",
         "",
     ]
-    lines.extend(f"- `{cmd}`" for cmd in examples)
+    lines.extend(f"- `{cmd}`" for cmd in local_darwin_defaults)
+    lines.extend(
+        [
+            "",
+            "## CI / Optional Linux Checks",
+            "",
+        ]
+    )
+    lines.extend(f"- `{cmd}`" for cmd in ci_or_optional_linux)
+    lines.extend(
+        [
+            "",
+            "## Remote ISO Build",
+            "",
+        ]
+    )
+    lines.extend(f"- `{cmd}`" for cmd in remote_iso_build)
     lines.append("")
     return "\n".join(lines)
 
