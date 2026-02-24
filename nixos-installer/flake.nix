@@ -3,9 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    rootSrc = {
+      url = "path:..";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs = { self, nixpkgs, rootSrc, ... }:
     let
       system = "x86_64-linux";
       lib = nixpkgs.lib;
@@ -13,6 +17,9 @@
 
       installerConfig = lib.nixosSystem {
         inherit system;
+        specialArgs = {
+          inherit rootSrc;
+        };
         modules = [
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
           ./hosts/shaka-mbp112-installer.nix

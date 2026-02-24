@@ -1,11 +1,11 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, rootSrc, ... }:
 let
   # Embed the main repository flake, not this bootstrap subflake.
-  flakeSource = ../..;
+  flakeSource = rootSrc;
 in
 {
   imports = [
-    ../../hosts/nixos-shaka/modules/common/networkmanager-default-wifi.nix
+    (rootSrc + "/hosts/nixos-shaka/modules/common/networkmanager-default-wifi.nix")
   ];
 
   networking.hostName = "shaka-manual-installer";
