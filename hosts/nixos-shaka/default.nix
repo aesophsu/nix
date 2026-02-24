@@ -39,8 +39,10 @@ in
   imports = [
     ./modules/common/base-system.nix
     ./modules/common/storage-btrfs-hibernate.nix
+    ./modules/hardware/macbookpro11-2-igpu.nix
     ./modules/common/platform-hardware.nix
     ./modules/common/network-core.nix
+    ./modules/common/network-mbp11-2-stability.nix
     ./modules/common/networkmanager-default-wifi.nix
     ./modules/common/power-and-runtime.nix
     ./modules/common/gui-core.nix

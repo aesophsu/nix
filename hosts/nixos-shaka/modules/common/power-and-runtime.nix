@@ -3,12 +3,12 @@
   zramSwap = {
     enable = true;
     algorithm = "zstd";
-    memoryPercent = 50;
+    memoryPercent = 25;
     priority = 100;
   };
 
   boot.kernel.sysctl = {
-    "vm.swappiness" = 100;
+    "vm.swappiness" = 80;
     "vm.vfs_cache_pressure" = 50;
     "vm.dirty_writeback_centisecs" = 1500;
   };
@@ -37,6 +37,8 @@
       PCIE_ASPM_ON_BAT = "powersupersave";
       SATA_LINKPWR_ON_AC = "med_power_with_dipm";
       SATA_LINKPWR_ON_BAT = "med_power_with_dipm";
+      # Old MacBooks often ignore charge thresholds; keep them here for hosts
+      # where the battery controller exposes support.
       START_CHARGE_THRESH_BAT0 = 75;
       STOP_CHARGE_THRESH_BAT0 = 80;
     };
