@@ -16,3 +16,5 @@ home/darwin/services/mihomo/config.local.yaml
 home/darwin/services/mihomo/config.yaml
 
 scripts/docs/__pycache__/
+archive/iso-out/
+scripts/build-nixos-iso-remote.env.local

@@ -12,3 +12,8 @@ python3 scripts/docs/generate.py --check
 默认会执行 `nix eval --json .#docInventory` 读取输入数据。
 
 在 flake `checks.<system>.docs-sync` 中会通过 `--inventory-file` 传入预先生成的 JSON，以避免在 derivation 内再次调用 `nix eval`。
+
+生成的 `docs/generated/checks-and-commands.md` 会按使用场景分组展示：
+- 本机 Darwin 默认 checks
+- CI / 可选 Linux checks
+- 远程 Linux 构建 NixOS ISO（`scripts/build-nixos-iso-remote.sh`）

@@ -11,6 +11,7 @@ in
     uv
     codex
     tree
+    ripgrep
     wget
     nodejs
     go
