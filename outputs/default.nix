@@ -50,39 +50,11 @@ let
 
   checkNames = [
     "smoke-eval"
-    "docs-sync"
   ]
   ++ lib.optionals (builtins.hasAttr system pre-commit-hooks.lib) [ "pre-commit" ];
 
-  docInventory = {
-    hosts = [ stellaHost ];
-    enabledHosts = [ stellaHost ];
-    systems = {
-      darwin = [ system ];
-      nixos = [ ];
-      all = [ system ];
-    };
-    outputs = {
-      topLevel = [
-        "darwinConfigurations"
-        "packages"
-        "checks"
-        "devShells"
-        "formatter"
-        "docInventory"
-      ];
-      platformFragments = {
-        "aarch64-darwin" = "outputs/darwin";
-      };
-    };
-    checks = {
-      "aarch64-darwin" = checkNames;
-    };
-  };
-
   pkgs = nixpkgs.legacyPackages.${system};
   tests = darwinOutputs.evalTests or { };
-  docInventoryJson = pkgs.writeText "doc-inventory.json" (builtins.toJSON docInventory);
 in
 {
   darwinConfigurations = darwinOutputs.darwinConfigurations or { };
@@ -95,11 +67,6 @@ in
     "aarch64-darwin" =
       {
         smoke-eval = smokeCheckLib.mkSmokeCheck pkgs tests;
-        docs-sync = pkgs.runCommand "docs-sync" { } ''
-          cd ${mylib.relativeToRoot "."}
-          ${pkgs.python3}/bin/python ./scripts/docs/generate.py --check --inventory-file ${docInventoryJson}
-          touch $out
-        '';
       }
       // lib.optionalAttrs (builtins.hasAttr system pre-commit-hooks.lib) {
         pre-commit = pre-commit-hooks.lib.${system}.run {
@@ -168,6 +135,4 @@ in
   formatter = {
     "aarch64-darwin" = pkgs.nixfmt;
   };
-
-  inherit docInventory;
 }

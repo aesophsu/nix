@@ -183,12 +183,6 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 |---|---|
 | **~/go** | Go module cache (GOPATH/GOMODCACHE). Do not move; migration breaks `go build` / `go run`. |
 
-**备份与杂项**
-
-| 路径 | 说明 |
-|---|---|
-| **~/Code/nix/archive/** | Home Manager and other backups (e.g. `zshrc.home-manager.backup`). |
-
 ### 调整方式（已完成）
 
 - Create `~/Code`; move former `~/nix` → `~/Code/nix`.
@@ -201,6 +195,6 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 
 ## 架构说明（当前）
 
-- `outputs/default.nix` 直接装配单机 `stella`，并生成 `docInventory`（不再使用 host registry）。
+- `outputs/default.nix` 直接装配单机 `stella`（不再使用 host registry / 文档生成检查）。
 - `outputs/darwin/default.nix` 直接组合 `system/`、`user/` 与 `hosts/stella/`，同时挂载 `outputs/darwin/tests/default.nix`。
 - `checks.<system>.smoke-eval` 为统一 smoke 检查命名；`checks.<system>.pre-commit` 为统一 pre-commit 检查命名。

@@ -9,8 +9,6 @@ flowchart TD
   F["`flake.nix`"] --> O["`outputs/`"]
   O --> OD["`outputs/default.nix` (单机 stella 装配)"]
   OD --> DS["`outputs/darwin/`"]
-  OD --> DI["`docInventory` (单机元数据)"]
-
   DS --> DST["`tests/default.nix` (Darwin smoke tests)"]
   DS --> HOST["`hosts/stella/` (主机差异)"]
   DS --> M["`system/` (系统层, nix-darwin)"]
@@ -34,8 +32,6 @@ flowchart TD
   HOST --> HOSTH["`home.nix` (用户层主机差异)"]
 ```
 
-详细结构索引与主机/模块清单改为生成文档维护（见 `docs/generated/`）。
-
 ## 分层约定
 
 | 层级 | 路径 | 说明 |
@@ -53,15 +49,7 @@ flowchart TD
 
 | 文档 | 说明 |
 |---|---|
-| `docs/README.md` | 文档总索引 |
-| `docs/generated/architecture.md` | 生成的架构/输出索引（由 `scripts/docs/generate.py` 维护） |
-| `docs/generated/hosts.md` | 生成的主机清单（来自 `.#docInventory`） |
-| `docs/generated/modules.md` | 生成的模块与 outputs 目录索引 |
-| `docs/generated/checks-and-commands.md` | 生成的 checks 矩阵与常用命令 |
 | `DEPLOYMENT.md` | 部署流程（新机安装 / 重建） |
-| `MIGRATION.md` | 目录重构迁移说明（旧路径 -> 新路径） |
-| `system/README.md` | 系统模块结构说明 |
-| `user/README.md` | Home Manager 结构说明 |
 | `hosts/stella/README.md` | 主机差异边界说明 |
 
 ## 使用
@@ -80,13 +68,6 @@ nix flake check --no-build
 
 # Smoke eval checks（Darwin）
 nix build --no-link .#checks.aarch64-darwin.smoke-eval
-
-# Docs sync
-nix build --no-link .#checks.aarch64-darwin.docs-sync
-
-# Doc inventory / generated docs
-nix eval --json .#docInventory
-python3 scripts/docs/generate.py --write
 
 # Pre-commit checks（如该系统受支持）
 nix build --no-link .#checks.aarch64-darwin.pre-commit
