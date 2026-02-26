@@ -9,11 +9,11 @@
   #   - 用户级模块（home-modules + home-manager.extraSpecialArgs）
   #
   # 约定：
-  # - darwin-modules：系统级配置（modules/darwin + hosts/darwin-<name>）
-  # - home-modules：  用户级配置（hosts/darwin-<name>/home.nix + home/darwin 等）
+  # - darwin-modules：系统级配置（system/darwin + hosts/stella/system.nix）
+  # - home-modules：  用户级配置（hosts/stella/home.nix + user/darwin 等）
   # - myvars：        至少包含 username/hostname 等基础信息
   #
-  # 典型调用方：outputs/aarch64-darwin/src/<host>.nix
+  # 典型调用方：outputs/darwin/default.nix
   lib,
   inputs,
   darwin-modules,

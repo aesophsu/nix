@@ -5,7 +5,7 @@
 ## 代理与国内网络说明
 
 - **First deploy without proxy**: Nix uses substituter mirrors, Homebrew uses BFSU mirror. One `darwin-rebuild switch` deploys mihomo (package + launchd + config link); no separate install.
-- **mihomo via Nix**: Package, env vars, `~/.config/mihomo/config.yaml` link, launchd are in `home/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd starts mihomo on login.
+- **mihomo via Nix**: Package, env vars, `~/.config/mihomo/config.yaml` link, launchd are in `user/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd starts mihomo on login.
 - **brew/mas errors**: Comment out `masApps` or some taps to finish first deploy; add mihomo config, then run the same `darwin-rebuild switch` again.
 - **GitHub access** (e.g. `nix flake update`): Use mihomo sessionVariables in shell, or set `http-proxy` / `https-proxy` in `~/.config/nix/nix.conf`.
 
@@ -66,7 +66,7 @@ cd nix
 Nix (Home Manager) deploys mihomo in step 5. Prepare config in repo (subscription URL/token; do not commit secrets):
 
 ```bash
-cp home/darwin/services/mihomo/config.yaml.example home/darwin/services/mihomo/config.yaml
+cp user/darwin/services/mihomo/config.yaml.example user/darwin/services/mihomo/config.yaml
 # Edit and add subscription URL, or use config.local.yaml (higher priority, often .gitignored)
 ```
 
@@ -129,7 +129,7 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 |---|---|
 | `Determinate detected, aborting activation` | Expected; `nix.enable = false` is set. |
 | mihomo won’t start | Check `~/.config/mihomo/config.yaml` exists and subscription URL is correct; re-run `darwin-rebuild switch`. |
-| Homebrew install fails | Check mirrors in `modules/darwin/apps.nix`. |
+| Homebrew install fails | Check mirrors in `system/darwin/apps.nix`. |
 | WeChat/SSL error | Comment masApps, add mihomo config, run switch again. |
 | SSH key not used | Set `mainSshAuthorizedKeys` in `vars/default.nix`. |
 
@@ -197,10 +197,10 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 ### 说明
 
 - Home Manager `home.homeDirectory` is `/Users/<username>` (vars); independent of repo path.
-- **~/bin** has been removed; PATH uses **~/.local/bin** only (see `home/base/core/shells/default.nix`).
+- **~/bin** has been removed; PATH uses **~/.local/bin** only (see `user/common/core/shells/default.nix`).
 
 ## 架构说明（当前）
 
-- `hosts/registry.nix` 是主机清单单一来源（SSOT），驱动 `outputs/aarch64-darwin/fragments/hosts.nix` 与 `outputs/aarch64-darwin/tests/default.nix`。
-- `outputs/aarch64-darwin/fragments/hosts.nix` 是通用 host loader（不再使用单主机 loader 文件）。
+- `outputs/default.nix` 直接装配单机 `stella`，并生成 `docInventory`（不再使用 host registry）。
+- `outputs/darwin/default.nix` 直接组合 `system/`、`user/` 与 `hosts/stella/`，同时挂载 `outputs/darwin/tests/default.nix`。
 - `checks.<system>.smoke-eval` 为统一 smoke 检查命名；`checks.<system>.pre-commit` 为统一 pre-commit 检查命名。

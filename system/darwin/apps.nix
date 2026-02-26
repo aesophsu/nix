@@ -19,7 +19,7 @@ let
   );
 in
 {
-  # git from modules/base/system-packages.nix
+  # git from system/common/system-packages.nix
   environment.variables = {
     TERMINFO_DIRS = map (path: path + "/share/terminfo") config.environment.profiles ++ [
       "/usr/share/terminfo"
@@ -32,7 +32,7 @@ in
   programs.zsh.enable = true;
   environment.shells = [ pkgs.zsh ];
 
-  # Homebrew 仅用于无法由 Nix 提供的 cask；CLI 与其余 GUI 均以 Nix 为准（见 modules/base/system-packages.nix、home/darwin/apps/gui.nix）。
+  # Homebrew 仅用于无法由 Nix 提供的 cask；CLI 与其余 GUI 均以 Nix 为准（见 system/common/system-packages.nix、user/darwin/apps/gui.nix）。
   homebrew = {
     # Nix 管理 Homebrew，但禁用 Brewfile 模式，避免每次 `brew bundle` 很慢。
     # 仍然会用 `brew install` 确保 brews/casks 存在。
@@ -54,11 +54,11 @@ in
     # 如果未来需要 yabai 等，再重新启用。
     taps = [ ];
 
-    # CLI 工具改由 Nix 提供（见 modules/base/system-packages.nix）；Homebrew 仅负责 GUI casks。
+    # CLI 工具改由 Nix 提供（见 system/common/system-packages.nix）；Homebrew 仅负责 GUI casks。
     brews = [ ];
 
     # miniforge is large; brew install on demand if needed
-    # 仅因 nixpkgs 暂无而保留的 Homebrew 例外（Cursor 已迁至 home/darwin/apps/gui.nix 的 code-cursor）
+    # 仅因 nixpkgs 暂无而保留的 Homebrew 例外（Cursor 已迁至 user/darwin/apps/gui.nix 的 code-cursor）
     casks = [ ];
   };
 }

@@ -97,13 +97,17 @@ def build_architecture_md(inventory: dict[str, Any]) -> str:
         "## Platform Systems",
         "",
         f"- Darwin systems: `{darwin_systems}`",
-        f"- All systems: `{all_systems}`",
-        "",
-        "## Platform Fragment Entrypoints",
-        "",
     ]
     if nixos_systems:
-        lines.insert(lines.index("") - 2, f"- NixOS systems: `{nixos_systems}`")
+        lines.append(f"- NixOS systems: `{nixos_systems}`")
+    lines.extend(
+        [
+            f"- All systems: `{all_systems}`",
+            "",
+            "## Darwin Output Entrypoints",
+            "",
+        ]
+    )
     for system, fragment_dir in sorted(fragments.items()):
         lines.append(f"- `{system}` -> `{fragment_dir}`")
     lines.extend(
@@ -142,7 +146,7 @@ def build_hosts_md(inventory: dict[str, Any]) -> str:
         [
             "# Generated Host Registry",
             "",
-            "This file is generated from `.#docInventory` (which is backed by `hosts/registry.nix`).",
+            "This file is generated from `.#docInventory`.",
             "",
             markdown_table(
                 ["name", "platform", "system", "kind", "enabled", "hostPath", "homePath", "roles", "tags"],
@@ -155,13 +159,11 @@ def build_hosts_md(inventory: dict[str, Any]) -> str:
 
 def build_modules_md() -> str:
     sections = [
-        ("System Modules (base)", REPO_ROOT / "modules" / "base"),
-        ("System Modules (darwin)", REPO_ROOT / "modules" / "darwin"),
-        ("Home Modules (base)", REPO_ROOT / "home" / "base"),
-        ("Home Modules (darwin)", REPO_ROOT / "home" / "darwin"),
-        ("Home Modules (nixos)", REPO_ROOT / "home" / "nixos"),
-        ("Output Fragments (darwin)", REPO_ROOT / "outputs" / "aarch64-darwin" / "fragments"),
-        ("Output Fragments (nixos)", REPO_ROOT / "outputs" / "x86_64-linux" / "fragments"),
+        ("System Modules (common)", REPO_ROOT / "system" / "common"),
+        ("System Modules (darwin)", REPO_ROOT / "system" / "darwin"),
+        ("User Modules (common)", REPO_ROOT / "user" / "common"),
+        ("User Modules (darwin)", REPO_ROOT / "user" / "darwin"),
+        ("Output Entrypoints (darwin)", REPO_ROOT / "outputs" / "darwin"),
         ("Output Helpers", REPO_ROOT / "outputs" / "lib"),
     ]
     sections = [(title, path) for title, path in sections if path.exists()]
@@ -235,6 +237,8 @@ def extract_relative_path_tokens(markdown_text: str) -> list[str]:
         known_prefixes = (
             "docs/",
             "scripts/",
+            "system/",
+            "user/",
             "modules/",
             "home/",
             "hosts/",

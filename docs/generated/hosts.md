@@ -1,7 +1,7 @@
 # Generated Host Registry
 
-This file is generated from `.#docInventory` (which is backed by `hosts/registry.nix`).
+This file is generated from `.#docInventory`.
 
 | name | platform | system | kind | enabled | hostPath | homePath | roles | tags |
 |---|---|---|---|---|---|---|---|---|
-| stella | darwin | aarch64-darwin |  | true | hosts/darwin-stella | hosts/darwin-stella/home.nix | desktop | primary, macbook-air-m4 |
+| stella | darwin | aarch64-darwin |  | true | hosts/stella | hosts/stella/home.nix | desktop | primary, macbook-air-m4 |

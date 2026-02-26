@@ -1,6 +1,6 @@
-# Host Overrides · `darwin-stella`
+# Host Overrides · `stella`
 
-Host-specific diffs only. Keep this directory small and avoid duplicating shared logic from `modules/darwin` or `home/darwin`.
+Host-specific diffs only. Keep this directory small and avoid duplicating shared logic from `system/darwin` or `user/darwin`.
 
 ## Boundary
 
@@ -13,9 +13,9 @@ Host-specific diffs only. Keep this directory small and avoid duplicating shared
 
 | 路径 | 说明 |
 |---|---|
-| `default.nix` | 系统层主机身份（`hostName`、`computerName`、`localHostName`） |
+| `system.nix` | 系统层主机身份（`hostName`、`computerName`、`localHostName`） |
 | `home.nix` | 用户层主机差异（当前仅 GitHub SSH `identityFile`） |
 
 ## Rule of Thumb
 
-If another Mac would likely need the same config, move it to `modules/darwin` or `home/darwin` instead of keeping it here.
+If another Mac would likely need the same config, move it to `system/darwin` or `user/darwin` instead of keeping it here.

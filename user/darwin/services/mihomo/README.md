@@ -4,7 +4,7 @@ Mihomo 代理配置（TUN、多上游、AI 规则），面向 MacBook Air M4 场
 
 ## 通过 Nix 部署（推荐）
 
-`home/darwin/services/mihomo/default.nix` 会将配置链接到 `~/.config/mihomo/config.yaml`。
+`user/darwin/services/mihomo/default.nix` 会将配置链接到 `~/.config/mihomo/config.yaml`。
 优先级：`config.local.yaml` > `config.yaml` > `config.yaml.example`（当前目录）。
 
 ```bash

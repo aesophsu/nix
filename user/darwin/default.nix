@@ -9,8 +9,8 @@
   imports = mylib.discoverImports {
     dir = ./.;
     extraImports = [
-      ../base/core
-      ../base/home.nix
+      ../common/core
+      ../common/home.nix
     ];
   };
 }

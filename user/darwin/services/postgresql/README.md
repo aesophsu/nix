@@ -1,6 +1,6 @@
 # PostgreSQL 16（Home Manager 服务）
 
-使用 Nixpkgs 包；数据目录、`initdb`、`launchd` 配置在 `home/darwin/services/postgresql/default.nix`。
+使用 Nixpkgs 包；数据目录、`initdb`、`launchd` 配置在 `user/darwin/services/postgresql/default.nix`。
 服务默认登录启动，并使用 Nix 缓存（避免 Homebrew `ghcr.io` 相关问题）。
 
 ## 路径

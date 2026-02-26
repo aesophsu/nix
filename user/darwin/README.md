@@ -1,6 +1,6 @@
 # Home Manager · Darwin（macOS）
 
-macOS 专用 Home Manager 配置（与 `hosts/darwin-stella/` 一起使用）。
+macOS 专用 Home Manager 配置（与 `hosts/stella/` 一起使用）。
 
 | 路径 | 说明 |
 |---|---|
@@ -11,7 +11,7 @@ macOS 专用 Home Manager 配置（与 `hosts/darwin-stella/` 一起使用）。
 | `services/postgresql/` | PostgreSQL 16（Nixpkgs）：包、数据目录、launchd |
 
 `default.nix` 保留顶层模块自动扫描，并显式导入 `apps/`、`services/`、`profiles/`，以保证结构和导入顺序稳定。
-`stella` 的 Home Manager 接线来自 `hosts/darwin-stella/home.nix` + `home/darwin/`。
+`stella` 的 Home Manager 接线来自 `hosts/stella/home.nix` + `user/darwin/`。
 
 ## 常用命令
 
