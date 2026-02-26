@@ -201,6 +201,6 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 
 ## 架构说明（当前）
 
-- `hosts/registry.nix` 是主机清单单一来源（SSOT），驱动 `outputs/*/fragments/hosts.nix` 与 `outputs/*/tests/default.nix`。
-- `outputs/aarch64-darwin/fragments/hosts.nix` 与 `outputs/x86_64-linux/fragments/hosts.nix` 都是通用 host loader（不再使用单主机 loader 文件）。
+- `hosts/registry.nix` 是主机清单单一来源（SSOT），驱动 `outputs/aarch64-darwin/fragments/hosts.nix` 与 `outputs/aarch64-darwin/tests/default.nix`。
+- `outputs/aarch64-darwin/fragments/hosts.nix` 是通用 host loader（不再使用单主机 loader 文件）。
 - `checks.<system>.smoke-eval` 为统一 smoke 检查命名；`checks.<system>.pre-commit` 为统一 pre-commit 检查命名。

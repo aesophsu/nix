@@ -81,6 +81,10 @@ def build_architecture_md(inventory: dict[str, Any]) -> str:
     systems = inventory.get("systems", {})
     fragments = outputs.get("platformFragments", {})
 
+    darwin_systems = ", ".join(systems.get("darwin", []))
+    nixos_systems = ", ".join(systems.get("nixos", []))
+    all_systems = ", ".join(systems.get("all", []))
+
     lines = [
         "# Generated Architecture Inventory",
         "",
@@ -92,13 +96,14 @@ def build_architecture_md(inventory: dict[str, Any]) -> str:
         "",
         "## Platform Systems",
         "",
-        f"- Darwin systems: `{', '.join(systems.get('darwin', []))}`",
-        f"- NixOS systems: `{', '.join(systems.get('nixos', []))}`",
-        f"- All systems: `{', '.join(systems.get('all', []))}`",
+        f"- Darwin systems: `{darwin_systems}`",
+        f"- All systems: `{all_systems}`",
         "",
         "## Platform Fragment Entrypoints",
         "",
     ]
+    if nixos_systems:
+        lines.insert(lines.index("") - 2, f"- NixOS systems: `{nixos_systems}`")
     for system, fragment_dir in sorted(fragments.items()):
         lines.append(f"- `{system}` -> `{fragment_dir}`")
     lines.extend(
@@ -159,6 +164,7 @@ def build_modules_md() -> str:
         ("Output Fragments (nixos)", REPO_ROOT / "outputs" / "x86_64-linux" / "fragments"),
         ("Output Helpers", REPO_ROOT / "outputs" / "lib"),
     ]
+    sections = [(title, path) for title, path in sections if path.exists()]
     lines = [
         "# Generated Module and Output Index",
         "",
@@ -180,7 +186,6 @@ def build_checks_md(inventory: dict[str, Any]) -> str:
     examples = [
         "nix flake check --no-build",
         "nix build --no-link .#checks.aarch64-darwin.smoke-eval",
-        "nix build --no-link .#checks.x86_64-linux.smoke-eval",
         "nix build --no-link .#checks.aarch64-darwin.docs-sync",
         "nix eval --json .#docInventory",
         "python3 scripts/docs/generate.py --write",
@@ -333,10 +338,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     try:
-      inventory = load_inventory(args)
+        inventory = load_inventory(args)
     except subprocess.CalledProcessError as exc:
-      sys.stderr.write(exc.stderr)
-      return exc.returncode
+        sys.stderr.write(exc.stderr)
+        return exc.returncode
     if args.write:
         return write_mode(inventory)
     return check_mode(inventory)

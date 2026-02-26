@@ -18,28 +18,5 @@ in
       ];
       enabled = true;
     }
-
-    {
-      name = "shaka-installer";
-      platform = "nixos";
-      system = "x86_64-linux";
-      hostPath = "hosts/nixos-shaka-installer";
-      kind = "installer";
-      roles = [ "installer" ];
-      isoPackageAliases = [
-        "macbookpro11-2-installer-iso"
-        "shaka-installer-iso"
-      ];
-      enabled = true;
-    }
-
-    {
-      name = "shaka";
-      platform = "nixos";
-      system = "x86_64-linux";
-      hostPath = "hosts/nixos-shaka";
-      roles = [ "desktop" ];
-      enabled = true;
-    }
   ];
 }

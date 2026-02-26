@@ -10,14 +10,11 @@ flowchart TD
   O --> OD["`outputs/default.nix` (顶层聚合)"]
   OD --> REG["`hosts/registry.nix` (主机清单/SSOT)"]
   OD --> DS["`outputs/aarch64-darwin/`"]
-  OD --> LS["`outputs/x86_64-linux/`"]
 
   DS --> DSH["`fragments/hosts.nix` (Darwin 通用 loader fragment)"]
   DS --> DST["`tests/default.nix` (Darwin smoke tests)"]
-  LS --> LSH["`fragments/hosts.nix` (NixOS 通用 loader fragment)"]
-  LS --> LST["`tests/default.nix` (NixOS smoke tests)"]
 
-  DSH --> M["`modules/` (系统层, nix-darwin/NixOS)"]
+  DSH --> M["`modules/` (系统层, nix-darwin)"]
   DSH --> H["`home/` (用户层, Home Manager)"]
   DSH --> HOST["`hosts/darwin-stella/` (主机差异)"]
   OD --> V["`vars/` (共享变量)"]
@@ -84,9 +81,8 @@ darwin-rebuild switch --flake /Users/sue/Code/nix#stella
 # 只做评估检查（不构建系统）
 nix flake check --no-build
 
-# Smoke eval checks（Darwin / NixOS）
+# Smoke eval checks（Darwin）
 nix build --no-link .#checks.aarch64-darwin.smoke-eval
-nix build --no-link .#checks.x86_64-linux.smoke-eval
 
 # Docs sync
 nix build --no-link .#checks.aarch64-darwin.docs-sync

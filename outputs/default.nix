@@ -40,15 +40,11 @@ let
   darwinSystems = {
     aarch64-darwin = import ./aarch64-darwin (args // { system = "aarch64-darwin"; });
   };
-  nixosSystems = {
-    x86_64-linux = import ./x86_64-linux (args // { system = "x86_64-linux"; });
-  };
-  allSystems = nixosSystems // darwinSystems;
+  allSystems = darwinSystems;
 
   darwinSystemNames = builtins.attrNames darwinSystems;
   darwinSystemValues = builtins.attrValues darwinSystems;
-  nixosSystemNames = builtins.attrNames nixosSystems;
-  nixosSystemValues = builtins.attrValues nixosSystems;
+  nixosSystemNames = [ ];
   allSystemNames = builtins.attrNames allSystems;
   allSystemValues = builtins.attrValues allSystems;
 
@@ -57,7 +53,6 @@ let
   # =====================================================================================
 
   forDarwinSystems = func: nixpkgs.lib.genAttrs darwinSystemNames func;
-  forNixosSystems = func: nixpkgs.lib.genAttrs nixosSystemNames func;
   forAllSystems = func: nixpkgs.lib.genAttrs allSystemNames func;
   checkNamesForSystem =
     system:
@@ -77,7 +72,6 @@ let
     outputs = {
       topLevel = [
         "darwinConfigurations"
-        "nixosConfigurations"
         "packages"
         "checks"
         "devShells"
@@ -86,7 +80,6 @@ let
       ];
       platformFragments = {
         "aarch64-darwin" = "outputs/aarch64-darwin/fragments";
-        "x86_64-linux" = "outputs/x86_64-linux/fragments";
       };
     };
     checks = builtins.listToAttrs (
@@ -103,13 +96,7 @@ in
   darwinConfigurations = lib.attrsets.mergeAttrsList (
     map (it: it.darwinConfigurations or { }) darwinSystemValues
   );
-  nixosConfigurations = lib.attrsets.mergeAttrsList (
-    map (it: it.nixosConfigurations or { }) nixosSystemValues
-  );
-
-  packages =
-    (forDarwinSystems (system: darwinSystems.${system}.packages or { }))
-    // (forNixosSystems (system: nixosSystems.${system}.packages or { }));
+  packages = forDarwinSystems (system: darwinSystems.${system}.packages or { });
 
   # Unified checks: smoke-eval plus pre-commit where supported on the target system.
   checks = forAllSystems (system:
