@@ -106,7 +106,7 @@ proxy-providers:
     update-on-start: true
     skip-cert-verify: false
     filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
-    exclude-filter: "(?i)(test|expire|backup|fallback)"
+    exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -125,7 +125,7 @@ proxy-providers:
     update-on-start: true
     skip-cert-verify: false
     filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
-    exclude-filter: "(?i)(test|expire|backup|fallback)"
+    exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -137,7 +137,7 @@ proxy-providers:
 
 proxy-groups:
   - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, DIRECT, REJECT] }
-  - { name: Auto, type: fallback, url: "https://cp.cloudflare.com/generate_204", interval: 300, use: [Airport1, Airport2] }
+  - { name: Auto, type: select, use: [Airport1, Airport2] }
   - { name: AI, type: select, proxies: [TW, JP, SG, US] }
   - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[HK\\]|HK-|HongKong|hk)" }
   - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw)" }

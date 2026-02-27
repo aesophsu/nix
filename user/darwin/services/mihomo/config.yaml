@@ -105,7 +105,7 @@ proxy-providers:
     update-on-start: true
     skip-cert-verify: false
     filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
-    exclude-filter: "(?i)(倍|test|备用|Expire|到期)"
+    exclude-filter: "(?i)(倍|test|备用|Expire|到期|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -123,7 +123,7 @@ proxy-providers:
     update-on-start: true
     skip-cert-verify: false
     filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
-    exclude-filter: "(?i)(倍|test|备用|Expire|到期)"
+    exclude-filter: "(?i)(倍|test|备用|Expire|到期|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -135,7 +135,7 @@ proxy-providers:
 
 proxy-groups:
   - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, DIRECT, REJECT] }
-  - { name: Auto, type: fallback, url: "https://cp.cloudflare.com/generate_204", interval: 300, use: [Airport1, Airport2] }
+  - { name: Auto, type: select, use: [Airport1, Airport2] }
   - { name: AI, type: select, proxies: [TW, JP, SG, US] }
   - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(hk|港)" }
   - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(tw|台)" }
