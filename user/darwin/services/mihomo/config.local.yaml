@@ -90,7 +90,7 @@ geox:
     path: ./Country.mmdb
     url: https://github.com/Loyalsoldier/geoip/releases/latest/download/Country.mmdb
     asn-path: ./GeoLite2-ASN.mmdb
-    asn-url: https://github.com/DustinWin/geoip_asn/releases/latest/download/GeoLite2-ASN.mmdb
+    asn-url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/GeoLite2-ASN.mmdb
   geosite:
     path: ./geosite.dat
     url: https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
