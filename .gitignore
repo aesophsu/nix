@@ -16,3 +16,4 @@ home/darwin/services/mihomo/config.local.yaml
 home/darwin/services/mihomo/config.yaml
 
 scripts/docs/__pycache__/
+user/darwin/services/mihomo/.runtime/
