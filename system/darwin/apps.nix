@@ -25,14 +25,16 @@ in
       "/usr/share/terminfo"
     ];
   };
-  system.activationScripts.homebrew.text = lib.mkBefore ''
-    ${homebrew_env_script}
-  '';
+  system.activationScripts = lib.mkIf proxyLib.policy.homebrewEnv {
+    homebrew.text = lib.mkBefore ''
+      ${homebrew_env_script}
+    '';
+  };
 
   programs.zsh.enable = true;
   environment.shells = [ pkgs.zsh ];
 
-  # Homebrew 仅用于无法由 Nix 提供的 cask；CLI 与其余 GUI 均以 Nix 为准（见 system/common/system-packages.nix、user/darwin/apps/gui.nix）。
+  # Homebrew 仅用于无法由 Nix 提供的 cask；CLI 仍以 Nix 为准（见 system/common/system-packages.nix）。
   homebrew = {
     # Nix 管理 Homebrew，但禁用 Brewfile 模式，避免每次 `brew bundle` 很慢。
     # 仍然会用 `brew install` 确保 brews/casks 存在。
@@ -57,8 +59,11 @@ in
     # CLI 工具改由 Nix 提供（见 system/common/system-packages.nix）；Homebrew 仅负责 GUI casks。
     brews = [ ];
 
-    # miniforge is large; brew install on demand if needed
-    # 仅因 nixpkgs 暂无而保留的 Homebrew 例外（Cursor 已迁至 user/darwin/apps/gui.nix 的 code-cursor）
-    casks = [ ];
+    # 256G SSD 策略：重量级 GUI 由 Homebrew cask 管理，减少 Nix store 代际占用。
+    casks = [
+      "chatgpt"
+      "google-chrome"
+      "telegram"
+    ];
   };
 }

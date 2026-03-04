@@ -3,6 +3,23 @@
 { lib }:
 rec {
   proxy = rec {
+    policy = {
+      # System network proxy default action on darwin activation: "on" or "off"
+      systemDefault = "on";
+      # Inject HTTP(S)_PROXY into user shell session by default
+      cliDefault = "on";
+      # Inject proxy env in homebrew activation phase
+      homebrewEnv = true;
+    };
+
+    # Common macOS network services we manage via networksetup.
+    systemServices = [
+      "Wi-Fi"
+      "Ethernet"
+      "USB 10/100/1000 LAN"
+      "Thunderbolt Ethernet"
+    ];
+
     noProxyLocal = [
       "localhost"
       "127.0.0.1"
