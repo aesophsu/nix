@@ -103,7 +103,7 @@ proxy-providers:
     url: "https://999.ts1110.top/weibo/ipx/client/dy?token=YOUR_TOKEN"
     path: ./proxies/airport1.yaml
     interval: 43200
-    update-on-start: true
+    update-on-start: false
     skip-cert-verify: false
     filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
     exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
@@ -122,7 +122,7 @@ proxy-providers:
     url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=YOUR_TOKEN"
     path: ./proxies/airport2.yaml
     interval: 43200
-    update-on-start: true
+    update-on-start: false
     skip-cert-verify: false
     filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
     exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"

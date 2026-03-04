@@ -102,7 +102,7 @@ proxy-providers:
     url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=6a0563b8a30ac5e2d6310cf55cca705e"
     path: ./proxies/airport1.yaml
     interval: 43200
-    update-on-start: true
+    update-on-start: false
     skip-cert-verify: false
     filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
     exclude-filter: "(?i)(倍|test|备用|Expire|到期|网|w01\\.fcweba\\.cc)"
@@ -120,7 +120,7 @@ proxy-providers:
     url: "https://999.ts1110.top/weibo/ipx/client/dy?token=286deb68eb0f7714af083c7192349b12"
     path: ./proxies/airport2.yaml
     interval: 43200
-    update-on-start: true
+    update-on-start: false
     skip-cert-verify: false
     filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
     exclude-filter: "(?i)(倍|test|备用|Expire|到期|网|w01\\.fcweba\\.cc)"

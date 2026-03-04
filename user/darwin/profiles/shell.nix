@@ -25,4 +25,9 @@ in
     initContent = lib.mkAfter (envExtra + initContent);
   };
 
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+
 }

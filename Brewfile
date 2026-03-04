@@ -4,5 +4,5 @@
 # 以下仅保留因 nixpkgs 暂无而仍由 Homebrew 安装的 cask：
 cask "chatgpt"
 #
-# 曾在 VS Code/Cursor 中安装的扩展（在编辑器内从市场安装即可）：
+# 曾在 VS Code 中安装的扩展（在编辑器内从市场安装即可）：
 # vscode "openai.chatgpt"
