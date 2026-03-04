@@ -6,7 +6,8 @@
   userfullname = "Milan Sue";
   useremail = "aesophsu@gmail.com";
 
-  networking = import ./networking.nix { inherit lib; };
+  networking = import ./networking { inherit lib; };
+  toolchains = import ./toolchains.nix;
 
   # Leave empty for local user; set hashed password on fresh install
   initialHashedPassword = "";

@@ -9,6 +9,9 @@
 - **system proxy**: activation sets macOS network services to local mihomo proxy (`127.0.0.1:7890/7891`) by default (`proxy.policy.systemDefault = "on"`).
 - **runtime switch**: use `proxy-on` / `proxy-off` / `proxy-status` to manage system proxy without editing Nix files.
 - **GitHub access** (e.g. `nix flake update`): Use mihomo sessionVariables in shell, or set `http-proxy` / `https-proxy` in `~/.config/nix/nix.conf`.
+- **Toolchains**: Node/Python are pinned in one place (`myvars.toolchains.*`): `node.package = "nodejs_22"`, `python.package = "python312"`.
+- **Node toolchain**: Use Corepack to manage pnpm; avoid mixing `nvm`/`volta` with Nix Node.
+- **Unified CLI source**: `python / uv / ruff / git / nodejs / docker / jq / curl` are managed in `user/common/core/tooling/*`; `direnv` remains in `user/common/core/packages.nix` (Docker is CLI+Compose only, no Docker Desktop).
 
 ## 前提条件
 
@@ -132,6 +135,15 @@ nix flake check --no-build
 nix build --no-link .#checks.aarch64-darwin.smoke-eval
 ```
 
+### Node / pnpm（Corepack）
+
+```bash
+node -v
+corepack enable
+corepack prepare pnpm@latest --activate   # optional, pin a version per project if needed
+pnpm install --frozen-lockfile
+```
+
 ---
 
 ## 故障排查
@@ -211,3 +223,20 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 - `outputs/default.nix` 直接装配单机 `stella`（不再使用 host registry / 文档生成检查）。
 - `outputs/darwin/default.nix` 直接组合 `system/`、`user/` 与 `hosts/stella/`，同时挂载 `outputs/darwin/tests/default.nix`。
 - `checks.<system>.smoke-eval` 为统一 smoke 检查命名；`checks.<system>.pre-commit` 为统一 pre-commit 检查命名。
+
+### 模块边界（重构后）
+
+- `vars/networking/`：按领域拆分 `proxy` / `mihomo` / `dns` / `hosts` / `ssh`，由 `vars/networking/default.nix` 聚合。
+- `system/darwin/system/`：按行为拆分 `proxy-tools` / `activation` / `defaults-ui` / `input` / `security-pam` / `timezone`，由 `system/darwin/system.nix` 聚合。
+- `user/common/core/`：工具按职责拆到 `tooling/toolchain.nix`、`tooling/vcs.nix`、`tooling/infra.nix`；`packages.nix` 仅保留基础 CLI 与 `direnv`，CLI 体验配置在 `cli-experience.nix`。
+
+### 单一声明约束
+
+- Node/Python 版本仅在 `vars/toolchains.nix` 定义。
+- `python / uv / ruff / git / nodejs / docker / jq / curl` 仅在 `user/common/core/tooling/*.nix` 声明；`direnv` 仅在 `user/common/core/packages.nix` 声明。
+- 代理脚本逻辑仅在 `system/darwin/system/proxy-tools.nix`。
+
+### 关键目录显式导入
+
+- `system/darwin/.imports.nix`：固定 Darwin 核心模块导入顺序。
+- `user/common/core/.imports.nix`：固定 core 模块导入顺序。

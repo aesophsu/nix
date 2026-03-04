@@ -3,6 +3,8 @@
 let
   envExtra = ''
     export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+    # Use Node's Corepack-managed package managers (pnpm/yarn) with Nix Node.
+    corepack enable >/dev/null 2>&1 || true
   '';
 
   # Uncomment after installing conda/miniforge if needed
@@ -24,10 +26,4 @@ in
     dotDir = config.home.homeDirectory;
     initContent = lib.mkAfter (envExtra + initContent);
   };
-
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-  };
-
 }

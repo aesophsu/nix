@@ -1,0 +1,11 @@
+[
+  "packages.nix"
+  "tooling"
+  "git.nix"
+  "cli-experience.nix"
+  "neovim.nix"
+  "pip.nix"
+  "shells"
+  "starship.nix"
+  "theme.nix"
+]
