@@ -4,9 +4,10 @@
 
 ## 代理与国内网络说明
 
-- **First deploy without proxy**: Nix uses substituter mirrors, Homebrew uses BFSU mirror. One `darwin-rebuild switch` deploys mihomo (package + launchd + config link); no separate install.
+- **First deploy without proxy**: Nix uses substituter mirrors. One `darwin-rebuild switch` deploys mihomo (package + launchd + config link); no separate install.
 - **mihomo via Nix**: Package, env vars, `~/.config/mihomo/config.yaml` link, launchd are in `user/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd starts mihomo on login.
-- **brew/mas errors**: Comment out `masApps` or some taps to finish first deploy; add mihomo config, then run the same `darwin-rebuild switch` again.
+- **system proxy**: activation sets macOS network services to local mihomo proxy (`127.0.0.1:7890/7891`) by default (`proxy.policy.systemDefault = "on"`).
+- **runtime switch**: use `proxy-on` / `proxy-off` / `proxy-status` to manage system proxy without editing Nix files.
 - **GitHub access** (e.g. `nix flake update`): Use mihomo sessionVariables in shell, or set `http-proxy` / `https-proxy` in `~/.config/nix/nix.conf`.
 
 ## 前提条件
@@ -83,7 +84,17 @@ sudo darwin-rebuild switch --flake .
 sudo darwin-rebuild switch --flake '.#stella'
 ```
 
-First run installs nix-darwin, Home Manager, Homebrew, mihomo; mirrors allow no proxy. If brew/mas fails, comment `masApps` or taps, add mihomo config, then run the same command again.
+First run installs nix-darwin, Home Manager, Homebrew, mihomo. If Homebrew install fails on first run, add mihomo config and rerun the same command.
+
+## 4.1 代理控制（运行时）
+
+```bash
+proxy-status
+proxy-off
+proxy-on
+```
+
+`proxy-on` / `proxy-off` 仅切换 macOS 系统代理，不改写配置文件；下一次 `darwin-rebuild switch` 会再次按 `proxy.policy.systemDefault` 应用默认状态。
 
 ---
 
@@ -129,9 +140,11 @@ nix build --no-link .#checks.aarch64-darwin.smoke-eval
 |---|---|
 | `Determinate detected, aborting activation` | Expected; `nix.enable = false` is set. |
 | mihomo won’t start | Check `~/.config/mihomo/config.yaml` exists and subscription URL is correct; re-run `darwin-rebuild switch`. |
-| Homebrew install fails | Check mirrors in `system/darwin/apps.nix`. |
-| WeChat/SSL error | Comment masApps, add mihomo config, run switch again. |
+| Homebrew install fails | Check proxy env/homebrew settings in `system/darwin/apps.nix`; add mihomo config, then run switch again. |
+| WeChat/SSL error | Ensure mihomo is running and system proxy is active, then run switch again. |
 | SSH key not used | Set `mainSshAuthorizedKeys` in `vars/default.nix`. |
+
+推荐排障顺序：`proxy-status` -> `launchctl print gui/$(id -u)/mihomo` -> `darwin-rebuild switch --flake .`
 
 ---
 
