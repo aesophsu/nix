@@ -7,6 +7,10 @@
 let
   system = "aarch64-darwin";
   inherit (inputs.nixpkgs) lib;
+  projectRoots = {
+    qdrant = "/Users/sue/Code/grobid-qdrant-stack";
+    gptResearch = "/Users/sue/Code/gpt-researcher";
+  };
 
   mylib = import ../lib { inherit lib; };
   myvars = import ../vars { inherit lib; };
@@ -55,6 +59,16 @@ let
 
   pkgs = nixpkgs.legacyPackages.${system};
   tests = darwinOutputs.evalTests or { };
+  commonLangPackages = with pkgs; [
+    go
+    nodejs_22
+    rustc
+    cargo
+    rustfmt
+    clippy
+    pkg-config
+    openssl
+  ];
 in
 {
   darwinConfigurations = darwinOutputs.darwinConfigurations or { };
@@ -127,6 +141,49 @@ in
             echo "Project venv example:"
             echo "  uv venv && source .venv/bin/activate"
             echo "  uv pip install -r requirements.txt"
+          '';
+        };
+
+        qdrant = pkgs.mkShell {
+          name = "qdrant-dev";
+          packages = commonLangPackages ++ (with pkgs; [
+            python312
+            uv
+            docker
+            docker-compose
+            jq
+          ]);
+
+          shellHook = ''
+            export PROJECT_ROOT="${projectRoots.qdrant}"
+            echo "qdrant shell ready"
+            echo "project: $PROJECT_ROOT"
+            echo "Go: $(go version)"
+            echo "Node: $(node -v) / npm: $(npm -v)"
+            echo "Rust: $(rustc --version)"
+            echo "Python: $(python --version)"
+            echo "uv: $(uv --version 2>/dev/null || true)"
+          '';
+        };
+
+        gpt-research = pkgs.mkShell {
+          name = "gpt-research-dev";
+          packages = commonLangPackages ++ (with pkgs; [
+            python312
+            uv
+            pnpm
+            jq
+          ]);
+
+          shellHook = ''
+            export PROJECT_ROOT="${projectRoots.gptResearch}"
+            echo "gpt-research shell ready"
+            echo "project: $PROJECT_ROOT"
+            echo "Go: $(go version)"
+            echo "Node: $(node -v) / npm: $(npm -v)"
+            echo "Rust: $(rustc --version)"
+            echo "Python: $(python --version)"
+            echo "uv: $(uv --version 2>/dev/null || true)"
           '';
         };
       };

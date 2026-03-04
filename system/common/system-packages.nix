@@ -8,7 +8,7 @@
   # - 日常开发工具、语言运行时和 GUI 应用优先放在 Home Manager 中：
   #     - CLI / 终端工具：user/common/core/packages.nix
   #     - 语言栈（Python 等）：user/common/core/python.nix
-  #     - macOS GUI 应用：user/darwin/apps/gui.nix
+  #     - macOS GUI 应用：system/darwin/apps.nix 的 Homebrew casks
   environment.variables.EDITOR = "nvim --clean";
   environment.systemPackages = with pkgs; [
     git
