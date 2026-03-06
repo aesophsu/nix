@@ -12,6 +12,8 @@
 - **Toolchains**: Node/Python are pinned in one place (`myvars.toolchains.*`): `node.package = "nodejs_22"`, `python.package = "python312"`.
 - **Node toolchain**: Use Corepack to manage pnpm; avoid mixing `nvm`/`volta` with Nix Node.
 - **Unified CLI source**: `python / uv / ruff / git / nodejs / docker / jq / curl` are managed in `user/common/core/tooling/*`; `direnv` remains in `user/common/core/packages.nix` (Docker is CLI+Compose only, no Docker Desktop).
+- **Rolling GUI apps**: `chatgpt` / `google-chrome` / `telegram` are Homebrew casks and may upgrade during `darwin-rebuild switch`; they are not version-locked like Nix packages.
+- **Rolling user tools**: `codex CLI` is intentionally installed outside Nix so it can track the latest upstream release.
 
 ## 前提条件
 
@@ -117,7 +119,55 @@ Edit `vars/default.nix`: `hostname`, `username`, `mainSshAuthorizedKeys`, `initi
 
 ---
 
-## 7. 后续更新
+## 7. 版本策略
+
+这套配置采用 4 层版本策略：
+
+1. `Locked Stable`
+   大多数 CLI 和系统配置跟随 `flake.lock`，通过 `nix flake update` 统一升级。
+2. `Pinned Major`
+   Node / Python 只固定主版本带，入口在 `vars/toolchains.nix`。
+3. `Rolling User Tools`
+   `codex CLI` 这类高频变化工具脱离 Nix，独立安装与更新。
+4. `Rolling External Data`
+   Homebrew cask、mihomo 规则、GeoIP 等属于滚动层，不保证版本可复现。
+
+### `codex CLI`（独立于 Nix）
+
+Nix 提供稳定的 Node 运行时，但不再提供 `codex CLI` 本体。
+
+Shell 会设置：
+
+- `NPM_CONFIG_PREFIX="$HOME/.local/npm"`
+- `PATH="$HOME/.local/npm/bin:..."`
+
+首次安装：
+
+```bash
+mkdir -p ~/.local/npm
+npm install -g @openai/codex@latest
+which codex
+codex --version
+```
+
+预期：
+
+- `which codex` 指向 `~/.local/npm/bin/codex`
+- 不再指向 `/nix/store/.../codex`
+
+更新 `codex CLI`：
+
+```bash
+npm install -g @openai/codex@latest
+# or
+npm update -g @openai/codex
+```
+
+`codex CLI` 不是 `flake` 更新的一部分，也不会在 `darwin-rebuild switch` 时自动更新。
+
+---
+
+## 8. 后续更新
 
 ```bash
 cd ~/Code/nix
@@ -126,6 +176,26 @@ sudo darwin-rebuild switch --flake .
 ```
 
 Same command for first and later runs. If mihomo config wasn’t ready at first deploy, add it and run again.
+
+### 分层更新入口
+
+Nix 稳定层：
+
+```bash
+cd ~/Code/nix
+nix flake update
+sudo darwin-rebuild switch --flake .
+```
+
+Rolling GUI 层：
+
+- `darwin-rebuild switch --flake .` 会处理已声明 Homebrew cask 的安装/升级
+
+Rolling user tool 层：
+
+```bash
+npm install -g @openai/codex@latest
+```
 
 ### 可选：仅做评估与 smoke 校验（不构建系统）
 

@@ -34,7 +34,7 @@ in
   programs.zsh.enable = true;
   environment.shells = [ pkgs.zsh ];
 
-  # Homebrew 仅用于无法由 Nix 提供的 cask；CLI 仍以 Nix 为准（见 system/common/system-packages.nix）。
+  # Homebrew 仅用于滚动更新的 GUI cask；CLI 仍以 Nix 为准（见 system/common/system-packages.nix）。
   homebrew = {
     # Nix 管理 Homebrew，但禁用 Brewfile 模式，避免每次 `brew bundle` 很慢。
     # 仍然会用 `brew install` 确保 brews/casks 存在。
@@ -44,7 +44,7 @@ in
     };
     onActivation = {
       autoUpdate = false; # faster rebuild; run brew update when needed
-      upgrade = false; # don't upgrade on every rebuild; run brew upgrade manually
+      upgrade = true; # rolling GUI layer: upgrade declared casks during rebuild
       cleanup = "none"; # 避免每次重建做大量清理；需要时手动 `brew cleanup`
     };
 
@@ -56,7 +56,7 @@ in
     # 如果未来需要 yabai 等，再重新启用。
     taps = [ ];
 
-    # CLI 工具改由 Nix 提供（见 system/common/system-packages.nix）；Homebrew 仅负责 GUI casks。
+    # CLI 工具改由 Nix 提供（见 system/common/system-packages.nix）；Homebrew 仅负责滚动 GUI casks。
     brews = [ ];
 
     # 256G SSD 策略：重量级 GUI 由 Homebrew cask 管理，减少 Nix store 代际占用。

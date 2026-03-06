@@ -1,12 +1,12 @@
 { pkgs, ... }:
 
 {
-  # Base user-level CLI packages (toolchain/vcs/infra are split into tooling/*).
+  # Base user-level stable CLI packages.
+  # Rolling user tools such as codex CLI are installed outside Nix on purpose.
   home.packages = [
     pkgs.nix-index
     pkgs.nix-tree
     pkgs.gnupg
-    pkgs.codex
     pkgs.ollama
     pkgs.tree
     pkgs.wget
