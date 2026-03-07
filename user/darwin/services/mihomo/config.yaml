@@ -1,10 +1,10 @@
 # ==========================================
-# Mihomo Config 模板 (MacBook Air M4 / macOS)
+# Mihomo config template (MacBook Air M4 / macOS)
 # ==========================================
-# 使用: cp config.yaml.example config.yaml 或 config.local.yaml
-# 然后填入你的订阅 URL（含 token）
+# Usage: cp config.yaml.example config.yaml or config.local.yaml
+# Then set your subscription URL (with token).
 
-# 基础端口设置
+# Ports
 port: 7890
 socks-port: 7891
 mixed-port: 7893
@@ -99,13 +99,14 @@ geox:
 proxy-providers:
   Airport1:
     type: http
-    url: "https://999.ts1110.top/weibo/ipx/client/dy?token=286deb68eb0f7714af083c7192349b12"
+    # Subscription 1 (ts1110)
+    url: "https://999.ts1110.top/weibo/ipx/client/dy?token=YOUR_TOKEN"
     path: ./proxies/airport1.yaml
     interval: 43200
     update-on-start: false
     skip-cert-verify: false
-    filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
-    exclude-filter: "(?i)(倍|test|备用|Expire|到期|网|w01\\.fcweba\\.cc)"
+    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
+    exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -117,13 +118,14 @@ proxy-providers:
 
   Airport2:
     type: http
-    url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=6a0563b8a30ac5e2d6310cf55cca705e"
+    # Subscription 2 (fcsubcn)
+    url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=YOUR_TOKEN"
     path: ./proxies/airport2.yaml
     interval: 43200
     update-on-start: false
     skip-cert-verify: false
-    filter: "(?i)(hk|港|tw|台|jp|日|sg|新|us|美)"
-    exclude-filter: "(?i)(倍|test|备用|Expire|到期|网|w01\\.fcweba\\.cc)"
+    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
+    exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
       url: https://cp.cloudflare.com/generate_204
@@ -137,11 +139,11 @@ proxy-groups:
   - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, DIRECT, REJECT] }
   - { name: Auto, type: select, use: [Airport1, Airport2] }
   - { name: AI, type: select, proxies: [TW, JP, SG, US] }
-  - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(hk|港)" }
-  - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(tw|台)" }
-  - { name: JP, type: select, use: [Airport1, Airport2], filter: "(?i)(jp|日)" }
-  - { name: SG, type: select, use: [Airport1, Airport2], filter: "(?i)(sg|新)" }
-  - { name: US, type: select, use: [Airport1, Airport2], filter: "(?i)(us|美)" }
+  - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[HK\\]|HK-|HongKong|hk)" }
+  - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw)" }
+  - { name: JP, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[JP\\]|JP-|Tokyo|Japan|jp)" }
+  - { name: SG, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[SG\\]|SG-|Singapore|sg)" }
+  - { name: US, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)" }
 
 rule-providers:
   fakeip-filter:
@@ -203,6 +205,8 @@ rules:
   - DOMAIN-KEYWORD,airdrop,DIRECT
   - DOMAIN-KEYWORD,airplay,DIRECT
   - DOMAIN-KEYWORD,bonjour,DIRECT
+  # Route all Apple services through the AI proxy group
+  # (covers App Store / iCloud / iMessage / iCloud Drive / etc.)
   - GEOSITE,apple,AI
   - RULE-SET,ai,AI
   - RULE-SET,cn,DIRECT

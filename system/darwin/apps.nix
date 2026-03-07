@@ -63,7 +63,6 @@ in
     casks = [
       "chatgpt"
       "google-chrome"
-      "telegram"
     ];
   };
 }
