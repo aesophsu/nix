@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+usage() {
+  echo "Usage: devshell-init <base|python|node>" >&2
+  exit 1
+}
+
+[ $# -eq 1 ] || usage
+
+template="$1"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+templates_dir=$(CDPATH= cd -- "$script_dir/../share/devshell-templates" && pwd)
+template_dir="$templates_dir/$template"
+
+[ -d "$template_dir" ] || {
+  echo "Unknown template: $template" >&2
+  usage
+}
+
+for target in flake.nix .envrc; do
+  if [ -e "$target" ]; then
+    echo "Refusing to overwrite existing $target in $(pwd)" >&2
+    exit 1
+  fi
+done
+
+cp "$template_dir/flake.nix" ./flake.nix
+cp "$template_dir/.envrc" ./.envrc
+
+echo "Created flake.nix and .envrc from '$template'."
+echo "Next step: direnv allow"
