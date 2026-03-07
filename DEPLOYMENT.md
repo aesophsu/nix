@@ -9,9 +9,10 @@
 - **system proxy**: activation sets macOS network services to local mihomo proxy (`127.0.0.1:7890/7891`) by default (`proxy.policy.systemDefault = "on"`).
 - **runtime switch**: use `proxy-on` / `proxy-off` / `proxy-status` to manage system proxy without editing Nix files.
 - **GitHub access** (e.g. `nix flake update`): Use mihomo sessionVariables in shell, or set `http-proxy` / `https-proxy` in `~/.config/nix/nix.conf`.
-- **Toolchains**: Node/Python are pinned in one place (`myvars.toolchains.*`): `node.package = "nodejs_22"`, `python.package = "python312"`.
+- **Toolchains**: Base Node/Python runtimes are pinned in one place (`myvars.toolchains.*`): `node.package = "nodejs_22"`, `python.package = "python312"`.
 - **Node toolchain**: Use Corepack to manage pnpm; avoid mixing `nvm`/`volta` with Nix Node.
-- **Unified CLI source**: `python / uv / ruff / git / nodejs / docker / jq / curl` are managed in `user/common/core/tooling/*`; `direnv` remains in `user/common/core/packages.nix` (Docker is CLI+Compose only, no Docker Desktop).
+- **Global vs project tools**: Global Nix packages now keep only the base runtimes and cross-project CLI. Project-specific language tooling should live in each repo's `flake.nix` devShell.
+- **Unified CLI source**: `python / git / nodejs / docker / jq / curl` are managed in `user/common/core/tooling/*`; `direnv`, `nix-direnv`, `devshell-init`, and `devshell-attach` live in `user/common/core/packages.nix` (Docker is CLI+Compose only, no Docker Desktop).
 - **Rolling GUI apps**: `chatgpt` / `google-chrome` / `telegram` are Homebrew casks and may upgrade during `darwin-rebuild switch`; they are not version-locked like Nix packages.
 - **Rolling user tools**: `codex CLI` is intentionally installed outside Nix so it can track the latest upstream release.
 
@@ -213,6 +214,40 @@ corepack enable
 corepack prepare pnpm@latest --activate   # optional, pin a version per project if needed
 pnpm install --frozen-lockfile
 ```
+
+### Project devShell workflow
+
+This machine uses a two-layer convention:
+
+- global layer: stable cross-project CLI plus `direnv` / `nix-direnv`
+- project layer: each repository owns its own `flake.nix` + `.envrc`
+
+Project bootstrap templates are packaged from this repo:
+
+- `base`
+- `python`
+- `node`
+
+Typical flows:
+
+```bash
+# new project
+mkdir -p ~/Code/myproj
+cd ~/Code/myproj
+devshell-init python
+direnv allow
+
+# cloned repository that already has flake.nix but no .envrc
+cd ~/Code/some-repo
+devshell-attach base
+direnv allow
+```
+
+Rules:
+
+- `.envrc` should stay minimal and contain `use flake`
+- prefer `uv`, `ruff`, `pnpm`, and other language tools inside the project devShell
+- `devshell-init` / `devshell-attach` refuse to overwrite existing `flake.nix` or `.envrc`
 
 ---
 
