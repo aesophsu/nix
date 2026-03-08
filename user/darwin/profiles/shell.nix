@@ -5,7 +5,7 @@ let
   envExtra = ''
     # Keep codex CLI and other npm -g tools outside the Nix store.
     export NPM_CONFIG_PREFIX="${npmGlobalPrefix}"
-    export PATH="${npmGlobalPrefix}/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+    export PATH="$PATH:${npmGlobalPrefix}/bin"
     # Use Node's Corepack-managed package managers (pnpm/yarn) with Nix Node.
     corepack enable >/dev/null 2>&1 || true
   '';

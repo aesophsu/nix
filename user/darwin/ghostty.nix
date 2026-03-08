@@ -4,7 +4,7 @@
   xdg.configFile."ghostty/config".text = ''
     # MacBook Air M4: prioritize a native macOS terminal look with minimal visual noise.
     font-family = SF Mono
-    font-size = 15.5
+    font-size = 11
 
     theme = light:GitHub Light Default,dark:Catppuccin Mocha
 

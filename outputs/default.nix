@@ -35,9 +35,28 @@ let
 
   pkgs = nixpkgs.legacyPackages.${system};
   tests = darwinOutputs.evalTests or { };
+  devShellPackages = with pkgs; [
+    git
+    git-lfs
+    curl
+    jq
+    fd
+    ripgrep
+    just
+    nixfmt
+    deadnix
+    statix
+    nil
+  ];
 in
 {
   darwinConfigurations = darwinOutputs.darwinConfigurations or { };
+
+  devShells = {
+    "aarch64-darwin".default = pkgs.mkShell {
+      packages = devShellPackages;
+    };
+  };
 
   packages = {
     "aarch64-darwin" = darwinOutputs.packages or { };
