@@ -5,11 +5,16 @@
   ...
 }:
 let
-  inherit (myvars.networking.mihomo) host httpPort socksPort;
+  inherit (myvars.networking.mihomo) host httpPort socksPort httpProxy socksProxy;
   proxyCfg = myvars.networking.proxy;
   proxyPolicy = proxyCfg.policy;
   proxyServices = proxyCfg.systemServices;
   proxyServicesArray = lib.concatMapStringsSep "\n" (svc: "  \"${svc}\"") proxyServices;
+  proxyEnv = proxyCfg.env { inherit httpProxy socksProxy; };
+  proxyEnvExportScript = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: value: "printf 'export %s=%s\\n' ${lib.escapeShellArg name} ${lib.escapeShellArg value}") proxyEnv
+  );
+  proxyEnvVars = lib.concatStringsSep " " (builtins.attrNames proxyEnv);
 
   proxyOn = pkgs.writeShellScriptBin "proxy-on" ''
     set -euo pipefail
@@ -63,6 +68,29 @@ ${proxyServicesArray}
       fi
     done
   '';
+
+  proxyEnvOn = pkgs.writeShellScriptBin "proxy-env-on" ''
+    set -euo pipefail
+
+${proxyEnvExportScript}
+  '';
+
+  proxyEnvOff = pkgs.writeShellScriptBin "proxy-env-off" ''
+    set -euo pipefail
+
+    printf 'unset %s\n' "${proxyEnvVars}"
+  '';
+
+  proxyEnvStatus = pkgs.writeShellScriptBin "proxy-env-status" ''
+    set -euo pipefail
+
+    for name in ${proxyEnvVars}; do
+      value="''${!name-}"
+      if [ -n "''${value}" ]; then
+        printf '%s=%s\n' "$name" "$value"
+      fi
+    done
+  '';
 in
 {
   assertions = [
@@ -86,11 +114,17 @@ in
     proxyOn
     proxyOff
     proxyStatus
+    proxyEnvOn
+    proxyEnvOff
+    proxyEnvStatus
   ];
 
   _module.args.proxyTools = {
     on = proxyOn;
     off = proxyOff;
     status = proxyStatus;
+    envOn = proxyEnvOn;
+    envOff = proxyEnvOff;
+    envStatus = proxyEnvStatus;
   };
 }

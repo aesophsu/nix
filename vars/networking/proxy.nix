@@ -2,12 +2,13 @@
 {
   proxy = rec {
     policy = {
-      # System network proxy default action on darwin activation: "on" or "off"
-      systemDefault = "on";
-      # Inject HTTP(S)_PROXY into user shell session by default
-      cliDefault = "on";
-      # Inject proxy env in homebrew activation phase
-      homebrewEnv = true;
+      # Manual system proxy preference for operator-facing tooling.
+      # `darwin-rebuild switch` must not mutate current network proxy state.
+      systemDefault = "off";
+      # Manual shell proxy preference. Proxy env is exported only via explicit commands.
+      cliDefault = "off";
+      # Homebrew activation should not inject proxy env during rebuilds.
+      homebrewEnv = false;
     };
 
     # Common macOS network services we manage via networksetup.

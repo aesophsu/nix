@@ -5,10 +5,11 @@
 ## 代理与国内网络说明
 
 - **First deploy without proxy**: Nix uses substituter mirrors. One `darwin-rebuild switch` deploys mihomo (package + launchd + config link); no separate install.
-- **mihomo via Nix**: Package, env vars, `~/.config/mihomo/config.yaml` link, launchd are in `user/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd starts mihomo on login.
-- **system proxy**: activation sets macOS network services to local mihomo proxy (`127.0.0.1:7890/7891`) by default (`proxy.policy.systemDefault = "on"`).
-- **runtime switch**: use `proxy-on` / `proxy-off` / `proxy-status` to manage system proxy without editing Nix files.
-- **GitHub access** (e.g. `nix flake update`): Use mihomo sessionVariables in shell, or set `http-proxy` / `https-proxy` in `~/.config/nix/nix.conf`.
+- **mihomo via Nix**: Package, `~/.config/mihomo/config.yaml` link, and launchd are in `user/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd keeps mihomo running after login.
+- **system proxy**: `darwin-rebuild switch` no longer changes macOS system proxy settings. Use manual takeover when you want traffic to go through local mihomo (`127.0.0.1:7890/7891`).
+- **runtime switch**: use `proxy-on` / `proxy-off` / `proxy-status` to manage macOS system proxy without editing Nix files.
+- **shell proxy env**: use `eval "$(proxy-env-on)"` and `eval "$(proxy-env-off)"` to opt the current shell in or out of `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`.
+- **GitHub access** (e.g. `nix flake update`): prefer manual shell takeover or set `http-proxy` / `https-proxy` in `~/.config/nix/nix.conf`.
 - **Toolchains**: Base Node/Python runtimes are pinned in one place (`myvars.toolchains.*`): `node.package = "nodejs_22"`, `python.package = "python312"`.
 - **Node toolchain**: Use Corepack to manage pnpm; avoid mixing `nvm`/`volta` with Nix Node.
 - **Global vs project tools**: Global Nix packages now keep only the base runtimes and cross-project CLI. Project-specific language tooling should live in each repo's `flake.nix` devShell.
@@ -98,9 +99,11 @@ First run installs nix-darwin, Home Manager, Homebrew, mihomo. If Homebrew insta
 proxy-status
 proxy-off
 proxy-on
+eval "$(proxy-env-on)"
+eval "$(proxy-env-off)"
 ```
 
-`proxy-on` / `proxy-off` 仅切换 macOS 系统代理，不改写配置文件；下一次 `darwin-rebuild switch` 会再次按 `proxy.policy.systemDefault` 应用默认状态。
+`proxy-on` / `proxy-off` 仅切换 macOS 系统代理，不改写配置文件；`darwin-rebuild switch` 不会再自动改回系统代理状态。`proxy-env-on` / `proxy-env-off` 只影响当前 shell。
 
 ---
 

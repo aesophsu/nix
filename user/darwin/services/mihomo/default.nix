@@ -1,7 +1,7 @@
-# mihomo: package, env vars, config, launchd
+# mihomo: package, config, launchd
 # Config precedence: config.local.yaml > config.yaml > config.yaml.example
 
-{ config, pkgs, lib, mylib, myvars, ... }:
+{ config, pkgs, mylib, ... }:
 
 let
   configDir = "${config.xdg.configHome}/mihomo";
@@ -12,16 +12,9 @@ let
     ];
     default = ./config.yaml.example;
   };
-  inherit (myvars.networking.mihomo) httpProxy socksProxy;
-  proxyPolicy = myvars.networking.proxy.policy;
-  proxyEnv = myvars.networking.proxy.env { inherit httpProxy socksProxy; };
 in
 {
   home.packages = [ pkgs.mihomo ];
-
-  # Env vars so CLI (curl, wget, git, etc.) use mihomo proxy
-  # no_proxy includes mirror domains so pip/uv/brew can go direct
-  home.sessionVariables = lib.mkIf (proxyPolicy.cliDefault == "on") proxyEnv;
 
   xdg.configFile."mihomo/config.yaml" = {
     source = configSource;

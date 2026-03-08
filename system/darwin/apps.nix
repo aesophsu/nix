@@ -1,34 +1,14 @@
 {
   config,
-  lib,
   pkgs,
-  myvars,
   ...
 }:
-
-let
-  # 通过本地 mihomo 代理 Homebrew；避免硬编码 TUNA 镜像，让 Homebrew 自己走代理访问官方源。
-  inherit (myvars.networking.mihomo) httpProxy socksProxy;
-  proxyLib = myvars.networking.proxy;
-  homebrew_mirror_env = proxyLib.env {
-    inherit httpProxy socksProxy;
-    noProxyList = proxyLib.noProxyLocal;
-  };
-  homebrew_env_script = lib.concatStringsSep "\n" (
-    lib.attrsets.mapAttrsToList (n: v: "export ${n}=${v}") homebrew_mirror_env
-  );
-in
 {
   # git from system/common/system-packages.nix
   environment.variables = {
     TERMINFO_DIRS = map (path: path + "/share/terminfo") config.environment.profiles ++ [
       "/usr/share/terminfo"
     ];
-  };
-  system.activationScripts = lib.mkIf proxyLib.policy.homebrewEnv {
-    homebrew.text = lib.mkBefore ''
-      ${homebrew_env_script}
-    '';
   };
 
   programs.zsh.enable = true;
@@ -62,6 +42,7 @@ in
     # 256G SSD 策略：重量级 GUI 由 Homebrew cask 管理，减少 Nix store 代际占用。
     casks = [
       "chatgpt"
+      "ghostty"
       "google-chrome"
     ];
   };

@@ -4,7 +4,7 @@ Mihomo 代理配置（TUN、多上游、AI 规则），面向 MacBook Air M4 场
 
 ## 通过 Nix 部署（推荐）
 
-`user/darwin/services/mihomo/default.nix` 会将配置链接到 `~/.config/mihomo/config.yaml`。
+`user/darwin/services/mihomo/default.nix` 会将配置链接到 `~/.config/mihomo/config.yaml`，并通过 launchd 保持 mihomo 常驻。
 优先级：`config.local.yaml` > `config.yaml` > `config.yaml.example`（当前目录）。
 
 ```bash
@@ -24,11 +24,12 @@ git clone https://github.com/haishan/yacd.git ~/.config/mihomo/ui
 
 ## 代理端口与行为
 
-应用后，mihomo 会成为默认代理：
+应用后，mihomo 会常驻运行，但不会自动接管流量：
 
 - HTTP/HTTPS：`127.0.0.1:7890`
 - SOCKS5：`127.0.0.1:7891`
-- CLI 走环境变量；GUI 通过 `networksetup`
+- 系统代理手动切换：`proxy-on` / `proxy-off`
+- 当前 shell 手动导出：`eval "$(proxy-env-on)"` / `eval "$(proxy-env-off)"`
 - 已启用 TUN（个别应用仍可能需要显式代理）
 
 ## 示例配置中的调优项
