@@ -15,6 +15,10 @@ let
     openclawPackageDir
     upstreamPackages
     ;
+  inherit (config._module.args.openclawConfig)
+    declarativeOpenclawConfig
+    managedOpenclawHmConfig
+    ;
   inherit (config._module.args.openclawPlugins)
     feishuPluginId
     memoryLancedbProId
@@ -26,136 +30,10 @@ let
     tavilyPluginSrc
     tavilyPluginVersion
     ;
-  feishuAppId = "cli_a926fc773df85cc7";
-  managedOpenclawConfig = {
-    auth.profiles."openai-codex:default" = {
-      provider = "openai-codex";
-      mode = "oauth";
-    };
-    agents.defaults = {
-      model.primary = "openai-codex/gpt-5.4";
-      workspace = "${config.home.homeDirectory}/.openclaw/workspace";
-      compaction.mode = "safeguard";
-      sandbox.mode = "off";
-      memorySearch.enabled = false;
-    };
-    channels = {
-      feishu = {
-        enabled = true;
-        appId = feishuAppId;
-        appSecret = "\${FEISHU_APP_SECRET}";
-        domain = "feishu";
-        connectionMode = "websocket";
-        requireMention = true;
-        dmPolicy = "pairing";
-        groupPolicy = "allowlist";
-        allowFrom = [
-          "ou_0a0b162f4521f168e4f15494e3e2714f"
-        ];
-        groupAllowFrom = [
-          "ou_0a0b162f4521f168e4f15494e3e2714f"
-        ];
-        tools = {
-          doc = false;
-          wiki = false;
-        };
-      };
-    };
-    gateway = {
-      mode = "local";
-      auth.mode = "token";
-      trustedProxies = [
-        "127.0.0.1"
-        "::1"
-      ];
-    };
-    tools = {
-      profile = "coding";
-      alsoAllow = [
-        "group:web"
-        "tavily_search"
-        "tavily_extract"
-        "tavily_crawl"
-        "tavily_map"
-        "tavily_research"
-      ];
-      deny = [ "group:runtime" ];
-      fs.workspaceOnly = true;
-    };
-    plugins = {
-      allow = [
-        feishuPluginId
-        memoryLancedbProId
-        tavilyPluginId
-      ];
-      slots.memory = memoryLancedbProId;
-      entries = {
-        feishu.enabled = true;
-        ${tavilyPluginId} = {
-          enabled = true;
-          config = {
-            searchDepth = "advanced";
-            maxResults = 5;
-            includeAnswer = true;
-            includeRawContent = false;
-            timeoutSeconds = 30;
-          };
-        };
-        ${memoryLancedbProId} = {
-          enabled = true;
-          config = {
-            embedding = {
-              provider = "openai-compatible";
-              apiKey = "\${JINA_API_KEY}";
-              model = "jina-embeddings-v5-text-small";
-              baseURL = "https://api.jina.ai/v1";
-              dimensions = 1024;
-              taskQuery = "retrieval.query";
-              taskPassage = "retrieval.passage";
-              normalized = true;
-            };
-            dbPath = "${config.home.homeDirectory}/.openclaw/memory/lancedb-pro";
-            autoCapture = false;
-            autoRecall = false;
-            enableManagementTools = false;
-            sessionStrategy = "systemSessionMemory";
-            retrieval = {
-              mode = "hybrid";
-              rerank = "cross-encoder";
-              rerankProvider = "jina";
-              rerankApiKey = "\${JINA_API_KEY}";
-              rerankModel = "jina-reranker-v3";
-              rerankEndpoint = "https://api.jina.ai/v1/rerank";
-            };
-            selfImprovement.enabled = false;
-            scopes = {
-              default = "project:openclaw-nix";
-              definitions = {
-                global.description = "Stable cross-context personal memory only";
-                "project:openclaw-nix".description = "Primary OpenClaw + Nix working memory";
-                "agent:admin".description = "Privileged local admin and ops memory";
-                "project:research".description = "Research project memory";
-                "project:medical-rag".description = "Medical RAG project memory";
-              };
-              agentAccess = {
-                main = [
-                  "global"
-                  "project:openclaw-nix"
-                ];
-              };
-            };
-          };
-        };
-      };
-      installs.${memoryLancedbProId} = memoryLancedbProInstall;
-      installs.${tavilyPluginId} = tavilyPluginInstall;
-    };
-  };
-  managedOpenclawHmConfig = managedOpenclawConfig // {
-    channels = builtins.removeAttrs managedOpenclawConfig.channels [ "feishu" ];
-    secrets.providers = { };
-  };
-  declarativeOpenclawConfig = pkgs.writeText "openclaw.json" (builtins.toJSON managedOpenclawConfig);
+  inherit (config._module.args.openclawSecrets)
+    envFileSource
+    wrapperSecretExports
+    ;
   gatewayLaunchdPath = lib.concatStringsSep ":" [
     "${config.home.homeDirectory}/.local/npm/bin"
     "${config.home.homeDirectory}/.local/bin"
@@ -181,10 +59,11 @@ in
     nix-openclaw.homeManagerModules.openclaw
     ./package.nix
     ./plugins.nix
+    ./config.nix
+    ./secrets.nix
   ];
 
-  home.file.".openclaw/.env".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.secrets/openclaw.env";
+  home.file.".openclaw/.env".source = envFileSource;
   home.file.".openclaw/openclaw.json".force = true;
   home.file.".local/bin/openclaw" = {
     executable = true;
@@ -201,21 +80,7 @@ in
       export no_proxy="${proxyEnv.no_proxy}"
       export NO_PROXY="${proxyEnv.NO_PROXY}"
 
-      if [ -f "${config.home.homeDirectory}/.secrets/feishu-app-id" ] && [ -z "$FEISHU_APP_ID" ]; then
-        export FEISHU_APP_ID="$(cat "${config.home.homeDirectory}/.secrets/feishu-app-id")"
-      fi
-      if [ -f "${config.home.homeDirectory}/.secrets/feishu-app-secret" ] && [ -z "$FEISHU_APP_SECRET" ]; then
-        export FEISHU_APP_SECRET="$(cat "${config.home.homeDirectory}/.secrets/feishu-app-secret")"
-      fi
-      if [ -f "${config.home.homeDirectory}/.secrets/jina-api-key" ] && [ -z "$JINA_API_KEY" ]; then
-        export JINA_API_KEY="$(cat "${config.home.homeDirectory}/.secrets/jina-api-key")"
-      fi
-      if [ -f "${config.home.homeDirectory}/.secrets/tavily-api-key" ] && [ -z "$TAVILY_API_KEY" ]; then
-        export TAVILY_API_KEY="$(cat "${config.home.homeDirectory}/.secrets/tavily-api-key")"
-      fi
-      if [ -f "${config.home.homeDirectory}/.secrets/firecrawl-api-key" ] && [ -z "$FIRECRAWL_API_KEY" ]; then
-        export FIRECRAWL_API_KEY="$(cat "${config.home.homeDirectory}/.secrets/firecrawl-api-key")"
-      fi
+      ${wrapperSecretExports}
 
       if [ -z "$OPENCLAW_BUNDLED_SKILLS_DIR" ]; then
         openclaw_pkg="${openclawPackageDir}"
