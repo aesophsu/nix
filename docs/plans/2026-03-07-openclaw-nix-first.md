@@ -77,3 +77,116 @@ Expected: shows the implementation plan header and tasks.
 
 Run: `git status --short`
 Expected: shows the new `AGENTS.md` and plan/design docs as expected.
+
+---
+
+## Current Operating Notes
+
+The plan above established the repository rule. The current working OpenClaw state built on top of that rule is:
+
+- Nix/Home Manager owns the persistent OpenClaw config, service wiring, plugin installs, and runtime wrapper
+- Feishu is the current user-facing entry path into the `main` assistant
+- Codex is the current model runtime through `openai-codex/gpt-5.2-codex`
+- `memory-lancedb-pro` is the active memory slot with Jina embeddings and reranking
+- `openclaw-tavily` is the active Tavily web research plugin
+- Firecrawl is active only as runtime-backed support for built-in `web_fetch`
+- proxy settings plus `JINA_API_KEY`, `TAVILY_API_KEY`, `FIRECRAWL_API_KEY`, and Feishu secrets are injected only at gateway runtime from local files under `~/.secrets`
+
+### Current Tool Policy
+
+The current working policy is:
+
+- `tools.profile = "coding"`
+- `tools.alsoAllow = [ "group:web" "tavily_search" "tavily_extract" "tavily_crawl" "tavily_map" "tavily_research" ]`
+- `tools.deny = [ "group:runtime" ]`
+- `tools.fs.workspaceOnly = true`
+
+Why this matters:
+
+- the coding profile keeps the base tool surface narrow
+- Tavily is exposed additively through `tools.alsoAllow`
+- built-in web tools stay available through `group:web`
+- runtime execution stays unavailable
+- filesystem access stays workspace-scoped
+
+### Why `tools.allow` Was Not The Right Mechanism
+
+Under a restrictive `tools.profile`, OpenClaw applies tool filtering as an intersection pipeline. `tools.allow` does not re-add plugin tools after the profile has already removed them. `tools.alsoAllow` is the additive mechanism that works with restrictive profiles.
+
+In the current setup, Tavily exposure only worked reliably after:
+
+- moving Tavily tool names into `tools.alsoAllow`
+- removing conflicting `tools.allow` usage in the same scope
+- restarting the gateway so the live process picked up the new policy
+
+### Current Plugin Notes
+
+**Memory**
+
+- plugin: `memory-lancedb-pro`
+- storage: `~/.openclaw/memory/lancedb-pro`
+- embeddings: Jina OpenAI-compatible endpoint
+- reranker: Jina rerank API
+- rollout posture:
+  - `autoCapture = false`
+  - `autoRecall = false`
+  - `enableManagementTools = false`
+
+**Tavily**
+
+- plugin: `openclaw-tavily`
+- pinned source revision: `6db474508f44854864d6c47368c84962ef012120`
+- key injection: runtime-only from `~/.secrets/tavily-api-key`
+- available tools:
+  - `tavily_search`
+  - `tavily_extract`
+  - `tavily_crawl`
+  - `tavily_map`
+  - `tavily_research`
+
+**Firecrawl**
+
+- used by built-in `web_fetch`, not as a plugin
+- key injection: runtime-only from `~/.secrets/firecrawl-api-key`
+- current build behavior:
+  - runtime code supports Firecrawl fallback
+  - config validator rejects `tools.web.fetch.firecrawl`
+  - therefore Firecrawl is runtime-env-only in this build
+
+### Current Web Responsibilities
+
+- Tavily handles explicit search/extract/crawl/research tool calls
+- Firecrawl is used internally by `web_fetch` when its fallback path is triggered and `FIRECRAWL_API_KEY` is present
+
+### Current Security Boundary
+
+The current Feishu-facing assistant can use:
+
+- filesystem tools
+- web tools
+- Tavily tools
+
+It cannot use:
+
+- host runtime/exec tools, because `group:runtime` is denied
+
+Additional constraints:
+
+- filesystem access is limited to the configured workspace
+- sandboxing is currently off, so restoring runtime tools later would widen risk materially
+
+### Safe Modification Checklist
+
+- Make persistent plugin changes in Nix/Home Manager, not imperatively
+- Pin external plugin sources by exact revision and hash
+- Use `tools.alsoAllow` for plugin tool exposure under restrictive profiles
+- Keep secrets runtime-only from `~/.secrets`
+- If runtime code and config validation disagree, keep config valid and use the smallest supported runtime-only path
+- After changing tool policy or gateway wrapper logic, confirm the gateway actually restarted
+- Verify against the live gateway and the `main` agent path before calling the change complete
+
+### Next Planned Integration Order
+
+1. Jina Reader
+2. LangGraph
+3. GPT-Researcher

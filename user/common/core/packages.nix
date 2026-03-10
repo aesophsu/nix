@@ -30,7 +30,6 @@ in
     pkgs.ollama
     pkgs.tree
     pkgs.wget
-    pkgs.go
     devshellTools
   ];
 

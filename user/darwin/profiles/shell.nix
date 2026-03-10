@@ -6,8 +6,9 @@ let
     # Keep codex CLI and other npm -g tools outside the Nix store.
     export NPM_CONFIG_PREFIX="${npmGlobalPrefix}"
     export PATH="$PATH:${npmGlobalPrefix}/bin"
-    # Use Node's Corepack-managed package managers (pnpm/yarn) with Nix Node.
-    corepack enable >/dev/null 2>&1 || true
+    if [ -f "${config.home.homeDirectory}/.secrets/jina-api-key" ]; then
+      export JINA_API_KEY="$(cat "${config.home.homeDirectory}/.secrets/jina-api-key")"
+    fi
   '';
 
   # Uncomment after installing conda/miniforge if needed
@@ -18,6 +19,8 @@ let
   '';
 in
 {
+  home.sessionPath = [ "${config.xdg.stateHome}/nix/profiles/home-manager/home-path/bin" ];
+
   programs.bash = {
     enable = true;
     bashrcExtra = lib.mkAfter (envExtra + initContent);

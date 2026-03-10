@@ -11,6 +11,8 @@
     extraImports = [
       ../common/core
       ../common/home.nix
+      ./services
     ];
+    exclude = [ ./services ];
   };
 }

@@ -137,3 +137,170 @@ When handling OpenClaw tasks in this repository, the assistant should follow thi
 - the assistant can still diagnose and operate OpenClaw effectively using the installed skill
 - runtime drift is minimized and never left implicit
 - the user can rely on one clear rule: persistent state belongs in Nix
+
+## Current Working Architecture
+
+The current steady-state OpenClaw setup in this repository is:
+
+- **Entry channel:** Feishu
+- **Primary model runtime:** Codex via `openai-codex/gpt-5.2-codex`
+- **Persistent memory plugin:** `memory-lancedb-pro`
+- **Web research plugin:** `openclaw-tavily`
+- **Built-in web fetch fallback:** Firecrawl via runtime-only `FIRECRAWL_API_KEY`
+- **Ownership:** Nix/Home Manager manages the service, config, plugin installs, and long-lived wiring
+- **Secrets:** injected at runtime from `~/.secrets`, not stored in Nix
+
+Operationally:
+
+- Feishu is the user-facing entry point into the `main` assistant
+- the gateway service is managed declaratively through Nix/Home Manager
+- proxy environment is injected into the gateway runtime by the launchd wrapper
+- `JINA_API_KEY`, `TAVILY_API_KEY`, `FIRECRAWL_API_KEY`, and Feishu secrets are exported only at runtime from local secret files
+
+## Current Tool Exposure Model
+
+The working tool policy is:
+
+- `tools.profile = "coding"`
+- `tools.alsoAllow = [ "group:web" "tavily_search" "tavily_extract" "tavily_crawl" "tavily_map" "tavily_research" ]`
+- `tools.deny = [ "group:runtime" ]`
+- `tools.fs.workspaceOnly = true`
+
+This is intentionally narrow:
+
+- filesystem tools remain available for coding workflows
+- Tavily and built-in web tools are added explicitly
+- host runtime tools remain intentionally unavailable
+- filesystem access remains constrained to the OpenClaw workspace
+
+### Why `tools.alsoAllow` Was Required
+
+`tools.profile = "coding"` is a restrictive core-tool allowlist. OpenClaw applies tool policy as an intersection pipeline, so `tools.allow` is not an additive escape hatch for plugin tools after the profile has already filtered them out.
+
+The stable working pattern is:
+
+- keep the restrictive profile
+- use `tools.alsoAllow` for extra plugin or non-profile tools
+- avoid mixing `tools.allow` and `tools.alsoAllow` in the same scope
+
+In practice, `tools.allow` did not expose Tavily tools, while `tools.alsoAllow` did once the gateway restarted on the new config.
+
+## Current Web Stack Responsibilities
+
+The current web stack is split by responsibility:
+
+- **Tavily** is used through explicit plugin tools:
+  - `tavily_search`
+  - `tavily_extract`
+  - `tavily_crawl`
+  - `tavily_map`
+  - `tavily_research`
+- **Firecrawl** is used internally by the built-in `web_fetch` tool when `FIRECRAWL_API_KEY` is present in the gateway runtime
+
+In this OpenClaw build, Firecrawl is **runtime-env-only**:
+
+- runtime code supports Firecrawl fallback
+- the config validator rejects `tools.web.fetch.firecrawl`
+- therefore declarative Firecrawl config in `openclaw.json` is not currently valid for this build
+
+The stable working pattern today is:
+
+- expose `group:web` via `tools.alsoAllow`
+- inject `FIRECRAWL_API_KEY` at runtime only
+- let `web_fetch` use Firecrawl automatically when its internal fallback path is triggered
+
+## Current Memory Design
+
+The current memory layer uses `memory-lancedb-pro` with Jina-backed retrieval:
+
+- embeddings provider: OpenAI-compatible Jina embeddings
+- reranker provider: Jina reranker
+- storage path: `~/.openclaw/memory/lancedb-pro`
+- slot binding: `plugins.slots.memory = "memory-lancedb-pro"`
+
+The scoped memory model is conservative:
+
+- default scope: `project:openclaw-nix`
+- explicit scope definitions for `global`, `project:*`, and `agent:*`
+- `main` currently receives `global` and `project:openclaw-nix`
+
+The current rollout is intentionally conservative:
+
+- `autoCapture = false`
+- `autoRecall = false`
+- `enableManagementTools = false`
+
+## Current Tavily Design
+
+The Tavily integration is intentionally reproducible and secret-safe:
+
+- plugin id: `openclaw-tavily`
+- source: GitHub tarball
+- pinned revision: `6db474508f44854864d6c47368c84962ef012120`
+- install path: `~/.openclaw/extensions/openclaw-tavily`
+- API key source: `~/.secrets/tavily-api-key`
+
+The API key is not written into generated Nix config and is not stored in the Nix store. It is injected only into the gateway runtime environment.
+
+The currently exposed Tavily tools are:
+
+- `tavily_search`
+- `tavily_extract`
+- `tavily_crawl`
+- `tavily_map`
+- `tavily_research`
+
+## Current Firecrawl Design
+
+The Firecrawl integration is intentionally minimal in this build:
+
+- no standalone plugin
+- no Firecrawl config stored in generated OpenClaw config
+- `FIRECRAWL_API_KEY` injected only at runtime from `~/.secrets/firecrawl-api-key`
+
+This is required because the current build rejects declarative `tools.web.fetch.firecrawl` config even though the runtime contains Firecrawl support code.
+
+## Current Security Boundary
+
+The current boundary is intentionally useful but not fully hardened:
+
+- Feishu-facing assistant can use filesystem tools and web/Tavily tools
+- host runtime tools are intentionally denied via `group:runtime`
+- filesystem tools are workspace-scoped via `tools.fs.workspaceOnly = true`
+- `agents.defaults.sandbox.mode = "off"` currently leaves execution unsandboxed if runtime tools are ever re-enabled
+
+This means the main practical safety boundary today is:
+
+- no host exec/runtime tools
+- workspace-scoped filesystem access
+- explicit web/Tavily exposure only
+
+## Safe Modification Checklist
+
+When modifying this OpenClaw setup later:
+
+1. **Plugin installation**
+   - keep persistent plugin installs declarative in Nix/Home Manager
+   - pin external plugin sources by exact revision and hash
+   - install into `~/.openclaw/extensions/...` through declarative activation steps
+
+2. **Tool exposure**
+   - preserve `tools.profile = "coding"` unless broadening access is deliberate
+   - use `tools.alsoAllow` for plugin tools
+   - do not assume `tools.allow` is additive under a restrictive profile
+   - keep `tools.deny = [ "group:runtime" ]` unless host execution is intentionally being reopened
+
+3. **Secrets**
+   - keep API keys out of Nix expressions and generated config
+   - inject secrets only at runtime from `~/.secrets/...`
+   - treat any secret value appearing in the Nix store as a regression
+
+4. **Schema/runtime mismatches**
+   - if runtime code appears to support a field but `openclaw config validate` rejects it, prefer the validator
+   - treat that as a build-specific schema mismatch, not as permission to force unsupported config into `openclaw.json`
+   - for this build, Firecrawl support is runtime-env-only rather than declarative
+
+5. **Gateway lifecycle**
+   - after tool-policy or runtime-wrapper changes, verify the running gateway actually restarted
+   - do not assume a rebuild alone is sufficient; confirm with `openclaw gateway status`
+   - re-run post-change verification against the live gateway, not just static config
