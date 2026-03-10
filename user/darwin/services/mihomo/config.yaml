@@ -105,7 +105,9 @@ proxy-providers:
     interval: 43200
     update-on-start: false
     skip-cert-verify: false
-    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
+    filter:
+      "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los
+      Angeles|Santa Clara|San Jose|San Francisco|us)"
     exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
@@ -124,7 +126,9 @@ proxy-providers:
     interval: 43200
     update-on-start: false
     skip-cert-verify: false
-    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
+    filter:
+      "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los
+      Angeles|Santa Clara|San Jose|San Francisco|us)"
     exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
     health-check:
       enable: true
@@ -140,10 +144,25 @@ proxy-groups:
   - { name: Auto, type: select, use: [Airport1, Airport2] }
   - { name: AI, type: select, proxies: [TW, JP, SG, US] }
   - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[HK\\]|HK-|HongKong|hk)" }
-  - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw)" }
-  - { name: JP, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[JP\\]|JP-|Tokyo|Japan|jp)" }
+  - {
+      name: TW,
+      type: select,
+      use: [Airport1, Airport2],
+      filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw)",
+    }
+  - {
+      name: JP,
+      type: select,
+      use: [Airport1, Airport2],
+      filter: "(?i)(\\[JP\\]|JP-|Tokyo|Japan|jp)",
+    }
   - { name: SG, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[SG\\]|SG-|Singapore|sg)" }
-  - { name: US, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)" }
+  - {
+      name: US,
+      type: select,
+      use: [Airport1, Airport2],
+      filter: "(?i)(\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)",
+    }
 
 rule-providers:
   fakeip-filter:

@@ -42,6 +42,7 @@
     # 256G SSD 策略：重量级 GUI 由 Homebrew cask 管理，减少 Nix store 代际占用。
     casks = [
       "chatgpt"
+      "feishu"
       "ghostty"
       "google-chrome"
     ];

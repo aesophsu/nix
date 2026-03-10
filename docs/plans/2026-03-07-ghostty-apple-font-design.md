@@ -4,7 +4,8 @@
 
 ## Goal
 
-Adjust Ghostty to use a font that matches the native macOS terminal aesthetic as closely as possible.
+Adjust Ghostty to use a font that matches the native macOS terminal aesthetic as closely as
+possible.
 
 ## Constraints
 

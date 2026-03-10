@@ -17,7 +17,7 @@
   '';
 
   # Only package index and client tuning vars live here.
-  # Generic HTTP(S)_PROXY/ALL_PROXY are managed in user/darwin/services/mihomo/default.nix.
+  # Generic HTTP(S)_PROXY/ALL_PROXY are managed in the Darwin shell profile.
   home.sessionVariables = {
     PIP_INDEX_URL = "https://mirror.nju.edu.cn/pypi/web/simple";
     PIP_EXTRA_INDEX_URL = "https://pypi.tuna.tsinghua.edu.cn/simple";

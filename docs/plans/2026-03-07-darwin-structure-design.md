@@ -2,22 +2,28 @@
 
 **Date:** 2026-03-07
 
-**Scope:** Improve maintainability of the Darwin-specific Nix module layout by standardizing directory structure and import wiring without changing behavior.
+**Scope:** Improve maintainability of the Darwin-specific Nix module layout by standardizing
+directory structure and import wiring without changing behavior.
 
 ---
 
 ## Goal
 
-Unify the Darwin module layout so both `system/darwin/` and `user/darwin/` follow the same explicit-entry pattern. The main change is replacing automatic directory scanning in the Darwin user layer with explicit import manifests.
+Unify the Darwin module layout so both `system/darwin/` and `user/darwin/` follow the same
+explicit-entry pattern. The main change is replacing automatic directory scanning in the Darwin user
+layer with explicit import manifests.
 
-This work is intentionally structural. It should not change module behavior, option semantics, host wiring, or activation outcomes.
+This work is intentionally structural. It should not change module behavior, option semantics, host
+wiring, or activation outcomes.
 
 ## Current Problems
 
 - `system/darwin/` already exposes a visible module manifest through `.imports.nix`.
-- `user/darwin/`, `user/darwin/profiles/`, and `user/darwin/services/` still rely on `mylib.discoverImports`.
+- `user/darwin/`, `user/darwin/profiles/`, and `user/darwin/services/` still rely on
+  `mylib.discoverImports`.
 - The repository therefore mixes two wiring styles for similar module trees.
-- Auto-discovery makes load order implicit and makes it harder to tell which modules are active by inspection.
+- Auto-discovery makes load order implicit and makes it harder to tell which modules are active by
+  inspection.
 - The README still documents scanning behavior, which reinforces the inconsistency.
 
 ## Chosen Approach
@@ -48,7 +54,8 @@ Entrypoint conventions are standardized:
 
 Single-file modules keep descriptive names such as `ghostty.nix`, `shell.nix`, and `security.nix`.
 
-Multi-file features remain directory-backed modules such as `services/mihomo/` and `services/postgresql/`.
+Multi-file features remain directory-backed modules such as `services/mihomo/` and
+`services/postgresql/`.
 
 ## Import Layout
 
@@ -60,9 +67,12 @@ Multi-file features remain directory-backed modules such as `services/mihomo/` a
 
 ### `user/darwin/`
 
-- `default.nix` should only handle local bootstrap concerns such as `home.homeDirectory`, `xdg.enable`, and explicit imports.
-- A new `.imports.nix` should list `ghostty.nix`, `apps/`, `profiles/`, and `services/` in a deliberate order.
-- `../common/core` and `../common/home.nix` remain explicit imports at the top level rather than being hidden behind directory scanning.
+- `default.nix` should only handle local bootstrap concerns such as `home.homeDirectory`,
+  `xdg.enable`, and explicit imports.
+- A new `.imports.nix` should list `ghostty.nix`, `apps/`, `profiles/`, and `services/` in a
+  deliberate order.
+- `../common/core` and `../common/home.nix` remain explicit imports at the top level rather than
+  being hidden behind directory scanning.
 
 ### `user/darwin/apps/`
 
@@ -78,7 +88,8 @@ Multi-file features remain directory-backed modules such as `services/mihomo/` a
 ### `user/darwin/services/`
 
 - Replace scanning with `default.nix` importing `./.imports.nix`.
-- `.imports.nix` becomes the visible manifest for service modules such as `mihomo/` and `postgresql/`.
+- `.imports.nix` becomes the visible manifest for service modules such as `mihomo/` and
+  `postgresql/`.
 
 ## Naming Rules
 
@@ -111,7 +122,8 @@ This change does not include:
 
 The refactor is complete when all of the following are true:
 
-- `user/darwin/`, `user/darwin/apps/`, `user/darwin/profiles/`, and `user/darwin/services/` use explicit imports
+- `user/darwin/`, `user/darwin/apps/`, `user/darwin/profiles/`, and `user/darwin/services/` use
+  explicit imports
 - `mylib.discoverImports` is no longer used in those Darwin user-layer entrypoints
 - Darwin system and Darwin user trees follow the same visible assembly pattern
 - `user/darwin/README.md` matches the final structure and no longer references auto-scan behavior
@@ -121,7 +133,8 @@ The refactor is complete when all of the following are true:
 ## Risks
 
 - Some modules may currently depend on discovery order indirectly.
-- Sparse directories may appear harmless while silently not being imported if manifests are incomplete.
+- Sparse directories may appear harmless while silently not being imported if manifests are
+  incomplete.
 
 ## Risk Controls
 

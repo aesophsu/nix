@@ -9,14 +9,16 @@ Build a machine-level convention for project-local Nix development environments:
 - keep a small global "base tooling" layer in Home Manager
 - make each project own its `flake.nix` + `.envrc`
 - enable `direnv` + `nix-direnv` so entering a project directory activates the project shell
-- provide reusable templates and helper commands for both new projects and freshly cloned repositories
+- provide reusable templates and helper commands for both new projects and freshly cloned
+  repositories
 
 ## Current State
 
 - Global packages are split between:
   - `user/common/core/packages.nix` for base CLI and `direnv`
   - `user/common/core/tooling/*.nix` for language/toolchain packages
-- `programs.direnv.enable = true` and `programs.direnv.nix-direnv.enable = true` are already enabled.
+- `programs.direnv.enable = true` and `programs.direnv.nix-direnv.enable = true` are already
+  enabled.
 - Repository root already uses `.envrc` with `use flake`.
 - Shell profiles do not yet explicitly show a `direnv hook` integration point.
 
@@ -87,7 +89,8 @@ Two deliberate follow-up adjustments are included:
 - weaken the role of globally installed language toolchains
 - prefer language/toolchain packages in project templates instead
 
-This does not require deleting useful global tooling immediately. The implementation should make the template path the default and document the boundary clearly.
+This does not require deleting useful global tooling immediately. The implementation should make the
+template path the default and document the boundary clearly.
 
 ## Testing Strategy
 

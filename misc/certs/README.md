@@ -4,13 +4,13 @@
 
 ## 文件说明
 
-| 路径 | 说明 |
-|---|---|
-| `ecc-ca.crt` | ECC CA 证书 |
-| `ecc-ca.srl` | CA 序列号文件（证书签发跟踪） |
-| `ecc-csr.conf` | OpenSSL CSR 配置 |
-| `ecc-server.crt` | 由 ECC CA 签发的服务端证书 |
-| `gen-certs.sh` | 自动生成证书脚本 |
+| 路径             | 说明                          |
+| ---------------- | ----------------------------- |
+| `ecc-ca.crt`     | ECC CA 证书                   |
+| `ecc-ca.srl`     | CA 序列号文件（证书签发跟踪） |
+| `ecc-csr.conf`   | OpenSSL CSR 配置              |
+| `ecc-server.crt` | 由 ECC CA 签发的服务端证书    |
+| `gen-certs.sh`   | 自动生成证书脚本              |
 
 ## 安全说明
 

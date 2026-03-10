@@ -6,11 +6,14 @@ This repository uses Nix as the source of truth for persistent system state.
 
 When working on OpenClaw in this repository:
 
-- treat Nix configuration as authoritative for persistent installation, versioning, services, environment wiring, and long-lived OpenClaw configuration
-- use the OpenClaw CLI primarily for diagnosis, inspection, probes, logs, and verification after Nix changes
+- treat Nix configuration as authoritative for persistent installation, versioning, services,
+  environment wiring, and long-lived OpenClaw configuration
+- use the OpenClaw CLI primarily for diagnosis, inspection, probes, logs, and verification after Nix
+  changes
 - do not use imperative OpenClaw changes as the default path for persistent system changes
 
-If Nix state and runtime OpenClaw state disagree, prefer Nix and reconcile runtime state back to the Nix definition.
+If Nix state and runtime OpenClaw state disagree, prefer Nix and reconcile runtime state back to the
+Nix definition.
 
 ### Allowed Direct OpenClaw Actions
 
@@ -38,7 +41,8 @@ If Nix state and runtime OpenClaw state disagree, prefer Nix and reconcile runti
 - direct edits to runtime-owned OpenClaw configuration as the primary path
 - emergency or experimental runtime mutations that intentionally bypass Nix
 
-If an exception is used for debugging or discovery, label it as temporary drift and propose the corresponding Nix representation before considering the work complete.
+If an exception is used for debugging or discovery, label it as temporary drift and propose the
+corresponding Nix representation before considering the work complete.
 
 ## Reference
 

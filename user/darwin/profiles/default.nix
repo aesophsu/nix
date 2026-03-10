@@ -1,5 +1,3 @@
-{ mylib, ... }:
-
 {
-  imports = mylib.discoverImports { dir = ./.; };
+  imports = [ ./shell.nix ];
 }

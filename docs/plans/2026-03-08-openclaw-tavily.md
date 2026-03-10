@@ -1,10 +1,14 @@
 # OpenClaw Tavily Plugin Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan
+> task-by-task.
 
-**Goal:** Add the Tavily OpenClaw plugin declaratively and verify it loads and serves Tavily tools after activation.
+**Goal:** Add the Tavily OpenClaw plugin declaratively and verify it loads and serves Tavily tools
+after activation.
 
-**Architecture:** Extend `user/darwin/services/openclaw/default.nix` with a pinned source tarball, activation install step, runtime API key injection, explicit plugin entry config, and explicit tool allow-list additions. Verify with OpenClaw CLI after rebuild.
+**Architecture:** Extend `user/darwin/services/openclaw/default.nix` with a pinned source tarball,
+activation install step, runtime API key injection, explicit plugin entry config, and explicit tool
+allow-list additions. Verify with OpenClaw CLI after rebuild.
 
 **Tech Stack:** Nix, Home Manager, OpenClaw CLI, Tavily plugin `framix-team/openclaw-tavily`
 
@@ -13,6 +17,7 @@
 ### Task 1: Add declarative plugin packaging and config
 
 **Files:**
+
 - Modify: `user/darwin/services/openclaw/default.nix`
 
 **Step 1:** Add pinned Tavily source metadata and install descriptor.
@@ -21,7 +26,8 @@
 
 **Step 3:** Add explicit Tavily tools to `tools.allow`.
 
-**Step 4:** Add activation logic to unpack the pinned tarball into `~/.openclaw/extensions/openclaw-tavily` and install runtime dependencies.
+**Step 4:** Add activation logic to unpack the pinned tarball into
+`~/.openclaw/extensions/openclaw-tavily` and install runtime dependencies.
 
 **Step 5:** Extend plugin SDK symlink setup to include `openclaw-tavily`.
 
@@ -30,6 +36,7 @@
 ### Task 2: Rebuild and activate
 
 **Files:**
+
 - Verify: `user/darwin/services/openclaw/default.nix`
 
 **Step 1:** Run the Home Manager/Nix rebuild used by this repo.
@@ -39,6 +46,7 @@
 ### Task 3: Verify plugin behavior
 
 **Files:**
+
 - Verify: `user/darwin/services/openclaw/default.nix`
 
 **Step 1:** Run `openclaw plugins list`.

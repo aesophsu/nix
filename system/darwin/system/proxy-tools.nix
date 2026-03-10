@@ -5,74 +5,82 @@
   ...
 }:
 let
-  inherit (myvars.networking.mihomo) host httpPort socksPort httpProxy socksProxy;
+  inherit (myvars.networking.mihomo)
+    host
+    httpPort
+    socksPort
+    httpProxy
+    socksProxy
+    ;
   proxyCfg = myvars.networking.proxy;
   proxyPolicy = proxyCfg.policy;
   proxyServices = proxyCfg.systemServices;
   proxyServicesArray = lib.concatMapStringsSep "\n" (svc: "  \"${svc}\"") proxyServices;
   proxyEnv = proxyCfg.env { inherit httpProxy socksProxy; };
   proxyEnvExportScript = lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (name: value: "printf 'export %s=%s\\n' ${lib.escapeShellArg name} ${lib.escapeShellArg value}") proxyEnv
+    lib.mapAttrsToList (
+      name: value: "printf 'export %s=%s\\n' ${lib.escapeShellArg name} ${lib.escapeShellArg value}"
+    ) proxyEnv
   );
   proxyEnvVars = lib.concatStringsSep " " (builtins.attrNames proxyEnv);
 
   proxyOn = pkgs.writeShellScriptBin "proxy-on" ''
-    set -euo pipefail
+        set -euo pipefail
 
-    services=(
-${proxyServicesArray}
-    )
+        services=(
+    ${proxyServicesArray}
+        )
 
-    for svc in "''${services[@]}"; do
-      if networksetup -listallnetworkservices 2>/dev/null | grep -q "^''${svc}$"; then
-        networksetup -setwebproxy "''${svc}" ${host} ${httpPort} 2>/dev/null || true
-        networksetup -setsecurewebproxy "''${svc}" ${host} ${httpPort} 2>/dev/null || true
-        networksetup -setsocksfirewallproxy "''${svc}" ${host} ${socksPort} 2>/dev/null || true
-        networksetup -setwebproxystate "''${svc}" on 2>/dev/null || true
-        networksetup -setsecurewebproxystate "''${svc}" on 2>/dev/null || true
-        networksetup -setsocksfirewallproxystate "''${svc}" on 2>/dev/null || true
-      fi
-    done
+        for svc in "''${services[@]}"; do
+          if networksetup -listallnetworkservices 2>/dev/null | grep -q "^''${svc}$"; then
+            networksetup -setwebproxy "''${svc}" ${host} ${httpPort} 2>/dev/null || true
+            networksetup -setsecurewebproxy "''${svc}" ${host} ${httpPort} 2>/dev/null || true
+            networksetup -setsocksfirewallproxy "''${svc}" ${host} ${socksPort} 2>/dev/null || true
+            networksetup -setwebproxystate "''${svc}" on 2>/dev/null || true
+            networksetup -setsecurewebproxystate "''${svc}" on 2>/dev/null || true
+            networksetup -setsocksfirewallproxystate "''${svc}" on 2>/dev/null || true
+          fi
+        done
   '';
 
   proxyOff = pkgs.writeShellScriptBin "proxy-off" ''
-    set -euo pipefail
+        set -euo pipefail
 
-    services=(
-${proxyServicesArray}
-    )
+        services=(
+    ${proxyServicesArray}
+        )
 
-    for svc in "''${services[@]}"; do
-      if networksetup -listallnetworkservices 2>/dev/null | grep -q "^''${svc}$"; then
-        networksetup -setwebproxystate "''${svc}" off 2>/dev/null || true
-        networksetup -setsecurewebproxystate "''${svc}" off 2>/dev/null || true
-        networksetup -setsocksfirewallproxystate "''${svc}" off 2>/dev/null || true
-      fi
-    done
+        for svc in "''${services[@]}"; do
+          if networksetup -listallnetworkservices 2>/dev/null | grep -q "^''${svc}$"; then
+            networksetup -setwebproxystate "''${svc}" off 2>/dev/null || true
+            networksetup -setsecurewebproxystate "''${svc}" off 2>/dev/null || true
+            networksetup -setsocksfirewallproxystate "''${svc}" off 2>/dev/null || true
+          fi
+        done
   '';
 
   proxyStatus = pkgs.writeShellScriptBin "proxy-status" ''
-    set -euo pipefail
+        set -euo pipefail
 
-    services=(
-${proxyServicesArray}
-    )
+        services=(
+    ${proxyServicesArray}
+        )
 
-    for svc in "''${services[@]}"; do
-      if networksetup -listallnetworkservices 2>/dev/null | grep -q "^''${svc}$"; then
-        echo "== $svc =="
-        networksetup -getwebproxy "''${svc}" 2>/dev/null || true
-        networksetup -getsecurewebproxy "''${svc}" 2>/dev/null || true
-        networksetup -getsocksfirewallproxy "''${svc}" 2>/dev/null || true
-        echo
-      fi
-    done
+        for svc in "''${services[@]}"; do
+          if networksetup -listallnetworkservices 2>/dev/null | grep -q "^''${svc}$"; then
+            echo "== $svc =="
+            networksetup -getwebproxy "''${svc}" 2>/dev/null || true
+            networksetup -getsecurewebproxy "''${svc}" 2>/dev/null || true
+            networksetup -getsocksfirewallproxy "''${svc}" 2>/dev/null || true
+            echo
+          fi
+        done
   '';
 
   proxyEnvOn = pkgs.writeShellScriptBin "proxy-env-on" ''
-    set -euo pipefail
+        set -euo pipefail
 
-${proxyEnvExportScript}
+    ${proxyEnvExportScript}
   '';
 
   proxyEnvOff = pkgs.writeShellScriptBin "proxy-env-off" ''

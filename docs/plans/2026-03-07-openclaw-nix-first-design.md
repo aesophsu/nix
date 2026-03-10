@@ -13,17 +13,21 @@ Define a stable operating model for using OpenClaw with a Nix-managed system:
 ## Context
 
 - The repository already uses Nix as the primary system-management layer.
-- An OpenClaw skill is installed locally and provides operational knowledge for OpenClaw installation, configuration, troubleshooting, and maintenance.
-- The user wants both the reproducibility of Nix and the convenience of skill-driven OpenClaw expertise.
+- An OpenClaw skill is installed locally and provides operational knowledge for OpenClaw
+  installation, configuration, troubleshooting, and maintenance.
+- The user wants both the reproducibility of Nix and the convenience of skill-driven OpenClaw
+  expertise.
 
-The main design problem is not capability overlap. It is preventing configuration drift between declarative Nix state and ad hoc OpenClaw runtime changes.
+The main design problem is not capability overlap. It is preventing configuration drift between
+declarative Nix state and ad hoc OpenClaw runtime changes.
 
 ## Chosen Approach
 
 Adopt a strict `Nix-first` model:
 
 - persistent installation and configuration changes are made in Nix
-- OpenClaw commands are primarily used for read-only inspection, health checks, and post-change verification
+- OpenClaw commands are primarily used for read-only inspection, health checks, and post-change
+  verification
 - imperative OpenClaw changes are treated as exceptions, not normal workflow
 
 This keeps rollback, review, migration, and recovery aligned with the rest of the repository.
@@ -63,7 +67,8 @@ Examples:
 
 ### 3. Disallowed By Default
 
-The assistant should not directly perform persistent OpenClaw mutations unless the user explicitly requests an exception.
+The assistant should not directly perform persistent OpenClaw mutations unless the user explicitly
+requests an exception.
 
 Disallowed-by-default examples:
 
@@ -90,7 +95,8 @@ When handling OpenClaw tasks in this repository, the assistant should follow thi
 1. Determine whether the request changes long-lived system state.
 2. If yes, implement through Nix or propose the Nix change first.
 3. If no, use OpenClaw CLI for inspection or verification as needed.
-4. Use the OpenClaw skill for domain knowledge, but do not treat its imperative examples as the default execution path in this repository.
+4. Use the OpenClaw skill for domain knowledge, but do not treat its imperative examples as the
+   default execution path in this repository.
 
 ## Task Categories
 
@@ -147,7 +153,8 @@ The current steady-state OpenClaw setup in this repository is:
 - **Persistent memory plugin:** `memory-lancedb-pro`
 - **Web research plugin:** `openclaw-tavily`
 - **Built-in web fetch fallback:** Firecrawl via runtime-only `FIRECRAWL_API_KEY`
-- **Ownership:** Nix/Home Manager manages the service, config, plugin installs, and long-lived wiring
+- **Ownership:** Nix/Home Manager manages the service, config, plugin installs, and long-lived
+  wiring
 - **Secrets:** injected at runtime from `~/.secrets`, not stored in Nix
 
 Operationally:
@@ -155,7 +162,8 @@ Operationally:
 - Feishu is the user-facing entry point into the `main` assistant
 - the gateway service is managed declaratively through Nix/Home Manager
 - proxy environment is injected into the gateway runtime by the launchd wrapper
-- `JINA_API_KEY`, `TAVILY_API_KEY`, `FIRECRAWL_API_KEY`, and Feishu secrets are exported only at runtime from local secret files
+- `JINA_API_KEY`, `TAVILY_API_KEY`, `FIRECRAWL_API_KEY`, and Feishu secrets are exported only at
+  runtime from local secret files
 
 ## Current Tool Exposure Model
 
@@ -175,7 +183,9 @@ This is intentionally narrow:
 
 ### Why `tools.alsoAllow` Was Required
 
-`tools.profile = "coding"` is a restrictive core-tool allowlist. OpenClaw applies tool policy as an intersection pipeline, so `tools.allow` is not an additive escape hatch for plugin tools after the profile has already filtered them out.
+`tools.profile = "coding"` is a restrictive core-tool allowlist. OpenClaw applies tool policy as an
+intersection pipeline, so `tools.allow` is not an additive escape hatch for plugin tools after the
+profile has already filtered them out.
 
 The stable working pattern is:
 
@@ -183,7 +193,8 @@ The stable working pattern is:
 - use `tools.alsoAllow` for extra plugin or non-profile tools
 - avoid mixing `tools.allow` and `tools.alsoAllow` in the same scope
 
-In practice, `tools.allow` did not expose Tavily tools, while `tools.alsoAllow` did once the gateway restarted on the new config.
+In practice, `tools.allow` did not expose Tavily tools, while `tools.alsoAllow` did once the gateway
+restarted on the new config.
 
 ## Current Web Stack Responsibilities
 
@@ -195,7 +206,8 @@ The current web stack is split by responsibility:
   - `tavily_crawl`
   - `tavily_map`
   - `tavily_research`
-- **Firecrawl** is used internally by the built-in `web_fetch` tool when `FIRECRAWL_API_KEY` is present in the gateway runtime
+- **Firecrawl** is used internally by the built-in `web_fetch` tool when `FIRECRAWL_API_KEY` is
+  present in the gateway runtime
 
 In this OpenClaw build, Firecrawl is **runtime-env-only**:
 
@@ -240,7 +252,8 @@ The Tavily integration is intentionally reproducible and secret-safe:
 - install path: `~/.openclaw/extensions/openclaw-tavily`
 - API key source: `~/.secrets/tavily-api-key`
 
-The API key is not written into generated Nix config and is not stored in the Nix store. It is injected only into the gateway runtime environment.
+The API key is not written into generated Nix config and is not stored in the Nix store. It is
+injected only into the gateway runtime environment.
 
 The currently exposed Tavily tools are:
 
@@ -258,7 +271,8 @@ The Firecrawl integration is intentionally minimal in this build:
 - no Firecrawl config stored in generated OpenClaw config
 - `FIRECRAWL_API_KEY` injected only at runtime from `~/.secrets/firecrawl-api-key`
 
-This is required because the current build rejects declarative `tools.web.fetch.firecrawl` config even though the runtime contains Firecrawl support code.
+This is required because the current build rejects declarative `tools.web.fetch.firecrawl` config
+even though the runtime contains Firecrawl support code.
 
 ## Current Security Boundary
 
@@ -267,7 +281,8 @@ The current boundary is intentionally useful but not fully hardened:
 - Feishu-facing assistant can use filesystem tools and web/Tavily tools
 - host runtime tools are intentionally denied via `group:runtime`
 - filesystem tools are workspace-scoped via `tools.fs.workspaceOnly = true`
-- `agents.defaults.sandbox.mode = "off"` currently leaves execution unsandboxed if runtime tools are ever re-enabled
+- `agents.defaults.sandbox.mode = "off"` currently leaves execution unsandboxed if runtime tools are
+  ever re-enabled
 
 This means the main practical safety boundary today is:
 
@@ -296,8 +311,10 @@ When modifying this OpenClaw setup later:
    - treat any secret value appearing in the Nix store as a regression
 
 4. **Schema/runtime mismatches**
-   - if runtime code appears to support a field but `openclaw config validate` rejects it, prefer the validator
-   - treat that as a build-specific schema mismatch, not as permission to force unsupported config into `openclaw.json`
+   - if runtime code appears to support a field but `openclaw config validate` rejects it, prefer
+     the validator
+   - treat that as a build-specific schema mismatch, not as permission to force unsupported config
+     into `openclaw.json`
    - for this build, Firecrawl support is runtime-env-only rather than declarative
 
 5. **Gateway lifecycle**

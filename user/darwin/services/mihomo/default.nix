@@ -1,7 +1,12 @@
 # mihomo: package, config, launchd
 # Config precedence: config.local.yaml > config.yaml > config.yaml.example
 
-{ config, pkgs, mylib, ... }:
+{
+  config,
+  pkgs,
+  mylib,
+  ...
+}:
 
 let
   configDir = "${config.xdg.configHome}/mihomo";

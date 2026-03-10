@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   myvars,
   ...
 }:
@@ -12,7 +11,6 @@
     rm -f ${config.home.homeDirectory}/.gitconfig
   '';
 
-  # GitHub CLI (gh)
   programs.gh = {
     enable = true;
     settings = {
@@ -33,7 +31,6 @@
     };
   };
 
-  # Main Git config; work dir uses ~/work/.gitconfig via includes
   programs.git = {
     enable = true;
     lfs.enable = true;
@@ -61,7 +58,6 @@
     };
   };
 
-  # delta: Git diff syntax highlighting
   programs.delta = {
     enable = true;
     enableGitIntegration = true;
@@ -72,9 +68,7 @@
     };
   };
 
-  # lazygit：Git TUI
   programs.lazygit.enable = true;
 
-  # gitui: alternative Git TUI (disabled)
   programs.gitui.enable = false;
 }

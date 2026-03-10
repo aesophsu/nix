@@ -1,25 +1,18 @@
-{ config, lib, myvars, nix-openclaw, pkgs, ... }:
+{
+  config,
+  lib,
+  myvars,
+  nix-openclaw,
+  pkgs,
+  ...
+}:
 let
   upstreamPackages = nix-openclaw.packages.${pkgs.stdenv.hostPlatform.system};
-  proxyEnv =
-    myvars.networking.proxy.env {
-      inherit (myvars.networking.mihomo) httpProxy socksProxy;
-    };
+  proxyEnv = myvars.networking.proxy.env {
+    inherit (myvars.networking.mihomo) httpProxy socksProxy;
+  };
   feishuAppId = "cli_a926fc773df85cc7";
   feishuPluginId = "feishu";
-  feishuPluginInstall = {
-    source = "npm";
-    spec = "@larksuiteoapi/feishu-openclaw-plugin@2026.3.8";
-    installPath = "${config.home.homeDirectory}/.openclaw/extensions/${feishuPluginId}";
-    version = "2026.3.8";
-    resolvedName = "@larksuiteoapi/feishu-openclaw-plugin";
-    resolvedVersion = "2026.3.8";
-    resolvedSpec = "@larksuiteoapi/feishu-openclaw-plugin@2026.3.8";
-    integrity = "sha512-77PzCEESdPgqL9jgoV8I3difKOuC/iRiECYLUT+2rLRD1Oy+CHtTXuYwHwztHvbY2sWitev/5rN/TseDHo2FVg==";
-    shasum = "d4acc5a0433aaf77b0d87a028fa627b38efdb4cd";
-    resolvedAt = "2026-03-08T08:28:44.852Z";
-    installedAt = "2026-03-08T08:29:19.942Z";
-  };
   memoryLancedbProId = "memory-lancedb-pro";
   memoryLancedbProVersion = "1.1.0-beta.6";
   memoryLancedbProRev = "cc8bf7cabc1b24c7769e15af59f41b49f43442b3";
@@ -173,7 +166,6 @@ let
   managedOpenclawHmConfig = managedOpenclawConfig // {
     channels = builtins.removeAttrs managedOpenclawConfig.channels [ "feishu" ];
     secrets.providers = { };
-    agents = builtins.removeAttrs managedOpenclawConfig.agents [ "admin" ];
   };
   fixedGateway = upstreamPackages.openclaw-gateway.overrideAttrs (old: {
     pnpmDeps = old.pnpmDeps.overrideAttrs (_: {
@@ -284,8 +276,6 @@ let
 in
 {
   imports = [ nix-openclaw.homeManagerModules.openclaw ];
-  home.sessionPath = lib.mkBefore [ "${config.home.homeDirectory}/.local/bin" ];
-  home.packages = [ (lib.hiPrio fixedGateway) ];
 
   home.file.".openclaw/.env".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.secrets/openclaw.env";
@@ -338,46 +328,50 @@ in
     run --quiet ${lib.getExe' pkgs.coreutils "cp"} ${declarativeOpenclawConfig} "$target"
     run --quiet ${lib.getExe' pkgs.coreutils "chmod"} 600 "$target"
   '';
-  home.activation.openclawMemoryLancedbProInstall = lib.hm.dag.entryAfter [ "openclawDeclarativeConfigLink" ] ''
-    plugin_dir="${config.home.homeDirectory}/.openclaw/extensions/${memoryLancedbProId}"
-    tmp_dir="$(${lib.getExe' pkgs.coreutils "mktemp"} -d)"
-    current_version=""
-    if [ -f "$plugin_dir/package.json" ]; then
-      current_version="$(${lib.getExe pkgs.jq} -r '.version // empty' "$plugin_dir/package.json" 2>/dev/null || true)"
-    fi
-    if [ "$current_version" != "${memoryLancedbProVersion}" ]; then
-      rm -rf "$plugin_dir"
-      run --quiet ${lib.getExe' pkgs.coreutils "mkdir"} -p "$plugin_dir"
-      run --quiet ${lib.getExe' pkgs.gnutar "tar"} --use-compress-program=${lib.getExe' pkgs.gzip "gzip"} -xf ${memoryLancedbProSrc} -C "$tmp_dir"
-      src_dir="$(find "$tmp_dir" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
-      run --quiet cp -R "$src_dir"/. "$plugin_dir"/
-      (
-        cd "$plugin_dir"
-        export npm_config_cache="${config.home.homeDirectory}/.cache/npm"
-        ${lib.getExe' pkgs.nodejs_22 "npm"} install --omit=dev --ignore-scripts
-      )
-    fi
-  '';
-  home.activation.openclawTavilyInstall = lib.hm.dag.entryAfter [ "openclawMemoryLancedbProInstall" ] ''
-    plugin_dir="${config.home.homeDirectory}/.openclaw/extensions/${tavilyPluginId}"
-    tmp_dir="$(${lib.getExe' pkgs.coreutils "mktemp"} -d)"
-    current_version=""
-    if [ -f "$plugin_dir/package.json" ]; then
-      current_version="$(${lib.getExe pkgs.jq} -r '.version // empty' "$plugin_dir/package.json" 2>/dev/null || true)"
-    fi
-    if [ "$current_version" != "${tavilyPluginVersion}" ]; then
-      rm -rf "$plugin_dir"
-      run --quiet ${lib.getExe' pkgs.coreutils "mkdir"} -p "$plugin_dir"
-      run --quiet ${lib.getExe' pkgs.gnutar "tar"} --use-compress-program=${lib.getExe' pkgs.gzip "gzip"} -xf ${tavilyPluginSrc} -C "$tmp_dir"
-      src_dir="$(find "$tmp_dir" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
-      run --quiet cp -R "$src_dir"/. "$plugin_dir"/
-      (
-        cd "$plugin_dir"
-        export npm_config_cache="${config.home.homeDirectory}/.cache/npm"
-        ${lib.getExe' pkgs.nodejs_22 "npm"} install --omit=dev --ignore-scripts
-      )
-    fi
-  '';
+  home.activation.openclawMemoryLancedbProInstall =
+    lib.hm.dag.entryAfter [ "openclawDeclarativeConfigLink" ]
+      ''
+        plugin_dir="${config.home.homeDirectory}/.openclaw/extensions/${memoryLancedbProId}"
+        tmp_dir="$(${lib.getExe' pkgs.coreutils "mktemp"} -d)"
+        current_version=""
+        if [ -f "$plugin_dir/package.json" ]; then
+          current_version="$(${lib.getExe pkgs.jq} -r '.version // empty' "$plugin_dir/package.json" 2>/dev/null || true)"
+        fi
+        if [ "$current_version" != "${memoryLancedbProVersion}" ]; then
+          rm -rf "$plugin_dir"
+          run --quiet ${lib.getExe' pkgs.coreutils "mkdir"} -p "$plugin_dir"
+          run --quiet ${lib.getExe' pkgs.gnutar "tar"} --use-compress-program=${lib.getExe' pkgs.gzip "gzip"} -xf ${memoryLancedbProSrc} -C "$tmp_dir"
+          src_dir="$(find "$tmp_dir" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+          run --quiet cp -R "$src_dir"/. "$plugin_dir"/
+          (
+            cd "$plugin_dir"
+            export npm_config_cache="${config.home.homeDirectory}/.cache/npm"
+            ${lib.getExe' pkgs.nodejs_22 "npm"} install --omit=dev --ignore-scripts
+          )
+        fi
+      '';
+  home.activation.openclawTavilyInstall =
+    lib.hm.dag.entryAfter [ "openclawMemoryLancedbProInstall" ]
+      ''
+        plugin_dir="${config.home.homeDirectory}/.openclaw/extensions/${tavilyPluginId}"
+        tmp_dir="$(${lib.getExe' pkgs.coreutils "mktemp"} -d)"
+        current_version=""
+        if [ -f "$plugin_dir/package.json" ]; then
+          current_version="$(${lib.getExe pkgs.jq} -r '.version // empty' "$plugin_dir/package.json" 2>/dev/null || true)"
+        fi
+        if [ "$current_version" != "${tavilyPluginVersion}" ]; then
+          rm -rf "$plugin_dir"
+          run --quiet ${lib.getExe' pkgs.coreutils "mkdir"} -p "$plugin_dir"
+          run --quiet ${lib.getExe' pkgs.gnutar "tar"} --use-compress-program=${lib.getExe' pkgs.gzip "gzip"} -xf ${tavilyPluginSrc} -C "$tmp_dir"
+          src_dir="$(find "$tmp_dir" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+          run --quiet cp -R "$src_dir"/. "$plugin_dir"/
+          (
+            cd "$plugin_dir"
+            export npm_config_cache="${config.home.homeDirectory}/.cache/npm"
+            ${lib.getExe' pkgs.nodejs_22 "npm"} install --omit=dev --ignore-scripts
+          )
+        fi
+      '';
   home.activation.openclawRuntimeHygiene = lib.hm.dag.entryAfter [ "openclawTavilyInstall" ] ''
     openclaw_pkg="${openclawPackageDir}"
     rm -rf "${config.home.homeDirectory}/.openclaw/extensions/feishu-openclaw-plugin"

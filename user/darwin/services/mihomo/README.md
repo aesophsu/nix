@@ -4,8 +4,9 @@ Mihomo 代理配置（TUN、多上游、AI 规则），面向 MacBook Air M4 场
 
 ## 通过 Nix 部署（推荐）
 
-`user/darwin/services/mihomo/default.nix` 会将配置链接到 `~/.config/mihomo/config.yaml`，并通过 launchd 保持 mihomo 常驻。
-优先级：`config.local.yaml` > `config.yaml` > `config.yaml.example`（当前目录）。
+`user/darwin/services/mihomo/default.nix` 会将配置链接到
+`~/.config/mihomo/config.yaml`，并通过 launchd 保持 mihomo 常驻。优先级：`config.local.yaml` >
+`config.yaml` > `config.yaml.example`（当前目录）。
 
 ```bash
 darwin-rebuild switch --flake .
@@ -16,7 +17,9 @@ darwin-rebuild switch --flake .
 
 ## Web UI
 
-Config uses `external-ui: ui`. Put a web panel in `~/.config/mihomo/ui/`, e.g. [yacd](https://github.com/haishan/yacd) or [mihomo-dashboard](https://github.com/MetaCubeX/mihomo-dashboard).
+Config uses `external-ui: ui`. Put a web panel in `~/.config/mihomo/ui/`, e.g.
+[yacd](https://github.com/haishan/yacd) or
+[mihomo-dashboard](https://github.com/MetaCubeX/mihomo-dashboard).
 
 ```bash
 git clone https://github.com/haishan/yacd.git ~/.config/mihomo/ui

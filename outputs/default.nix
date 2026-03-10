@@ -8,7 +8,7 @@ let
   inherit (inputs.nixpkgs) lib;
 
   mylib = import ../lib { inherit lib; };
-  myvars = import ../vars { inherit lib; };
+  myvars = import ../infra { inherit lib; };
   smokeCheckLib = import ./lib/smoke-check.nix { inherit lib; };
   preCommitHooks = import ./lib/pre-commit-hooks.nix;
 
@@ -63,16 +63,15 @@ in
   };
 
   checks = {
-    "aarch64-darwin" =
-      {
-        smoke-eval = smokeCheckLib.mkSmokeCheck pkgs tests;
-      }
-      // lib.optionalAttrs (builtins.hasAttr system pre-commit-hooks.lib) {
-        pre-commit = pre-commit-hooks.lib.${system}.run {
-          src = mylib.relativeToRoot ".";
-          hooks = preCommitHooks;
-        };
+    "aarch64-darwin" = {
+      smoke-eval = smokeCheckLib.mkSmokeCheck pkgs tests;
+    }
+    // lib.optionalAttrs (builtins.hasAttr system pre-commit-hooks.lib) {
+      pre-commit = pre-commit-hooks.lib.${system}.run {
+        src = mylib.relativeToRoot ".";
+        hooks = preCommitHooks;
       };
+    };
   };
 
   formatter = {

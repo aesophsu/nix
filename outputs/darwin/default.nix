@@ -9,22 +9,9 @@
 }@args:
 let
   stellaModules = {
-    darwin-modules =
-      (map mylib.relativeToRoot [
-        "system/common"
-        "system/darwin"
-        "hosts/stella/system.nix"
-      ])
-      ++ [
-        {
-          modules.desktop.fonts.enable = true;
-        }
-      ];
+    darwin-modules = map mylib.relativeToRoot [ "profiles/system/stella.nix" ];
 
-    home-modules = map mylib.relativeToRoot [
-      "hosts/stella/home.nix"
-      "user/darwin"
-    ];
+    home-modules = map mylib.relativeToRoot [ "profiles/user/stella.nix" ];
   };
 
   stellaConfig = mylib.macosSystem (args // stellaModules);

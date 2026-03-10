@@ -10,7 +10,8 @@ This document records the current intended OpenClaw tool surface for this machin
 
 - Persistent OpenClaw state is owned by Nix/Home Manager
 - OpenClaw CLI is used for inspection and verification
-- Runtime secret values are loaded from `~/.secrets` by the gateway wrapper, not committed into generated config
+- Runtime secret values are loaded from `~/.secrets` by the gateway wrapper, not committed into
+  generated config
 
 ### Current Runtime Architecture
 
@@ -31,7 +32,8 @@ This document records the current intended OpenClaw tool surface for this machin
 
 ### Why Plugin Tools Use `tools.alsoAllow`
 
-`tools.profile = "coding"` is restrictive. OpenClaw applies profile filtering before later allowlist stages, so `tools.allow` is not a reliable additive mechanism for plugin tools in this setup.
+`tools.profile = "coding"` is restrictive. OpenClaw applies profile filtering before later allowlist
+stages, so `tools.allow` is not a reliable additive mechanism for plugin tools in this setup.
 
 Use `tools.alsoAllow` when exposing plugin tools while preserving a restrictive profile.
 
@@ -61,7 +63,8 @@ Use `tools.alsoAllow` when exposing plugin tools while preserving a restrictive 
 ### Current Web Stack Responsibilities
 
 - Tavily handles explicit search/extract/crawl/research tool calls
-- Firecrawl is used internally by `web_fetch` when `FIRECRAWL_API_KEY` is present and the fallback path is used
+- Firecrawl is used internally by `web_fetch` when `FIRECRAWL_API_KEY` is present and the fallback
+  path is used
 
 ### Memory
 
@@ -96,6 +99,7 @@ All are injected at runtime only and should not be written into Nix expressions 
 - Pin external plugin sources by exact revision and hash
 - Keep secrets out of the Nix store and inject them only at runtime
 - Use `tools.alsoAllow` for plugin tool exposure under restrictive profiles
-- If runtime code supports a field but config validation rejects it, keep config valid and use the smallest supported runtime-only path
+- If runtime code supports a field but config validation rejects it, keep config valid and use the
+  smallest supported runtime-only path
 - Keep `group:runtime` denied unless widening trust is intentional
 - After policy or wrapper changes, verify the live gateway restarted before testing

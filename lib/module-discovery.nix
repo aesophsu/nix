@@ -1,10 +1,12 @@
 { lib }:
 
 let
-  isImportableNixFile = name: type: type == "regular" && name != "default.nix" && lib.hasSuffix ".nix" name;
+  isImportableNixFile =
+    name: type: type == "regular" && name != "default.nix" && lib.hasSuffix ".nix" name;
   isDirectory = _name: type: type == "directory";
 
-  defaultManifest = dir: if builtins.pathExists (dir + "/.imports.nix") then (dir + "/.imports.nix") else null;
+  defaultManifest =
+    dir: if builtins.pathExists (dir + "/.imports.nix") then (dir + "/.imports.nix") else null;
 
   normalizeExclude = exclude: map toString exclude;
 

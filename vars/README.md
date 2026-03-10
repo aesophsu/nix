@@ -2,11 +2,11 @@
 
 所有主机共享的变量定义。
 
-| 路径 | 说明 |
-|---|---|
-| `default.nix` | 用户信息（用户名、姓名、邮箱）、初始密码哈希、SSH authorized keys |
-| `networking/` | 网络配置聚合目录（proxy/mihomo/dns/hosts/ssh） |
-| `toolchains.nix` | Node/Python 版本单一来源（`node.package`、`python.package`） |
+| 路径             | 说明                                                              |
+| ---------------- | ----------------------------------------------------------------- |
+| `default.nix`    | 用户信息（用户名、姓名、邮箱）、初始密码哈希、SSH authorized keys |
+| `networking/`    | 网络配置聚合目录（proxy/mihomo/dns/hosts/ssh）                    |
+| `toolchains.nix` | Node/Python 版本单一来源（`node.package`、`python.package`）      |
 
 代理策略单一来源为 `vars/networking/proxy.nix` 的 `proxy.policy`：
 
