@@ -52,7 +52,7 @@ let
       mode = "oauth";
     };
     agents.defaults = {
-      model.primary = "openai-codex/gpt-5.2-codex";
+      model.primary = "openai-codex/gpt-5.4";
       workspace = "${config.home.homeDirectory}/.openclaw/workspace";
       compaction.mode = "safeguard";
       sandbox.mode = "off";

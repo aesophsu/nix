@@ -143,7 +143,7 @@ When handling OpenClaw tasks in this repository, the assistant should follow thi
 The current steady-state OpenClaw setup in this repository is:
 
 - **Entry channel:** Feishu
-- **Primary model runtime:** Codex via `openai-codex/gpt-5.2-codex`
+- **Primary model runtime:** Codex via `openai-codex/gpt-5.4`
 - **Persistent memory plugin:** `memory-lancedb-pro`
 - **Web research plugin:** `openclaw-tavily`
 - **Built-in web fetch fallback:** Firecrawl via runtime-only `FIRECRAWL_API_KEY`

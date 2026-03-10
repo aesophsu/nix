@@ -86,7 +86,7 @@ The plan above established the repository rule. The current working OpenClaw sta
 
 - Nix/Home Manager owns the persistent OpenClaw config, service wiring, plugin installs, and runtime wrapper
 - Feishu is the current user-facing entry path into the `main` assistant
-- Codex is the current model runtime through `openai-codex/gpt-5.2-codex`
+- Codex is the current model runtime through `openai-codex/gpt-5.4`
 - `memory-lancedb-pro` is the active memory slot with Jina embeddings and reranking
 - `openclaw-tavily` is the active Tavily web research plugin
 - Firecrawl is active only as runtime-backed support for built-in `web_fetch`

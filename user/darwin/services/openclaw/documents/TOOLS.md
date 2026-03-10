@@ -16,7 +16,7 @@ This document records the current intended OpenClaw tool surface for this machin
 
 - entry channel: Feishu
 - default assistant: `main`
-- model runtime: Codex via `openai-codex/gpt-5.2-codex`
+- model runtime: Codex via `openai-codex/gpt-5.4`
 - memory plugin: `memory-lancedb-pro`
 - Tavily plugin: `openclaw-tavily`
 - Firecrawl support: runtime-only fallback inside built-in `web_fetch`
