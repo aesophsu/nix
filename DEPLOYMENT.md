@@ -7,14 +7,15 @@
 - **First deploy without proxy**: Nix uses substituter mirrors. One `darwin-rebuild switch` deploys
   mihomo (package + launchd + config link); no separate install.
 - **mihomo via Nix**: Package, `~/.config/mihomo/config.yaml` link, and launchd are in
-  `user/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd keeps mihomo
-  running after login.
+  `modules/home/darwin/services/mihomo/default.nix`. Prepare config in repo (step 3); launchd keeps
+  mihomo running after login.
 - **system proxy**: `darwin-rebuild switch` no longer changes macOS system proxy settings. Use
   manual takeover when you want traffic to go through local mihomo (`127.0.0.1:7890/7891`).
 - **runtime switch**: use `proxy-on` / `proxy-off` / `proxy-status` to manage macOS system proxy
   without editing Nix files.
-- **shell proxy env**: use `eval "$(proxy-env-on)"` and `eval "$(proxy-env-off)"` to opt the current
-  shell in or out of `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`.
+- **shell proxy env**: bash and zsh inherit the proxy environment automatically through
+  `modules/home/darwin/shell.nix`. Use `eval "$(proxy-env-off)"` only when you need to clear proxy
+  vars in the current shell.
 - **GitHub access** (e.g. `nix flake update`): prefer manual shell takeover or set `http-proxy` /
   `https-proxy` in `~/.config/nix/nix.conf`.
 - **Toolchains**: Base Node/Python runtimes are pinned in one place (`myvars.toolchains.*`):
@@ -23,8 +24,8 @@
 - **Global vs project tools**: Global Nix packages now keep only the base runtimes and cross-project
   CLI. Project-specific language tooling should live in each repo's `flake.nix` devShell.
 - **Unified CLI source**: `python / git / nodejs / docker / jq / curl` are managed in
-  `user/common/core/tooling/*`; `direnv`, `nix-direnv`, `devshell-init`, and `devshell-attach` live
-  in `user/common/core/packages.nix` (Docker is CLI+Compose only, no Docker Desktop).
+  `modules/home/core/tooling/*`; `direnv`, `nix-direnv`, `devshell-init`, and `devshell-attach` live
+  in `modules/home/core/packages.nix` (Docker is CLI+Compose only, no Docker Desktop).
 - **Rolling GUI apps**: `chatgpt` / `google-chrome` / `telegram` are Homebrew casks and may upgrade
   during `darwin-rebuild switch`; they are not version-locked like Nix packages.
 - **Rolling user tools**: `codex CLI` is intentionally installed outside Nix so it can track the
@@ -32,7 +33,7 @@
 
 ## 前提条件
 
-- Fresh macOS, user `sue` (match `vars/default.nix` `username`).
+- Fresh macOS, user `sue` (match `infra/identity.nix` `username`).
 
 ---
 
@@ -88,7 +89,7 @@ Nix (Home Manager) deploys mihomo in step 5. Prepare config in repo (subscriptio
 commit secrets):
 
 ```bash
-cp user/darwin/services/mihomo/config.yaml.example user/darwin/services/mihomo/config.yaml
+cp modules/home/darwin/services/mihomo/config.yaml.example modules/home/darwin/services/mihomo/config.yaml
 # Edit and add subscription URL, or use config.local.yaml (higher priority, often .gitignored)
 ```
 
@@ -133,10 +134,10 @@ git clone https://github.com/haishan/yacd.git ~/.config/mihomo/ui
 
 ---
 
-## 6. （可选）修改 `vars`
+## 6. （可选）修改共享基础配置
 
-Edit `vars/default.nix`: `hostname`, `username`, `mainSshAuthorizedKeys`, `initialHashedPassword`
-(use `nix-hash --type sha512` for fresh install).
+Edit `infra/identity.nix` for `hostname`, `username`, `mainSshAuthorizedKeys`, and
+`initialHashedPassword` (use `nix-hash --type sha512` for fresh install).
 
 ---
 
@@ -145,7 +146,7 @@ Edit `vars/default.nix`: `hostname`, `username`, `mainSshAuthorizedKeys`, `initi
 这套配置采用 4 层版本策略：
 
 1. `Locked Stable` 大多数 CLI 和系统配置跟随 `flake.lock`，通过 `nix flake update` 统一升级。
-2. `Pinned Major` Node / Python 只固定主版本带，入口在 `vars/toolchains.nix`。
+2. `Pinned Major` Node / Python 只固定主版本带，入口在 `infra/toolchains.nix`。
 3. `Rolling User Tools` `codex CLI` 这类高频变化工具脱离 Nix，独立安装与更新。
 4. `Rolling External Data` Homebrew cask、mihomo 规则、GeoIP 等属于滚动层，不保证版本可复现。
 
@@ -276,7 +277,7 @@ Rules:
 | mihomo won’t start                          | Check `~/.config/mihomo/config.yaml` exists and subscription URL is correct; re-run `darwin-rebuild switch`. |
 | Homebrew install fails                      | Check proxy env/homebrew settings in `system/darwin/apps.nix`; add mihomo config, then run switch again.     |
 | WeChat/SSL error                            | Ensure mihomo is running and system proxy is active, then run switch again.                                  |
-| SSH key not used                            | Set `mainSshAuthorizedKeys` in `vars/default.nix`.                                                           |
+| SSH key not used                            | Set `mainSshAuthorizedKeys` in `infra/identity.nix`.                                                         |
 
 推荐排障顺序：`proxy-status` -> `launchctl print gui/$(id -u)/mihomo` ->
 `darwin-rebuild switch --flake .`
@@ -352,8 +353,8 @@ Rules:
 
 ### 模块边界（重构后）
 
-- `vars/networking/`：按领域拆分 `proxy` / `mihomo` / `dns` / `hosts` / `ssh`，由
-  `vars/networking/default.nix` 聚合。
+- `infra/networking/`：按领域拆分 `proxy` / `mihomo` / `dns` / `hosts` / `ssh`，由
+  `infra/networking/default.nix` 聚合。
 - `system/darwin/system/`：按行为拆分 `proxy-tools` / `activation` / `defaults-ui` / `input` /
   `security-pam` / `timezone`，由 `system/darwin/system.nix` 聚合。
 - `user/common/core/`：工具按职责拆到
@@ -362,7 +363,7 @@ Rules:
 
 ### 单一声明约束
 
-- Node/Python 版本仅在 `vars/toolchains.nix` 定义。
+- Node/Python 版本仅在 `infra/toolchains.nix` 定义。
 - `python / uv / ruff / git / nodejs / docker / jq / curl` 仅在 `user/common/core/tooling/*.nix`
   声明；`direnv` 仅在 `user/common/core/packages.nix` 声明。
 - 代理脚本逻辑仅在 `system/darwin/system/proxy-tools.nix`。

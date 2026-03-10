@@ -1,29 +1,28 @@
 # Home Manager · Darwin（macOS）
 
-macOS 专用 Home Manager 配置（与 `hosts/stella/` 一起使用）。
+macOS 专用 Home Manager 配置现在由 `profiles/` 组合 `modules/` 下的 canonical 模块。
 
-| 路径                 | 说明                                                             |
-| -------------------- | ---------------------------------------------------------------- |
-| `default.nix`        | 设置 `homeDirectory` / `xdg`；自动扫描并导入当前目录模块         |
-| `ghostty.nix`        | Ghostty 终端配置（`~/.config/ghostty/config`）                   |
-| `profiles/shell.nix` | Shell PATH / 初始化偏好（bash、zsh）                             |
-| `services/mihomo/`   | [mihomo](https://github.com/MetaCubeX/mihomo)：包、配置、launchd |
+| 路径                                     | 说明                                                                  |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| `profiles/user/stella.nix`               | `stella` 的 Home Manager 组合入口                                     |
+| `modules/home/base.nix`                  | `homeDirectory` / `xdg` 等基础设置                                    |
+| `modules/home/core/default.nix`          | 通用 CLI、git、toolchain、Python mirror、theme                        |
+| `modules/home/darwin/apps/ghostty.nix`   | Ghostty 终端配置（`~/.config/ghostty/config`）                        |
+| `modules/home/darwin/shell.nix`          | Shell PATH、bash/zsh 初始化、proxy env 继承                           |
+| `modules/home/darwin/services/mihomo/`   | [mihomo](https://github.com/MetaCubeX/mihomo)：包、配置、launchd      |
+| `modules/home/darwin/services/openclaw/` | OpenClaw 的 package / plugins / config / secrets / runtime 子模块边界 |
 
-`default.nix` 使用顶层模块自动扫描，当前主要由 `ghostty.nix`、`profiles/` 与 `services/`
-组成。系统代理手动接管命令由 `system/darwin/system.nix` 提供（`proxy-on` / `proxy-off` /
-`proxy-status`）。Shell 代理环境变量改为手动启用：`eval "$(proxy-env-on)"` /
-`eval "$(proxy-env-off)"`。Python 生态镜像变量由 `user/common/core/pip.nix`
-提供；通用 HTTP(S)\_PROXY 不再由 `services/mihomo/`
-自动注入。Node/Python 工具链统一由 Nix 管理：版本固定在
-`myvars.toolchains`（`node.package = "nodejs_22"`、`python.package = "python312"`）。pnpm 通过 Corepack 提供；不建议与
-`nvm`/`volta` 混用。 `python / uv / ruff / git / nodejs / docker / jq / curl` 在
-`user/common/core/tooling/` 按职责拆分声明；`direnv` 继续由 `user/common/core/packages.nix`
-管理（Docker 为 CLI + Compose）。核心模块导入顺序固定在
-`user/common/core/.imports.nix`，以避免自动扫描导致的隐式耦合。 `stella` 的 Home Manager 接线来自
-`hosts/stella/home.nix` + `user/darwin/`。
+`stella` 的 Home Manager 接线来自 `profiles/user/stella.nix` +
+`hosts/stella/home.nix`。系统代理手动接管命令由 `modules/system/darwin/system/proxy-tools.nix`
+提供（`proxy-on` / `proxy-off` /
+`proxy-status`）。bash 和 zsh 会自动继承声明式 proxy 环境；需要临时清空当前 shell 时再使用
+`eval "$(proxy-env-off)"`。Python 生态镜像变量由 `modules/home/core/pip.nix`
+提供。Node/Python工具链统一由 `infra/toolchains.nix` 定义，pnpm 通过 Corepack 提供；不建议与 `nvm` /
+`volta` 混用。`python / git / nodejs / docker / jq / curl` 在 `modules/home/core/tooling/`
+按职责拆分声明；`direnv` 与 devshell helper 由 `modules/home/core/packages.nix` 管理。
 
 ## 常用命令
 
 - 全量：`darwin-rebuild switch --flake .`
-- 仅 HM：`home-manager switch --flake .#stella`
-- 回滚：`home-manager switch --rollback`
+- 主机：`sudo darwin-rebuild switch --flake .#stella`
+- 回滚：`sudo darwin-rebuild switch --rollback`

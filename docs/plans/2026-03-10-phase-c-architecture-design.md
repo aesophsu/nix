@@ -131,6 +131,9 @@ Rules:
 
 `.tmp-openclaw-local/` should be treated as suspicious and non-authoritative.
 
+Status after Phase C: remove it from the tracked declarative tree and keep it out of normal repo
+management unless a specific reproducible workflow requires it again.
+
 Recommendation:
 
 - do not keep it as a managed repo surface by default

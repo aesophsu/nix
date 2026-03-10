@@ -3,6 +3,7 @@ result
 result/
 result-*
 .worktrees/
+.tmp-openclaw-local/
 .direnv/
 .DS_Store
 .pre-commit-config.yaml
@@ -15,6 +16,8 @@ core*
 # mihomo config (subscription token; do not commit)
 home/darwin/services/mihomo/config.local.yaml
 home/darwin/services/mihomo/config.yaml
+modules/home/darwin/services/mihomo/config.local.yaml
+modules/home/darwin/services/mihomo/config.yaml
 
 scripts/docs/__pycache__/
 user/darwin/services/mihomo/.runtime/

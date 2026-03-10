@@ -6,3 +6,4 @@ vercel.json
 cache
 temp
 .temp
+.tmp-openclaw-local
