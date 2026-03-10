@@ -339,15 +339,15 @@ Rules:
 
 ### 说明
 
-- Home Manager `home.homeDirectory` is `/Users/<username>` (vars); independent of repo path.
-- **~/bin** has been removed; PATH uses **~/.local/bin** only (see
-  `user/common/core/shells/default.nix`).
+- Home Manager `home.homeDirectory` is `/Users/<username>` (from `infra/identity.nix`); independent
+  of repo path.
+- **~/bin** has been removed; PATH uses **~/.local/bin** only (see `modules/home/darwin/shell.nix`).
 
 ## 架构说明（当前）
 
 - `outputs/default.nix` 直接装配单机 `stella`（不再使用 host registry / 文档生成检查）。
-- `outputs/darwin/default.nix` 直接组合 `system/`、`user/` 与 `hosts/stella/`，同时挂载
-  `outputs/darwin/tests/default.nix`。
+- `outputs/darwin/default.nix` 通过 `profiles/system/stella.nix` 与 `profiles/user/stella.nix`
+  组合 canonical `modules/` 和 `hosts/stella/`，同时挂载 `outputs/darwin/tests/default.nix`。
 - `checks.<system>.smoke-eval` 为统一 smoke 检查命名；`checks.<system>.pre-commit`
   为统一 pre-commit 检查命名。
 
