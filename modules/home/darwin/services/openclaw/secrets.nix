@@ -1,8 +1,7 @@
 { config, ... }:
 {
   _module.args.openclawSecrets = {
-    envFileSource =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.secrets/openclaw.env";
+    envFileSource = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.secrets/openclaw.env";
     wrapperSecretExports = ''
       if [ -f "${config.home.homeDirectory}/.secrets/feishu-app-id" ] && [ -z "$FEISHU_APP_ID" ]; then
         export FEISHU_APP_ID="$(cat "${config.home.homeDirectory}/.secrets/feishu-app-id")"

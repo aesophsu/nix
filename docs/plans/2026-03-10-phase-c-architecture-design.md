@@ -30,7 +30,8 @@ OpenClaw should end in five explicit ownership layers:
    - produces the runnable gateway and CLI package outputs
 
 2. `runtime`
-   - owns launchd wiring, wrapper entrypoints, PATH/NODE_PATH shaping, runtime probes, and runtime hygiene
+   - owns launchd wiring, wrapper entrypoints, PATH/NODE_PATH shaping, runtime probes, and runtime
+     hygiene
    - may read secrets from local files or environment at execution time
    - must not become the canonical source of persistent config
 
@@ -44,7 +45,8 @@ OpenClaw should end in five explicit ownership layers:
 
 5. `secrets`
    - owns only runtime secret loading contracts
-   - secret values stay in `~/.secrets` or equivalent local secret material and never enter the Nix store
+   - secret values stay in `~/.secrets` or equivalent local secret material and never enter the Nix
+     store
 
 Recommended target path:
 
@@ -105,8 +107,8 @@ Recommendation:
 - update all imports to `infra/*`
 - delete `vars/README.md` and the entire `vars/` tree once nothing imports it
 
-`vars/` should not remain as a public compatibility surface. Keeping both `infra/` and `vars/`
-would extend ambiguity and preserve configuration debt.
+`vars/` should not remain as a public compatibility surface. Keeping both `infra/` and `vars/` would
+extend ambiguity and preserve configuration debt.
 
 ## Final OpenClaw Ownership Split
 
@@ -165,7 +167,8 @@ Commit Phase A+B first, then do Phase C as a dedicated commit sequence.
 Recommended sequence:
 
 1. commit the current Phase A+B restructuring and formatting baseline
-2. create one Phase C branch or linear commit series focused only on shim retirement and module cutover
+2. create one Phase C branch or linear commit series focused only on shim retirement and module
+   cutover
 3. keep OpenClaw boundary work in its own commit if the diff is large
 4. keep doc updates in a final small commit unless they are tightly coupled to a code move
 

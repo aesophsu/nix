@@ -140,11 +140,15 @@ let
     channels = builtins.removeAttrs managedOpenclawConfig.channels [ "feishu" ];
     secrets.providers = { };
   };
-  declarativeOpenclawConfig =
-    pkgs.writeText "openclaw.json" (builtins.toJSON managedOpenclawConfig);
+  declarativeOpenclawConfig = pkgs.writeText "openclaw.json" (builtins.toJSON managedOpenclawConfig);
 in
 {
   _module.args.openclawConfig = {
-    inherit declarativeOpenclawConfig feishuAppId managedOpenclawConfig managedOpenclawHmConfig;
+    inherit
+      declarativeOpenclawConfig
+      feishuAppId
+      managedOpenclawConfig
+      managedOpenclawHmConfig
+      ;
   };
 }

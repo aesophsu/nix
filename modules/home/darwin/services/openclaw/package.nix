@@ -100,7 +100,6 @@ in
 {
   _module.args.openclawPackage = {
     inherit fixedGateway upstreamPackages;
-    openclawPackageDir =
-      "$(find ${fixedGateway}/lib/openclaw/node_modules/.pnpm -path '*/openclaw@*/node_modules/openclaw' -print | head -n 1)";
+    openclawPackageDir = "$(find ${fixedGateway}/lib/openclaw/node_modules/.pnpm -path '*/openclaw@*/node_modules/openclaw' -print | head -n 1)";
   };
 }

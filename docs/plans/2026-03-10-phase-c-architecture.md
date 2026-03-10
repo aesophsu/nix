@@ -9,9 +9,9 @@ removing or excluding `.tmp-openclaw-local/` without losing rollback clarity.
 
 **Architecture:** Execute Phase C as a sequence of small, validated cutovers. First remove the
 already-redundant `vars/` surface. Then move the remaining canonical home and system modules under
-`modules/`. Finally split the OpenClaw monolith into `package`, `plugins`, `config`, `secrets`,
-and `runtime`, cut service imports to the canonical path, remove the last shims, and do only the
-narrow doc updates required by the new structure.
+`modules/`. Finally split the OpenClaw monolith into `package`, `plugins`, `config`, `secrets`, and
+`runtime`, cut service imports to the canonical path, remove the last shims, and do only the narrow
+doc updates required by the new structure.
 
 **Tech Stack:** Nix flakes, nix-darwin, Home Manager, launchd, nix-openclaw, OpenClaw CLI
 
@@ -60,8 +60,8 @@ Rollback rule:
 
 - if the new generation is bad, run `sudo darwin-rebuild switch --rollback`
 - if Home Manager state is partially applied, run `home-manager switch --rollback`
-- if the code change itself should be reverted after the checkpoint commit, use `git revert <commit>`
-  rather than rewriting history
+- if the code change itself should be reverted after the checkpoint commit, use
+  `git revert <commit>` rather than rewriting history
 
 ### Task 1: Freeze the baseline and capture rollback state
 
@@ -74,22 +74,19 @@ Rollback rule:
 
 **Step 1: Confirm the worktree state before Phase C**
 
-Run: `git status --short`
-Expected: only the known Phase A+B changes, formatting sweep changes, and known pre-existing user
-changes are present.
+Run: `git status --short` Expected: only the known Phase A+B changes, formatting sweep changes, and
+known pre-existing user changes are present.
 
 **Step 2: Capture the current passing baseline**
 
-Run: `nix flake check`
-Expected: exit 0
+Run: `nix flake check` Expected: exit 0
 
 **Step 3: Capture the current active generations**
 
-Run: `darwin-rebuild --list-generations | tail -n 5`
-Expected: the latest successful Phase A+B generation is visible
+Run: `darwin-rebuild --list-generations | tail -n 5` Expected: the latest successful Phase A+B
+generation is visible
 
-Run: `home-manager generations | tail -n 5`
-Expected: recent Home Manager generations are visible
+Run: `home-manager generations | tail -n 5` Expected: recent Home Manager generations are visible
 
 **Step 4: Commit checkpoint `P0`**
 
@@ -123,8 +120,8 @@ git commit -m "refactor: checkpoint phase a+b baseline"
 
 **Step 1: Confirm there are no live imports that still need `vars/`**
 
-Run: `rg -n "vars/" . -g '*.nix'`
-Expected: matches are limited to the compatibility files being deleted or historical docs
+Run: `rg -n "vars/" . -g '*.nix'` Expected: matches are limited to the compatibility files being
+deleted or historical docs
 
 **Step 2: Delete the `vars/` compatibility surface**
 
@@ -132,22 +129,21 @@ Remove the entire `vars/` tree once no active Nix evaluation path depends on it.
 
 **Step 3: Verify the canonical shared surface is still `infra/`**
 
-Run: `rg -n "import ../infra|import ../../infra|import ../../../infra|myvars = import ../infra" . -g '*.nix'`
-Expected: canonical imports point at `infra/` and `outputs/default.nix` still builds `myvars`
-from `infra`
+Run:
+`rg -n "import ../infra|import ../../infra|import ../../../infra|myvars = import ../infra" . -g '*.nix'`
+Expected: canonical imports point at `infra/` and `outputs/default.nix` still builds `myvars` from
+`infra`
 
 **Step 4: Run evaluation validation**
 
-Run: `nix flake check --no-build`
-Expected: exit 0
+Run: `nix flake check --no-build` Expected: exit 0
 
-Run: `nix eval .#darwinConfigurations.stella.config.networking.hostName`
-Expected: `"stella"` or the current configured host name
+Run: `nix eval .#darwinConfigurations.stella.config.networking.hostName` Expected: `"stella"` or the
+current configured host name
 
 **Step 5: Activate checkpoint `P1`**
 
-Run: `sudo darwin-rebuild switch --flake .#stella`
-Expected: exit 0
+Run: `sudo darwin-rebuild switch --flake .#stella` Expected: exit 0
 
 **Step 6: Commit checkpoint `P1`**
 
@@ -248,8 +244,7 @@ Run:
 `rg -n "user/common/home.nix|user/common/core/|user/darwin/ghostty.nix|user/darwin/services/mihomo/" modules profiles outputs -g '*.nix'`
 Expected: no matches except the intentionally deferred OpenClaw path
 
-Run: `nix flake check --no-build`
-Expected: exit 0
+Run: `nix flake check --no-build` Expected: exit 0
 
 Run:
 `env -u __HM_SESS_VARS_SOURCED -u __HM_ZSH_SESS_VARS_SOURCED bash -lc 'printf "%s\n%s\n%s\n" "$HTTP_PROXY" "$NPM_CONFIG_PREFIX" "$PATH"'`
@@ -257,8 +252,7 @@ Expected: proxy env and shell env are still present
 
 **Step 5: Activate checkpoint `P2-home`**
 
-Run: `sudo darwin-rebuild switch --flake .#stella`
-Expected: exit 0
+Run: `sudo darwin-rebuild switch --flake .#stella` Expected: exit 0
 
 **Step 6: Commit the home-module cutover**
 
@@ -348,21 +342,16 @@ Delete:
 
 **Step 4: Validate system-module cutover**
 
-Run:
-`rg -n "system/common/|system/darwin/" modules profiles outputs -g '*.nix'`
-Expected: no matches
+Run: `rg -n "system/common/|system/darwin/" modules profiles outputs -g '*.nix'` Expected: no
+matches
 
-Run: `nix flake check --no-build`
-Expected: exit 0
+Run: `nix flake check --no-build` Expected: exit 0
 
-Run:
-`nix eval .#darwinConfigurations.stella.config.users.users.sue.home`
-Expected: `"/Users/sue"`
+Run: `nix eval .#darwinConfigurations.stella.config.users.users.sue.home` Expected: `"/Users/sue"`
 
 **Step 5: Activate checkpoint `P2`**
 
-Run: `sudo darwin-rebuild switch --flake .#stella`
-Expected: exit 0
+Run: `sudo darwin-rebuild switch --flake .#stella` Expected: exit 0
 
 **Step 6: Commit the system-module cutover**
 
@@ -389,8 +378,8 @@ git commit -m "refactor: move canonical system modules under modules"
 **Step 1: Create the canonical OpenClaw module root**
 
 Create `modules/home/darwin/services/openclaw/default.nix` as the canonical entrypoint. It should
-import `package.nix` and `plugins.nix` first, while still leaving `config`, `secrets`, and
-`runtime` in the legacy file until later tasks.
+import `package.nix` and `plugins.nix` first, while still leaving `config`, `secrets`, and `runtime`
+in the legacy file until later tasks.
 
 **Step 2: Extract `package.nix`**
 
@@ -439,8 +428,7 @@ canonical OpenClaw module. Do not delete it yet.
 
 **Step 5: Validate `package` and `plugins` extraction**
 
-Run: `nix flake check --no-build`
-Expected: exit 0
+Run: `nix flake check --no-build` Expected: exit 0
 
 Run:
 `nix eval --raw .#darwinConfigurations.stella.config.home-manager.users.sue.programs.openclaw.package.pname`
@@ -452,8 +440,7 @@ Expected: `true`
 
 **Step 6: Activate checkpoint `P3`**
 
-Run: `sudo darwin-rebuild switch --flake .#stella`
-Expected: exit 0
+Run: `sudo darwin-rebuild switch --flake .#stella` Expected: exit 0
 
 **Step 7: Commit checkpoint `P3`**
 
@@ -514,21 +501,17 @@ helper contracts.
 
 **Step 4: Validate `config` and `secrets` extraction**
 
-Run: `nix flake check --no-build`
-Expected: exit 0
+Run: `nix flake check --no-build` Expected: exit 0
 
 Run:
 `nix eval --json .#darwinConfigurations.stella.config.home-manager.users.sue.programs.openclaw.instances.default.config.tools`
 Expected: the current tool policy JSON is returned
 
-Run:
-`readlink ~/.openclaw/.env`
-Expected: points to `~/.secrets/openclaw.env`
+Run: `readlink ~/.openclaw/.env` Expected: points to `~/.secrets/openclaw.env`
 
 **Step 5: Activate checkpoint `P4`**
 
-Run: `sudo darwin-rebuild switch --flake .#stella`
-Expected: exit 0
+Run: `sudo darwin-rebuild switch --flake .#stella` Expected: exit 0
 
 **Step 6: Commit checkpoint `P4`**
 
@@ -588,25 +571,22 @@ If `user/darwin/profiles/default.nix` becomes orphaned and unused, delete it in 
 
 **Step 4: Validate the runtime cutover**
 
-Run: `rg -n "user/darwin/services/openclaw|user/darwin/services/default.nix|user/darwin/default.nix" modules profiles outputs -g '*.nix'`
+Run:
+`rg -n "user/darwin/services/openclaw|user/darwin/services/default.nix|user/darwin/default.nix" modules profiles outputs -g '*.nix'`
 Expected: no matches
 
-Run: `nix flake check`
-Expected: exit 0
+Run: `nix flake check` Expected: exit 0
 
-Run: `sudo darwin-rebuild switch --flake .#stella`
-Expected: exit 0
+Run: `sudo darwin-rebuild switch --flake .#stella` Expected: exit 0
 
-Run: `openclaw status`
-Expected: gateway reachable and no new critical runtime regressions
+Run: `openclaw status` Expected: gateway reachable and no new critical runtime regressions
 
-Run: `openclaw gateway status`
-Expected: running and probe ok
+Run: `openclaw gateway status` Expected: running and probe ok
 
-Run: `openclaw doctor`
-Expected: no new critical findings
+Run: `openclaw doctor` Expected: no new critical findings
 
-Run: `launchctl print gui/$(id -u)/com.steipete.openclaw.gateway | rg 'state =|pid =|last exit code ='`
+Run:
+`launchctl print gui/$(id -u)/com.steipete.openclaw.gateway | rg 'state =|pid =|last exit code ='`
 Expected: running state and healthy pid or last exit `0`
 
 Run:
@@ -640,8 +620,8 @@ git commit -m "refactor: split openclaw runtime and remove home shims"
 
 **Step 1: Prefer full removal of `.tmp-openclaw-local/`**
 
-Delete the tracked `.tmp-openclaw-local/` tree if no current Nix path, doc, or local test flow
-still depends on it.
+Delete the tracked `.tmp-openclaw-local/` tree if no current Nix path, doc, or local test flow still
+depends on it.
 
 Fallback only if removal is blocked by a still-needed local workflow:
 
@@ -662,17 +642,15 @@ Do not do unrelated prose cleanup.
 
 **Step 3: Final validation**
 
-Run: `rg -n "vars/|user/common/core/default.nix|user/common/core/shells/default.nix|user/darwin/default.nix|system/common/default.nix|system/darwin/default.nix|\\.tmp-openclaw-local/" .`
+Run:
+`rg -n "vars/|user/common/core/default.nix|user/common/core/shells/default.nix|user/darwin/default.nix|system/common/default.nix|system/darwin/default.nix|\\.tmp-openclaw-local/" .`
 Expected: only historical plan docs or intentional documentation references remain
 
-Run: `nix flake check`
-Expected: exit 0
+Run: `nix flake check` Expected: exit 0
 
-Run: `sudo darwin-rebuild switch --flake .#stella`
-Expected: exit 0
+Run: `sudo darwin-rebuild switch --flake .#stella` Expected: exit 0
 
-Run: `openclaw status && openclaw gateway status && openclaw doctor`
-Expected: exit 0
+Run: `openclaw status && openclaw gateway status && openclaw doctor` Expected: exit 0
 
 **Step 4: Commit checkpoint `P6`**
 
