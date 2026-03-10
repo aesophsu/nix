@@ -10,8 +10,8 @@ let
       runHook preInstall
 
       mkdir -p "$out/bin" "$out/share/devshell-templates"
-      cp "$src/user/common/core/scripts/devshell-init" "$out/bin/devshell-init"
-      cp "$src/user/common/core/scripts/devshell-attach" "$out/bin/devshell-attach"
+      cp "$src/modules/home/core/scripts/devshell-init" "$out/bin/devshell-init"
+      cp "$src/modules/home/core/scripts/devshell-attach" "$out/bin/devshell-attach"
       chmod +x "$out/bin/devshell-init" "$out/bin/devshell-attach"
       cp -R "$src/templates/devshell/." "$out/share/devshell-templates/"
 

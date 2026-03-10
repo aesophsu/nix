@@ -50,7 +50,7 @@ in
 
   programs.nushell = {
     enable = true;
-    configFile.source = ../../../user/common/core/shells/config.nu;
+    configFile.source = ./config.nu;
     inherit shellAliases;
   };
 }

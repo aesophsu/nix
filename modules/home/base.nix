@@ -5,7 +5,7 @@
   ...
 }:
 {
-  imports = [ ../../user/common/home.nix ];
+  imports = [ ./common.nix ];
 
   home.homeDirectory = mylib.homeDirForSystem {
     inherit system;

@@ -1,6 +1,6 @@
 {
   imports = [
-    ../../../user/darwin/ghostty.nix
+    ./apps/ghostty.nix
     ./shell.nix
     ./services/default.nix
   ];
