@@ -76,6 +76,9 @@ in
           export OPENCLAW_BUNDLED_SKILLS_DIR="$openclaw_pkg/skills"
         fi
       fi
+      if [ -z "$OPENCLAW_BUNDLED_PLUGINS_DIR" ] && [ -d "${fixedGateway}/lib/openclaw/extensions" ]; then
+        export OPENCLAW_BUNDLED_PLUGINS_DIR="${fixedGateway}/lib/openclaw/extensions"
+      fi
 
       exec ${fixedGateway}/bin/openclaw "$@"
     '';

@@ -12,6 +12,6 @@ in
     pkg: builtins.elem (pkg.pname or pkg.name or "") allowUnfreePnames;
 
   nixpkgs.config.permittedInsecurePackages = [
-    "openclaw-2026.2.26"
+    "openclaw-2026.3.12"
   ];
 }

@@ -45,6 +45,7 @@
       "feishu"
       "ghostty"
       "google-chrome"
+      "visual-studio-code"
       "zotero"
     ];
   };

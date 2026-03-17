@@ -12,9 +12,6 @@ let
     inherit (myvars.networking.mihomo) httpProxy socksProxy;
   };
   fixedGateway = upstreamPackages.openclaw-gateway.overrideAttrs (old: {
-    pnpmDeps = old.pnpmDeps.overrideAttrs (_: {
-      outputHash = "sha256-CDJKsEeDukH6xdLztpeccR6ILxh80BMTMo8McPOSysE=";
-    });
     postPatch = (old.postPatch or "") + ''
 
       # Upstream CLI still bakes the legacy launchd label into daemon constants.
@@ -61,10 +58,14 @@ let
       done
 
       bundled_skills_dir=""
+      bundled_plugins_dir=""
       openclaw_pkg="$(find "$out/lib/openclaw/node_modules/.pnpm" -path "*/openclaw@*/node_modules/openclaw" -print | head -n 1)"
       openclaw_node_modules="$out/lib/openclaw/node_modules"
       if [ -n "$openclaw_pkg" ] && [ -d "$openclaw_pkg/skills" ]; then
         bundled_skills_dir="$openclaw_pkg/skills"
+      fi
+      if [ -d "$out/lib/openclaw/extensions" ]; then
+        bundled_plugins_dir="$out/lib/openclaw/extensions"
       fi
 
       wrap_args=()
@@ -76,6 +77,9 @@ let
       fi
       if [ -n "$bundled_skills_dir" ]; then
         wrap_args+=(--set-default OPENCLAW_BUNDLED_SKILLS_DIR "$bundled_skills_dir")
+      fi
+      if [ -n "$bundled_plugins_dir" ]; then
+        wrap_args+=(--set-default OPENCLAW_BUNDLED_PLUGINS_DIR "$bundled_plugins_dir")
       fi
       wrap_args+=(
         --set-default http_proxy ${lib.escapeShellArg proxyEnv.http_proxy}
