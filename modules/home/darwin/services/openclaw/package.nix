@@ -21,6 +21,7 @@ let
         perl -0pi -e 's/export const GATEWAY_LAUNCH_AGENT_LABEL = "ai\.openclaw\.gateway";/export const GATEWAY_LAUNCH_AGENT_LABEL = "com.steipete.openclaw.gateway";/' src/daemon/constants.ts
         perl -0pi -e 's/return `ai\.openclaw\.\$\{normalized\}`;/return `com.steipete.openclaw.gateway.\$\{normalized\}`;/' src/daemon/constants.ts
       fi
+
     '';
     preInstall = (old.preInstall or "") + ''
       # pnpm also vendors an embedded openclaw package in node_modules. Patch
@@ -32,7 +33,12 @@ let
         done
       done
     '';
-    postInstall = (old.postInstall or "") + ''
+    installPhase = ''
+      ${old.installPhase or ""}
+
+      # The upstream derivation uses a custom installPhase script path, so
+      # append our install-time fixes directly here instead of relying on a
+      # separate postInstall hook.
       # Baileys imports `long` at runtime without declaring it, so pnpm's
       # strict package layout leaves the package-local resolution path empty.
       long_src="$(find "$out/lib/openclaw/node_modules/.pnpm" -path "*/long@*/node_modules/long" -print | head -n 1)"
@@ -53,6 +59,18 @@ let
       # Scrub the stale gateway label from all installed text artifacts,
       # including the embedded openclaw package copy under node_modules.
       chmod -R u+w "$out/lib/openclaw"
+      # OpenClaw discovers bundled plugins from the installed extensions tree,
+      # so normalize the package names in the final output it actually scans.
+      rewrite_plugin_name() {
+        plugin_json="$1"
+        plugin_name="$2"
+        tmp_json="$(mktemp)"
+        ${lib.getExe pkgs.jq} --arg plugin_name "$plugin_name" \
+          '.name = $plugin_name' "$plugin_json" > "$tmp_json"
+        mv "$tmp_json" "$plugin_json"
+      }
+      rewrite_plugin_name "$out/lib/openclaw/extensions/elevenlabs/package.json" "@openclaw/elevenlabs"
+      rewrite_plugin_name "$out/lib/openclaw/extensions/microsoft/package.json" "@openclaw/microsoft"
       grep -R -l "ai.openclaw.gateway" "$out/lib/openclaw" | while IFS= read -r file; do
         perl -0pi -e "s/ai\\.openclaw\\.gateway/com.steipete.openclaw.gateway/g" "$file"
       done
