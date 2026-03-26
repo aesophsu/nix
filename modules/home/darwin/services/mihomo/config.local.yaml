@@ -200,6 +200,19 @@ rules:
   - DOMAIN-KEYWORD,airdrop,DIRECT
   - DOMAIN-KEYWORD,airplay,DIRECT
   - DOMAIN-KEYWORD,bonjour,DIRECT
+  # Route Apple App Store traffic through the general Proxy group first.
+  - PROCESS-NAME,App Store,Proxy
+  - PROCESS-NAME,appstoreagent,Proxy
+  - PROCESS-NAME,appstored,Proxy
+  - PROCESS-NAME,storedownloadd,Proxy
+  - DOMAIN-SUFFIX,apps.apple.com,Proxy
+  - DOMAIN-SUFFIX,appstoreconnect.apple.com,Proxy
+  - DOMAIN-SUFFIX,itunes.apple.com,Proxy
+  - DOMAIN-SUFFIX,mzstatic.com,Proxy
+  - DOMAIN-KEYWORD,appstore,Proxy
+  - DOMAIN-KEYWORD,itunes,Proxy
+  # Keep the broader Apple ecosystem on Proxy as well.
+  - GEOSITE,apple,Proxy
   - RULE-SET,ai,AI
   - RULE-SET,cn,DIRECT
   - RULE-SET,cnip,DIRECT,no-resolve
