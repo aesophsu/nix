@@ -46,6 +46,12 @@ in
   programs.zsh = {
     enable = true;
     dotDir = config.home.homeDirectory;
+    profileExtra = ''
+      # macOS login zsh runs path_helper after .zshenv, which can drop
+      # Home Manager's PATH prefixes. Re-source session vars here so login
+      # shells keep the declarative PATH ordering.
+      . "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
+    '';
     initContent = lib.mkAfter (envExtra + initContent);
   };
 

@@ -4,6 +4,11 @@
 
 - Nix-first installation and service management remain authoritative.
 - Runtime target is `OpenClaw 2026.3.24`.
+- Merged upgrade baseline is commit `e7a6d7f` on `main`.
+- Current flake input state keeps `nixpkgs` at `46db2e0`, `home-manager` at `1eb0549`,
+  `nix-openclaw` at `64d4106`, and `nixpkgs-darwin` at `fdc7b8f`.
+- Homebrew CLI visibility is now provided declaratively through Home Manager shell PATH exposure to
+  `/opt/homebrew/bin`; it no longer depends on manual shell edits.
 - Validation baseline:
   - `nix build .#darwinConfigurations.stella.system`
   - `sudo darwin-rebuild switch --flake .#stella`
@@ -21,6 +26,20 @@
 3. Local runtime adjustments that keep the launchd label, bundled plugin names, and wrapper environment aligned with this repo's Nix-managed deployment.
 
 Anything outside those three categories should not be added there.
+
+Adjacent non-OpenClaw compatibility layers still present after the upgrade:
+
+1. [`overlays/direnv-darwin-cgo-fix.nix`](/Users/sue/nix/overlays/direnv-darwin-cgo-fix.nix) keeps Darwin builds working until upstream `nixpkgs-darwin` removes the broken `CGO_ENABLED=0` + `-linkmode=external` combination for `direnv`.
+2. [`outputs/default.nix`](/Users/sue/nix/outputs/default.nix) keeps flake `pre-commit` checks focused on `nixfmt` and `typos`; full-repo `prettier` enforcement is deferred to a dedicated formatting branch.
+
+## Deferred Cleanup Triggers
+
+Only remove temporary compatibility layers when the corresponding trigger is met:
+
+1. Remove [`overlays/direnv-darwin-cgo-fix.nix`](/Users/sue/nix/overlays/direnv-darwin-cgo-fix.nix) only after upstream `nixpkgs-darwin` no longer evaluates `direnv` with the broken `CGO_ENABLED=0` + `-linkmode=external` combination on Darwin.
+2. Restore full flake `prettier` coverage in [`outputs/default.nix`](/Users/sue/nix/outputs/default.nix) only after repository-wide formatting drift is handled in a dedicated formatting branch.
+3. Reduce [`modules/home/darwin/services/openclaw/package.nix`](/Users/sue/nix/modules/home/darwin/services/openclaw/package.nix) only when `nix-openclaw` picks up the required OpenClaw source version and runtime fixes upstream.
+4. Revisit the insecure package allowlist for `openclaw-2026.3.12` only after upstream package metadata stops flagging the overridden OpenClaw package as insecure during evaluation.
 
 ## Removal Order
 
@@ -48,6 +67,7 @@ These do not currently block operation:
 
 - `openclaw gateway status` may still report the LaunchAgent as "out of date or non-standard" even when the service is healthy and running the expected command.
 - Node may emit `punycode` deprecation warnings during CLI diagnostics.
+- `openclaw status` currently reports Feishu `ON` and `OK`, gateway RPC probe `ok`, and no critical or warn findings in the embedded security summary.
 
 ## Upgrade Workflow
 
