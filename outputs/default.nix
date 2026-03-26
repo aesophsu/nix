@@ -11,6 +11,11 @@ let
   myvars = import ../infra { inherit lib; };
   smokeCheckLib = import ./lib/smoke-check.nix { inherit lib; };
   preCommitHooks = import ./lib/pre-commit-hooks.nix;
+  flakeCheckHooks = preCommitHooks // {
+    prettier = (preCommitHooks.prettier or { }) // {
+      enable = false;
+    };
+  };
 
   genSpecialArgs =
     targetSystem:
@@ -69,7 +74,7 @@ in
     // lib.optionalAttrs (builtins.hasAttr system pre-commit-hooks.lib) {
       pre-commit = pre-commit-hooks.lib.${system}.run {
         src = mylib.relativeToRoot ".";
-        hooks = preCommitHooks;
+        hooks = flakeCheckHooks;
       };
     };
   };

@@ -30,6 +30,7 @@ let
 in
 {
   home.sessionPath = [
+    "/opt/homebrew/bin"
     "${config.home.homeDirectory}/.local/bin"
     "${config.xdg.stateHome}/nix/profiles/home-manager/home-path/bin"
   ];

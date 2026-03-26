@@ -7,7 +7,7 @@
   typos = {
     enable = true;
     settings = {
-      write = true;
+      write = false;
       configPath = ".typos.toml";
       exclude = "rime-data/";
     };
@@ -16,7 +16,7 @@
   prettier = {
     enable = true;
     settings = {
-      write = true;
+      write = false;
       configPath = ".prettierrc.yaml";
     };
   };
