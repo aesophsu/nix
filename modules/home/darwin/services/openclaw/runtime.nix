@@ -7,8 +7,10 @@
 }:
 let
   inherit (config._module.args.openclawPackage)
+    bundledPluginsDir
+    bundledSkillsDir
     fixedGateway
-    openclawPackageDir
+    openclawRoot
     upstreamPackages
     ;
   inherit (config._module.args.openclawConfig)
@@ -70,14 +72,11 @@ in
 
       ${wrapperSecretExports}
 
-      if [ -z "$OPENCLAW_BUNDLED_SKILLS_DIR" ]; then
-        openclaw_pkg="${openclawPackageDir}"
-        if [ -n "$openclaw_pkg" ] && [ -d "$openclaw_pkg/skills" ]; then
-          export OPENCLAW_BUNDLED_SKILLS_DIR="$openclaw_pkg/skills"
-        fi
+      if [ -z "$OPENCLAW_BUNDLED_SKILLS_DIR" ] && [ -d "${bundledSkillsDir}" ]; then
+        export OPENCLAW_BUNDLED_SKILLS_DIR="${bundledSkillsDir}"
       fi
-      if [ -z "$OPENCLAW_BUNDLED_PLUGINS_DIR" ] && [ -d "${fixedGateway}/lib/openclaw/extensions" ]; then
-        export OPENCLAW_BUNDLED_PLUGINS_DIR="${fixedGateway}/lib/openclaw/extensions"
+      if [ -z "$OPENCLAW_BUNDLED_PLUGINS_DIR" ] && [ -d "${bundledPluginsDir}" ]; then
+        export OPENCLAW_BUNDLED_PLUGINS_DIR="${bundledPluginsDir}"
       fi
 
       exec ${fixedGateway}/bin/openclaw "$@"
@@ -139,7 +138,7 @@ in
       '';
 
   home.activation.openclawRuntimeHygiene = lib.hm.dag.entryAfter [ "openclawTavilyInstall" ] ''
-    openclaw_pkg="${openclawPackageDir}"
+    openclaw_pkg="${openclawRoot}"
     rm -rf "${config.home.homeDirectory}/.openclaw/extensions/feishu-openclaw-plugin"
     for plugin_dir in "${config.home.homeDirectory}/.openclaw/extensions/${memoryLancedbProId}" "${config.home.homeDirectory}/.openclaw/extensions/${tavilyPluginId}"; do
       if [ -d "$plugin_dir" ] && [ -n "$openclaw_pkg" ] && [ -d "$openclaw_pkg" ]; then

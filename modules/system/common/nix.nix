@@ -4,7 +4,6 @@
   myvars,
   ...
 }:
-
 {
   nix.settings = {
     experimental-features = [
