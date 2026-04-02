@@ -100,7 +100,7 @@ proxy-providers:
   Airport1:
     type: http
     # Subscription 1 (ts1110)
-    url: "https://999.sub987.top/weibo/ipx/client/dy?token=c52a6ead3111c272262893388c364954"
+    url: "https://999.sub987.top/weibo/ipx/client/dy?token=YOUR_TOKEN"
     path: ./proxies/airport1.yaml
     interval: 43200
     update-on-start: false
