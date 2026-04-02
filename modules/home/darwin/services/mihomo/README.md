@@ -15,6 +15,14 @@ darwin-rebuild switch --flake .
 
 不使用 Nix 时：编辑后手动将 `config.yaml` 复制到 `~/.config/mihomo/config.yaml`。
 
+## 订阅注意事项
+
+- `config.local.yaml` 用于保存真实订阅地址与 token；不要提交到仓库。
+- 如果机场提供的是一次性订阅链接，不要先用浏览器、`curl` 或其它探测工具访问；否则链接可能会被提前消费并失效。
+- 一次性订阅链接的推荐流程：先写入 `config.local.yaml`，再执行 `darwin-rebuild switch --flake .`，随后重启 `mihomo`，只让 `mihomo` 自己完成那一次拉取。
+- 如果一次性订阅链接已经被消费，直接去机场官网重置，不要继续在本机反复重试。
+- 当前配置中 `Airport2` 的 provider 下载通过隐藏的 `Airport1Bootstrap` 组完成引导，目的是避免 `Airport2` 订阅更新完全依赖不稳定的直连链路。
+
 ## Web UI
 
 Config uses `external-ui: ui`. Put a web panel in `~/.config/mihomo/ui/`, e.g.

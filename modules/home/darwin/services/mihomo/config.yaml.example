@@ -100,7 +100,7 @@ proxy-providers:
   Airport1:
     type: http
     # Subscription 1 (ts1110)
-    url: "https://999.ts1110.top/weibo/ipx/client/dy?token=YOUR_TOKEN"
+    url: "https://999.sub987.top/weibo/ipx/client/dy?token=c52a6ead3111c272262893388c364954"
     path: ./proxies/airport1.yaml
     interval: 43200
     update-on-start: false
@@ -120,6 +120,7 @@ proxy-providers:
     type: http
     # Subscription 2 (fcsubcn)
     url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=YOUR_TOKEN"
+    proxy: Airport1Bootstrap
     path: ./proxies/airport2.yaml
     interval: 43200
     update-on-start: false
@@ -136,6 +137,17 @@ proxy-providers:
       additional-suffix: " - A2"
 
 proxy-groups:
+  - {
+      name: Airport1Bootstrap,
+      type: url-test,
+      use: [Airport1],
+      filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)",
+      url: https://cp.cloudflare.com/generate_204,
+      interval: 300,
+      lazy: true,
+      timeout: 5000,
+      hidden: true,
+    }
   - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, DIRECT, REJECT] }
   - { name: Auto, type: select, use: [Airport1, Airport2] }
   - { name: AI, type: select, proxies: [TW, JP, SG, US] }

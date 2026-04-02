@@ -99,7 +99,7 @@ geox:
 proxy-providers:
   Airport1:
     type: http
-    url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=6a0563b8a30ac5e2d6310cf55cca705e"
+    url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=082cd075c1cdde93a1b6e38eb6341bb5"
     path: ./proxies/airport1.yaml
     interval: 43200
     update-on-start: false
@@ -117,7 +117,8 @@ proxy-providers:
 
   Airport2:
     type: http
-    url: "https://999.ts1110.top/weibo/ipx/client/dy?token=286deb68eb0f7714af083c7192349b12"
+    url: "https://999.sub987.top/weibo/ipx/client/dy?token=c52a6ead3111c272262893388c364954"
+    proxy: Airport1Bootstrap
     path: ./proxies/airport2.yaml
     interval: 43200
     update-on-start: false
@@ -134,6 +135,17 @@ proxy-providers:
       additional-suffix: " - A2"
 
 proxy-groups:
+  - {
+      name: Airport1Bootstrap,
+      type: url-test,
+      use: [Airport1],
+      filter: "(?i)(tw|台|jp|日|sg|新|us|美)",
+      url: https://cp.cloudflare.com/generate_204,
+      interval: 300,
+      lazy: true,
+      timeout: 5000,
+      hidden: true,
+    }
   - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, DIRECT, REJECT] }
   - { name: Auto, type: select, use: [Airport1, Airport2] }
   - { name: AI, type: select, proxies: [TW, JP, SG, US] }
