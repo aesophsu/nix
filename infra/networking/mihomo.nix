@@ -24,7 +24,7 @@
         "geoip.dat"
         "geoip.metadb"
       ];
-      mirrorDir = "/Users/sue/Code/nix/user/darwin/services/mihomo/.runtime";
+      mirrorDir = "/Users/sue/.config/mihomo";
       onFailure = "fallback-continue";
     };
   };
