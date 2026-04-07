@@ -3,10 +3,9 @@
 ## Current Baseline
 
 - Nix-first installation and service management remain authoritative.
-- Runtime target is `OpenClaw 2026.3.24`.
+- Runtime target is `OpenClaw 2026.4.5`.
 - Merged upgrade baseline is commit `e7a6d7f` on `main`.
-- Current flake input state keeps `nixpkgs` at `46db2e0`, `home-manager` at `1eb0549`,
-  `nix-openclaw` at `64d4106`, and `nixpkgs-darwin` at `fdc7b8f`.
+- Current OpenClaw flake input state keeps `nix-openclaw` at `0f4d066`.
 - Homebrew CLI visibility is now provided declaratively through Home Manager shell PATH exposure to
   `/opt/homebrew/bin`; it no longer depends on manual shell edits.
 - Validation baseline:
@@ -21,7 +20,7 @@
 
 [`modules/home/darwin/services/openclaw/package.nix`](/Users/sue/nix/modules/home/darwin/services/openclaw/package.nix) is a temporary compatibility layer. It currently owns only these concerns:
 
-1. Source override to upstream `v2026.3.24` (`cff6dc94`) until `nix-openclaw` ships the same or newer release.
+1. Source override to upstream `v2026.4.5` (`3e72c035`) until `nix-openclaw` ships the same or newer release.
 2. Packaging compatibility fixes needed for Nix output closure validation.
 3. Local runtime adjustments that keep the launchd label, bundled plugin names, and wrapper environment aligned with this repo's Nix-managed deployment.
 
@@ -45,7 +44,7 @@ Only remove temporary compatibility layers when the corresponding trigger is met
 
 When updating `nix-openclaw`, try to delete local logic in this order:
 
-1. Remove the source override if upstream already packages `2026.3.24` or newer.
+1. Remove the source override if upstream already packages `2026.4.5` or newer.
 2. Remove the `node-which` install fix if upstream no longer emits dangling symlinks for:
    - `cmake-js/node_modules/.bin/node-which`
    - `node-llama-cpp/node_modules/.bin/node-which`

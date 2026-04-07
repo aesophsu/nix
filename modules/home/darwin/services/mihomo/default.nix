@@ -15,6 +15,7 @@ let
   providersDir = "${configDir}/proxies";
   rawAirport1Provider = "${providersDir}/airport1.yaml";
   controlledAirport1Provider = "${providersDir}/airport1-controlled.yaml";
+  rawAirport2Provider = "${providersDir}/airport2.yaml";
   airport1TransformScript = "${configDir}/transform_airport1_provider.rb";
   rubyExe = "/usr/bin/ruby";
   trackedConfigSource = mylib.firstExistingPathOr {
@@ -47,35 +48,4 @@ in
     fi
   '';
 
-  launchd.agents.mihomo-airport1-transform = {
-    enable = true;
-    config = {
-      Label = "mihomo-airport1-transform";
-      ProgramArguments = [
-        "/bin/sh"
-        "-c"
-        "if [ -f '${rawAirport1Provider}' ]; then exec ${airport1TransformCommand}; fi"
-      ];
-      RunAtLoad = true;
-      WatchPaths = [ rawAirport1Provider ];
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/mihomo-airport1-transform.stdout.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/mihomo-airport1-transform.stderr.log";
-    };
-  };
-
-  launchd.agents.mihomo = {
-    enable = true;
-    config = {
-      Label = "mihomo";
-      ProgramArguments = [
-        "/bin/sh"
-        "-c"
-        "if [ -f '${rawAirport1Provider}' ]; then ${airport1TransformCommand}; fi; exec '${pkgs.mihomo}/bin/mihomo' -d '${configDir}'"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/mihomo.stdout.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/mihomo.stderr.log";
-    };
-  };
 }

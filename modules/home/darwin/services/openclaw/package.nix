@@ -16,9 +16,9 @@ let
   latestOpenclawSourceInfo = {
     owner = "openclaw";
     repo = "openclaw";
-    rev = "cff6dc94e30794a269eb7805b6e636c3634a088c";
-    hash = "sha256-cvRoCPf63ocTVgZ38qDW/oZDKXvAwhtvURcQLI9qRMY=";
-    pnpmDepsHash = "sha256-UsDwR66NJV+45ar0/5mZoi1v9IQAiG6kxa4RmorQ7h8=";
+    rev = "3e72c0352dde84a0bcb3aabafa99c2d4b12d1c46";
+    hash = "sha256-dpBLqxSsSlvyaAG6DV/D/BSvrca93LtF4ritnlGZSho=";
+    pnpmDepsHash = "sha256-sBpaoGacWmipWmnKmdVTKu/T8mzOQFAIX0VKORiHvUc=";
   };
   proxyEnv = myvars.networking.proxy.env {
     inherit (myvars.networking.mihomo) httpProxy socksProxy;
@@ -29,7 +29,205 @@ let
       pnpmDepsHash = latestOpenclawSourceInfo.pnpmDepsHash;
     }).overrideAttrs
       (old: {
-        postPatch = (old.postPatch or "") + ''
+        postPatch = ''
+          if [ -n "''${REMOVE_PACKAGE_MANAGER_FIELD_SH:-}" ] && [ -f package.json ]; then
+            "$REMOVE_PACKAGE_MANAGER_FIELD_SH" package.json
+          fi
+
+          for bundled_plugin in diffs discord feishu; do
+            if [ -f "extensions/$bundled_plugin/package.json" ]; then
+              tmp_json="$(mktemp)"
+              ${lib.getExe pkgs.jq} 'del(.openclaw.bundle.stageRuntimeDependencies)' \
+                "extensions/$bundled_plugin/package.json" > "$tmp_json"
+              mv "$tmp_json" "extensions/$bundled_plugin/package.json"
+            fi
+          done
+
+          # OpenClaw 2026.4.x stages bundled plugin runtime deps during build.
+          # In a pnpm-based Nix build, transitive deps are not flattened at the
+          # workspace root, so the upstream closure walker falls back to a fresh
+          # npm install for amazon-bedrock and fails. Copy direct runtime deps
+          # from the existing pnpm install instead and let their nested deps come
+          # along via the dereferenced package tree.
+          if [ -f scripts/stage-bundled-plugin-runtime-deps.mjs ]; then
+            python3 - <<'PY'
+from pathlib import Path
+import re
+
+path = Path("scripts/stage-bundled-plugin-runtime-deps.mjs")
+text = path.read_text()
+new = """function collectInstalledRuntimeClosure(rootNodeModulesDir, dependencySpecs) {
+  const closure = [];
+  for (const [depName, spec] of Object.entries(dependencySpecs)) {
+    const installedVersion = readInstalledDependencyVersion(rootNodeModulesDir, depName);
+    if (installedVersion === null || !dependencyVersionSatisfied(spec, installedVersion)) {
+      return null;
+    }
+    closure.push(depName);
+  }
+  return closure;
+}
+"""
+text, n = re.subn(
+    r'function collectInstalledRuntimeClosure\(rootNodeModulesDir, dependencySpecs\) \{\n.*?\n\}\n',
+    new,
+    text,
+    count=1,
+    flags=re.S,
+)
+if n != 1:
+    raise SystemExit("expected runtime deps helper block not found")
+
+new = """function resolveInstalledDependencyPath(nodeModulesDir, depName) {
+  const directPath = dependencyNodeModulesPath(nodeModulesDir, depName);
+  if (fs.existsSync(path.join(directPath, "package.json"))) {
+    return directPath;
+  }
+
+  const virtualStoreDir = path.join(nodeModulesDir, ".pnpm");
+  if (!fs.existsSync(virtualStoreDir)) {
+    return null;
+  }
+
+  const depPathParts = depName.split("/");
+  for (const entry of fs.readdirSync(virtualStoreDir)) {
+    const candidatePath = path.join(
+      virtualStoreDir,
+      entry,
+      "node_modules",
+      ...depPathParts,
+    );
+    if (fs.existsSync(path.join(candidatePath, "package.json"))) {
+      return candidatePath;
+    }
+  }
+
+  return null;
+}
+
+function readInstalledDependencyVersion(nodeModulesDir, depName) {
+  const dependencyPath = resolveInstalledDependencyPath(nodeModulesDir, depName);
+  if (dependencyPath === null) {
+    return null;
+  }
+  const version = readJson(path.join(dependencyPath, "package.json")).version;
+  return typeof version === "string" ? version : null;
+}
+"""
+text, n = re.subn(
+    r'function readInstalledDependencyVersion\(nodeModulesDir, depName\) \{\n.*?\n\}\n',
+    new,
+    text,
+    count=1,
+    flags=re.S,
+)
+if n != 1:
+    raise SystemExit("expected readInstalledDependencyVersion block not found")
+
+new = """function stageInstalledRootRuntimeDeps(params) {
+  const { fingerprint, packageJson, pluginDir, repoRoot } = params;
+  const dependencySpecs = {
+    ...packageJson.dependencies,
+    ...packageJson.optionalDependencies,
+  };
+  if (Object.keys(dependencySpecs).length === 0) {
+    return false;
+  }
+
+  const candidateNodeModulesDirs = [
+    path.join(repoRoot, "node_modules"),
+    path.join(repoRoot, "extensions", path.basename(pluginDir), "node_modules"),
+  ];
+  let sourceNodeModulesDir = null;
+  let dependencyNames = null;
+  for (const candidateDir of candidateNodeModulesDirs) {
+    if (!fs.existsSync(candidateDir)) {
+      continue;
+    }
+    const candidateDeps = collectInstalledRuntimeClosure(candidateDir, dependencySpecs);
+    if (candidateDeps !== null) {
+      sourceNodeModulesDir = candidateDir;
+      dependencyNames = candidateDeps;
+      break;
+    }
+  }
+  if (sourceNodeModulesDir === null || dependencyNames === null) {
+    return false;
+  }
+
+  const nodeModulesDir = path.join(pluginDir, "node_modules");
+  const stampPath = resolveRuntimeDepsStampPath(pluginDir);
+  const stagedNodeModulesDir = path.join(
+    makeTempDir(
+      os.tmpdir(),
+      `openclaw-runtime-deps-''${sanitizeTempPrefixSegment(path.basename(pluginDir))}-`,
+    ),
+    "node_modules",
+  );
+
+  try {
+    for (const depName of dependencyNames) {
+      const sourcePath = resolveInstalledDependencyPath(sourceNodeModulesDir, depName);
+      if (sourcePath === null) {
+        return false;
+      }
+      const targetPath = dependencyNodeModulesPath(stagedNodeModulesDir, depName);
+      fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+      fs.cpSync(sourcePath, targetPath, { recursive: true, force: true, dereference: true });
+    }
+    pruneStagedRuntimeDependencyCargo(stagedNodeModulesDir);
+
+    replaceDir(nodeModulesDir, stagedNodeModulesDir);
+    writeJson(stampPath, {
+      fingerprint,
+      generatedAt: new Date().toISOString(),
+    });
+    return true;
+  } finally {
+    removePathIfExists(path.dirname(stagedNodeModulesDir));
+  }
+}
+"""
+text, n = re.subn(
+    r'function stageInstalledRootRuntimeDeps\(params\) \{\n.*?\n\}\n\nfunction installPluginRuntimeDeps',
+    new + "\nfunction installPluginRuntimeDeps",
+    text,
+    count=1,
+    flags=re.S,
+)
+if n != 1:
+    raise SystemExit("expected stageInstalledRootRuntimeDeps block not found")
+
+old = """    installPluginRuntimeDepsWithRetries({
+      attempts: installAttempts,
+      install: installPluginRuntimeDepsImpl,
+      installParams: {
+        fingerprint,
+        packageJson,
+        pluginDir,
+        pluginId,
+        repoRoot,
+      },
+    });
+"""
+new = """    console.error(`[openclaw-runtime-deps] staging ''${pluginId}`);
+    installPluginRuntimeDepsWithRetries({
+      attempts: installAttempts,
+      install: installPluginRuntimeDepsImpl,
+      installParams: {
+        fingerprint,
+        packageJson,
+        pluginDir,
+        pluginId,
+        repoRoot,
+      },
+    });
+"""
+if old not in text:
+    raise SystemExit("expected runtime deps staging block not found")
+path.write_text(text.replace(old, new))
+PY
+          fi
 
           # Upstream CLI still bakes the legacy launchd label into daemon constants.
           # Patch the source before bundling so the compiled gateway CLI matches the
@@ -87,6 +285,21 @@ let
           }
 
           mkdir -p "$out/lib/openclaw" "$out/bin"
+
+          if [ -d extensions/feishu ] && [ -d node_modules/.pnpm ]; then
+            feishu_stage_dir="extensions/feishu/node_modules"
+            mkdir -p "$feishu_stage_dir"
+            for dep in "@larksuiteoapi/node-sdk" "@sinclair/typebox" "https-proxy-agent"; do
+              dep_src="$(find . -path "*/node_modules/$dep" -print | head -n 1)"
+              if [ -z "$dep_src" ]; then
+                echo "missing feishu runtime dependency before install: $dep" >&2
+                exit 1
+              fi
+              dep_target="$feishu_stage_dir/$dep"
+              mkdir -p "$(dirname "$dep_target")"
+              cp -R -L "$dep_src" "$dep_target"
+            done
+          fi
 
           log_step "move build outputs" mv dist node_modules package.json "$out/lib/openclaw/"
           if [ -d extensions ]; then

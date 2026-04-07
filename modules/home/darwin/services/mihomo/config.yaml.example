@@ -90,68 +90,39 @@ geox:
   update-interval: 172800
 
 proxy-providers:
-  Airport1Raw:
-    type: http
-# Subscription 1
-    url: "https://999.sub987.top/weibo/ipx/client/dy?token=YOUR_TOKEN"
-    path: ./proxies/airport1.yaml
-    interval: 43200
-    update-on-start: false
-    skip-cert-verify: false
-  Airport1:
-    type: file
-    path: ./proxies/airport1-controlled.yaml
-    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
-    exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
-    health-check:
-      enable: true
-      url: https://cp.cloudflare.com/generate_204
-      interval: 1800
-      timeout: 5
-      lazy: true
-    override:
-      additional-suffix: " - A1"
-
-  Airport2:
+  Airport2Raw:
     type: http
 # Subscription 2
     url: "https://fcsblka.fcsubcn.cc:2096/api/v1/client/subscribe?token=YOUR_TOKEN"
-    proxy: Airport1Bootstrap
     path: ./proxies/airport2.yaml
     interval: 43200
     update-on-start: false
     skip-cert-verify: false
-    filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)"
-    exclude-filter: "(?i)(test|expire|backup|fallback|网|w01\\.fcweba\\.cc)"
-    health-check:
-      enable: true
-      url: https://cp.cloudflare.com/generate_204
-      interval: 1800
-      timeout: 5
-      lazy: true
+  Airport2:
+    type: file
+    path: ./proxies/airport2.yaml
+    exclude-filter: "^(剩余流量：|距离下次重置剩余：|套餐到期：)"
     override:
       additional-suffix: " - A2"
-
 proxy-groups:
+  - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, GLOBAL, REJECT] }
   - {
-      name: Airport1Bootstrap,
+      name: Auto,
       type: url-test,
-      use: [Airport1],
-      filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)",
-      url: https://cp.cloudflare.com/generate_204,
+      use: [Airport2],
+      filter: "(?i)(\\[HK\\]|HK-|HongKong|hk|\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)",
+      url: "https://cp.cloudflare.com/generate_204",
       interval: 1800,
       lazy: true,
       timeout: 5000,
-      hidden: true,
     }
-  - { name: Proxy, type: select, proxies: [Auto, AI, HK, TW, JP, SG, US, REJECT] }
-  - { name: Auto, type: select, use: [Airport1, Airport2] }
-  - { name: AI, type: select, proxies: [TW, JP, SG, US] }
-  - { name: HK, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[HK\\]|HK-|HongKong|hk)" }
-  - { name: TW, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw)" }
-  - { name: JP, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[JP\\]|JP-|Tokyo|Japan|jp)" }
-  - { name: SG, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[SG\\]|SG-|Singapore|sg)" }
-  - { name: US, type: select, use: [Airport1, Airport2], filter: "(?i)(\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)" }
+  - { name: AI, type: select, use: [Airport2], filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw|\\[JP\\]|JP-|Tokyo|Japan|jp|\\[SG\\]|SG-|Singapore|sg|\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)" }
+  - { name: HK, type: select, use: [Airport2], filter: "(?i)(\\[HK\\]|HK-|HongKong|hk)" }
+  - { name: TW, type: select, use: [Airport2], filter: "(?i)(\\[TW\\]|TW-|TaiPei|Taiwan|tw)" }
+  - { name: JP, type: select, use: [Airport2], filter: "(?i)(\\[JP\\]|JP-|Tokyo|Japan|jp)" }
+  - { name: SG, type: select, use: [Airport2], filter: "(?i)(\\[SG\\]|SG-|Singapore|sg)" }
+  - { name: US, type: select, use: [Airport2], filter: "(?i)(\\[US\\]|US-|America|Los Angeles|Santa Clara|San Jose|San Francisco|us)" }
+  - { name: GLOBAL, type: select, use: [Airport2] }
 
 rule-providers:
   fakeip-filter:
